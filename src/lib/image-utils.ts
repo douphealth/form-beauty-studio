@@ -61,14 +61,35 @@ export function generateOutputFilename(originalName: string, format: OutputForma
   return base + getExtension(format);
 }
 
+// Validation limits
+export const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50 MB
+export const MAX_FILE_COUNT = 200;
+export const MAX_DIMENSION = 16384; // 16K pixels
+
+export function validateFile(file: File): string | null {
+  if (file.size > MAX_FILE_SIZE) {
+    return `File too large (${formatBytes(file.size)}). Max ${formatBytes(MAX_FILE_SIZE)}.`;
+  }
+  if (!isAcceptedImage(file)) {
+    return `Unsupported format: ${file.type || file.name.split('.').pop()}`;
+  }
+  return null;
+}
+
 export function compressImage(file: File, options: CompressionOptions): Promise<Blob> {
   return new Promise((resolve, reject) => {
+    const objectUrl = URL.createObjectURL(file);
     const img = new Image();
     img.onload = () => {
       try {
         let { width, height } = img;
 
-        // Resize if needed
+        if (width > MAX_DIMENSION || height > MAX_DIMENSION) {
+          const ratio = Math.min(MAX_DIMENSION / width, MAX_DIMENSION / height);
+          width = Math.round(width * ratio);
+          height = Math.round(height * ratio);
+        }
+
         if (options.maxDimension && (width > options.maxDimension || height > options.maxDimension)) {
           const ratio = Math.min(options.maxDimension / width, options.maxDimension / height);
           width = Math.round(width * ratio);
@@ -85,7 +106,6 @@ export function compressImage(file: File, options: CompressionOptions): Promise<
           return;
         }
 
-        // White background for JPEG (no transparency)
         if (options.format === 'jpeg') {
           ctx.fillStyle = '#FFFFFF';
           ctx.fillRect(0, 0, width, height);
@@ -94,11 +114,11 @@ export function compressImage(file: File, options: CompressionOptions): Promise<
         ctx.drawImage(img, 0, 0, width, height);
 
         const mime = getMimeType(options.format);
-        // PNG doesn't use quality parameter
         const quality = options.format === 'png' ? undefined : options.quality;
 
         canvas.toBlob(
           (blob) => {
+            URL.revokeObjectURL(objectUrl);
             if (blob) {
               resolve(blob);
             } else {
@@ -109,11 +129,15 @@ export function compressImage(file: File, options: CompressionOptions): Promise<
           quality
         );
       } catch (err) {
+        URL.revokeObjectURL(objectUrl);
         reject(err);
       }
     };
-    img.onerror = () => reject(new Error('Failed to load image'));
-    img.src = URL.createObjectURL(file);
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error('Failed to load image'));
+    };
+    img.src = objectUrl;
   });
 }
 

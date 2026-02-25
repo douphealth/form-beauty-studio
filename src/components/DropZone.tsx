@@ -1,24 +1,48 @@
 import { useCallback, useRef, useState } from "react";
 import { Upload, Image as ImageIcon, Sparkles, ArrowDown } from "lucide-react";
-import { isAcceptedImage, createImageFile, type ImageFile } from "@/lib/image-utils";
+import { toast } from "sonner";
+import { isAcceptedImage, createImageFile, validateFile, MAX_FILE_COUNT, type ImageFile } from "@/lib/image-utils";
 
 interface DropZoneProps {
   onFilesAdded: (files: ImageFile[]) => void;
   hasFiles: boolean;
+  currentCount?: number;
 }
 
-export default function DropZone({ onFilesAdded, hasFiles }: DropZoneProps) {
+export default function DropZone({ onFilesAdded, hasFiles, currentCount = 0 }: DropZoneProps) {
   const [dragging, setDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleFiles = useCallback(
     (fileList: FileList | File[]) => {
-      const files = Array.from(fileList).filter(isAcceptedImage);
-      if (files.length > 0) {
-        onFilesAdded(files.map(createImageFile));
+      const rawFiles = Array.from(fileList);
+      const remaining = MAX_FILE_COUNT - currentCount;
+
+      if (remaining <= 0) {
+        toast.error(`Max ${MAX_FILE_COUNT} images allowed.`);
+        return;
+      }
+
+      const capped = rawFiles.slice(0, remaining);
+      if (capped.length < rawFiles.length) {
+        toast.warning(`Only ${capped.length} of ${rawFiles.length} files added (limit: ${MAX_FILE_COUNT}).`);
+      }
+
+      const valid: ImageFile[] = [];
+      for (const file of capped) {
+        const error = validateFile(file);
+        if (error) {
+          toast.error(`${file.name}: ${error}`);
+        } else {
+          valid.push(createImageFile(file));
+        }
+      }
+
+      if (valid.length > 0) {
+        onFilesAdded(valid);
       }
     },
-    [onFilesAdded]
+    [onFilesAdded, currentCount]
   );
 
   const onDrop = useCallback(

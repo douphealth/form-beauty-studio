@@ -183,7 +183,7 @@ export default function Index() {
         {/* Main content */}
         <main className="mx-auto max-w-5xl px-5 py-10 sm:px-8 sm:py-14">
           {/* Drop zone */}
-          <DropZone onFilesAdded={handleFilesAdded} hasFiles={images.length > 0} />
+          <DropZone onFilesAdded={handleFilesAdded} hasFiles={images.length > 0} currentCount={images.length} />
 
           {/* Settings panel */}
           {images.length > 0 && (
