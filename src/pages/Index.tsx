@@ -77,16 +77,19 @@ const HERO_FEATURES = [
   },
 ];
 
-const COMPARISON_FEATURES = [
-  { feature: "Client-side processing", us: true, them: true },
-  { feature: "Batch ZIP download", us: true, them: true },
-  { feature: "Before/after comparison", us: true, them: false },
-  { feature: "Dark mode", us: true, them: false },
-  { feature: "Image preview & zoom", us: true, them: false },
-  { feature: "Custom resize presets", us: true, them: false },
-  { feature: "Keyboard shortcuts", us: true, them: false },
-  { feature: "No ads or trackers", us: true, them: false },
-  { feature: "Premium design", us: true, them: false },
+const INCLUDED_FEATURES = [
+  "Client-side compression (no server uploads)",
+  "Batch processing with ZIP download",
+  "WebP, JPEG & PNG output formats",
+  "Adjustable quality slider (1–100%)",
+  "Resize presets (4K, 2K, Full HD, HD, Web, Thumbnail)",
+  "Click-to-preview with zoom controls",
+  "Before/after comparison slider",
+  "Light & dark mode",
+  "Keyboard shortcuts (⌘↵ compress, ⌘⇧D download)",
+  "Individual or bulk download",
+  "Drag & drop or file picker",
+  "Fully responsive (desktop, tablet, mobile)",
 ];
 
 export default function Index() {
@@ -601,7 +604,7 @@ export default function Index() {
                   ))}
                 </div>
 
-                {/* ─── Comparison Table ─── */}
+                {/* ─── What's Included ─── */}
                 <motion.div
                   initial={{ opacity: 0, y: 24 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -610,48 +613,30 @@ export default function Index() {
                 >
                   <div className="mb-6 text-center">
                     <h2 className="text-xl font-bold text-foreground sm:text-2xl">
-                      How We <span className="gradient-text">Compare</span>
+                      What's <span className="gradient-text">Included</span>
                     </h2>
                     <p className="mt-2 text-sm text-muted-foreground/60">
-                      See why professionals choose ImageForge over the competition.
+                      Everything you get — no exaggeration, no fine print.
                     </p>
                   </div>
 
-                  <div className="glass-card overflow-hidden">
-                    <div className="grid grid-cols-3 gap-0 border-b border-border/30 bg-primary/[0.02]">
-                      <div className="px-5 py-4 text-[11px] font-semibold uppercase tracking-[0.15em] text-muted-foreground/50">Feature</div>
-                      <div className="px-5 py-4 text-center">
-                        <span className="gradient-text text-xs font-bold">ImageForge</span>
-                      </div>
-                      <div className="px-5 py-4 text-center text-xs font-medium text-muted-foreground/50">Others</div>
-                    </div>
-                    {COMPARISON_FEATURES.map((row, i) => (
-                      <motion.div
-                        key={row.feature}
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.7 + i * 0.04 }}
-                        className={`grid grid-cols-3 gap-0 ${i < COMPARISON_FEATURES.length - 1 ? "border-b border-border/15" : ""}`}
-                      >
-                        <div className="px-5 py-3.5 text-xs font-medium text-foreground/80">{row.feature}</div>
-                        <div className="flex items-center justify-center px-5 py-3.5">
-                          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-success/10 text-success">
+                  <div className="glass-card p-6 sm:p-8">
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      {INCLUDED_FEATURES.map((feature, i) => (
+                        <motion.div
+                          key={feature}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.7 + i * 0.04 }}
+                          className="flex items-center gap-3 rounded-xl px-4 py-3 transition-colors hover:bg-primary/[0.03]"
+                        >
+                          <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-success/10 text-success">
                             <CheckCircle2 className="h-3.5 w-3.5" strokeWidth={2.5} />
                           </span>
-                        </div>
-                        <div className="flex items-center justify-center px-5 py-3.5">
-                          {row.them ? (
-                            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-success/10 text-success">
-                              <CheckCircle2 className="h-3.5 w-3.5" strokeWidth={2.5} />
-                            </span>
-                          ) : (
-                            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-muted/30 text-muted-foreground/30">
-                              ×
-                            </span>
-                          )}
-                        </div>
-                      </motion.div>
-                    ))}
+                          <span className="text-xs font-medium text-foreground/80">{feature}</span>
+                        </motion.div>
+                      ))}
+                    </div>
                   </div>
                 </motion.div>
 
