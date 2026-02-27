@@ -1,15 +1,18 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Zap, Download, Trash2, Settings2, Layers, Gauge,
   Maximize, FileType, Package, ArrowRight, Shield, Cpu, Sparkles,
-  Lock, Globe, ChevronDown
+  Lock, Globe, ChevronDown, Keyboard, Eye, Image as ImageIcon,
+  CheckCircle2, Clock, HardDrive, Palette, FileDown, MonitorSmartphone,
 } from "lucide-react";
 import JSZip from "jszip";
 import { toast } from "sonner";
 import DropZone from "@/components/DropZone";
 import ImageCard from "@/components/ImageCard";
 import ThemeToggle from "@/components/ThemeToggle";
+import ImagePreviewModal from "@/components/ImagePreviewModal";
+import Footer from "@/components/Footer";
 import {
   type ImageFile, type OutputFormat, type CompressionOptions,
   compressImage, formatBytes, getCompressionRatio,
@@ -29,6 +32,7 @@ const RESIZE_OPTIONS = [
   { value: 1920, label: "Full HD — 1920px" },
   { value: 1280, label: "HD — 1280px" },
   { value: 800, label: "Web — 800px" },
+  { value: 480, label: "Thumbnail — 480px" },
 ];
 
 const stagger = {
@@ -40,6 +44,51 @@ const stagger = {
   },
 };
 
+const HERO_FEATURES = [
+  {
+    icon: Zap,
+    title: "Lightning Fast",
+    desc: "Client-side processing — no uploads, no waiting. Instant results on your machine.",
+  },
+  {
+    icon: Shield,
+    title: "100% Private",
+    desc: "Your images never leave your device. Zero data collection, zero tracking, zero compromise.",
+  },
+  {
+    icon: Layers,
+    title: "Batch Processing",
+    desc: "Compress hundreds of images at once with a one-click ZIP download. No limits.",
+  },
+  {
+    icon: Eye,
+    title: "Before & After",
+    desc: "Visual side-by-side comparison with a draggable slider to inspect quality in detail.",
+  },
+  {
+    icon: Palette,
+    title: "Multi-Format",
+    desc: "Convert between WebP, JPEG, and PNG. Choose the perfect format for every use case.",
+  },
+  {
+    icon: MonitorSmartphone,
+    title: "Fully Responsive",
+    desc: "Works flawlessly on desktop, tablet, and mobile. Process images from any device.",
+  },
+];
+
+const COMPARISON_FEATURES = [
+  { feature: "Client-side processing", us: true, them: true },
+  { feature: "Batch ZIP download", us: true, them: true },
+  { feature: "Before/after comparison", us: true, them: false },
+  { feature: "Dark mode", us: true, them: false },
+  { feature: "Image preview & zoom", us: true, them: false },
+  { feature: "Custom resize presets", us: true, them: false },
+  { feature: "Keyboard shortcuts", us: true, them: false },
+  { feature: "No ads or trackers", us: true, them: false },
+  { feature: "Premium design", us: true, them: false },
+];
+
 export default function Index() {
   const [images, setImages] = useState<ImageFile[]>([]);
   const [format, setFormat] = useState<OutputFormat>("webp");
@@ -48,6 +97,7 @@ export default function Index() {
   const [processing, setProcessing] = useState(false);
   const [progress, setProgress] = useState({ current: 0, total: 0 });
   const [settingsOpen, setSettingsOpen] = useState(true);
+  const [previewImage, setPreviewImage] = useState<ImageFile | null>(null);
 
   const handleFilesAdded = useCallback((newFiles: ImageFile[]) => {
     setImages((prev) => [...prev, ...newFiles]);
@@ -137,6 +187,33 @@ export default function Index() {
     toast.success("ZIP downloaded!");
   }, [images]);
 
+  const downloadAllIndividually = useCallback(() => {
+    const completed = images.filter((i) => i.status === "done" && i.compressedBlob);
+    completed.forEach((img) => downloadBlob(img.compressedBlob!, img.outputFilename));
+    toast.success(`${completed.length} files downloaded!`);
+  }, [images]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLSelectElement) return;
+      
+      if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+        e.preventDefault();
+        processAll();
+      }
+      if (e.key === "Escape") {
+        setPreviewImage(null);
+      }
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === "d") {
+        e.preventDefault();
+        downloadZip();
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [processAll, downloadZip]);
+
   const stats = useMemo(() => {
     const totalOriginal = images.reduce((s, i) => s + i.originalSize, 0);
     const completed = images.filter((i) => i.status === "done" && i.compressedSize != null);
@@ -181,6 +258,13 @@ export default function Index() {
             </div>
 
             <div className="flex items-center gap-2">
+              {/* Keyboard shortcut hint */}
+              <div className="hidden items-center gap-1.5 rounded-full border border-border/40 bg-card/30 backdrop-blur-sm px-3 py-1.5 text-[10px] font-medium text-muted-foreground/40 lg:inline-flex">
+                <Keyboard className="h-3 w-3" />
+                <kbd className="font-mono text-[9px]">⌘↵</kbd> Compress
+                <span className="mx-1 h-3 w-px bg-border/30" />
+                <kbd className="font-mono text-[9px]">⌘⇧D</kbd> ZIP
+              </div>
               <div className="hidden items-center gap-1.5 rounded-full border border-border/40 bg-card/30 backdrop-blur-sm px-3 py-1.5 text-[10px] font-medium text-muted-foreground/60 sm:inline-flex">
                 <Lock className="h-3 w-3" /> Private
                 <span className="mx-1.5 h-3 w-px bg-border/50" />
@@ -391,26 +475,41 @@ export default function Index() {
                     >
                       <Zap className="h-4 w-4 transition-transform group-hover:scale-110" strokeWidth={2} />
                       Compress All
+                      <kbd className="hidden rounded-md bg-primary-foreground/20 px-1.5 py-0.5 font-mono text-[9px] sm:inline">⌘↵</kbd>
                     </motion.button>
 
                     {hasCompleted && (
-                      <motion.button
-                        onClick={downloadZip}
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        whileHover={{ y: -2 }}
-                        whileTap={{ scale: 0.98 }}
-                        className="inline-flex items-center gap-2 rounded-2xl border border-success/20 bg-success/[0.06] px-7 py-4 text-sm font-bold text-success transition-all duration-300 hover:bg-success hover:text-success-foreground hover:shadow-lg"
-                      >
-                        <Download className="h-4 w-4" strokeWidth={2} /> Download ZIP
-                      </motion.button>
+                      <>
+                        <motion.button
+                          onClick={downloadZip}
+                          initial={{ opacity: 0, scale: 0.9 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          whileHover={{ y: -2 }}
+                          whileTap={{ scale: 0.98 }}
+                          className="inline-flex items-center gap-2 rounded-2xl border border-success/20 bg-success/[0.06] px-7 py-4 text-sm font-bold text-success transition-all duration-300 hover:bg-success hover:text-success-foreground hover:shadow-lg"
+                        >
+                          <Download className="h-4 w-4" strokeWidth={2} /> Download ZIP
+                          <kbd className="hidden rounded-md bg-success/10 px-1.5 py-0.5 font-mono text-[9px] sm:inline">⌘⇧D</kbd>
+                        </motion.button>
+
+                        <motion.button
+                          onClick={downloadAllIndividually}
+                          initial={{ opacity: 0, scale: 0.9 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          whileHover={{ y: -2 }}
+                          whileTap={{ scale: 0.98 }}
+                          className="inline-flex items-center gap-2 rounded-2xl border border-border/40 bg-card/30 backdrop-blur-sm px-5 py-4 text-sm font-semibold text-muted-foreground transition-all duration-300 hover:bg-card/60 hover:text-foreground"
+                        >
+                          <FileDown className="h-4 w-4" strokeWidth={1.5} /> Individual
+                        </motion.button>
+                      </>
                     )}
 
                     <motion.button
                       onClick={clearAll}
                       whileHover={{ y: -1 }}
                       whileTap={{ scale: 0.98 }}
-                      className="inline-flex items-center gap-2 rounded-2xl border border-border/40 bg-card/30 backdrop-blur-sm px-7 py-4 text-sm font-semibold text-muted-foreground transition-all duration-300 hover:bg-card/60 hover:text-foreground"
+                      className="inline-flex items-center gap-2 rounded-2xl border border-border/40 bg-card/30 backdrop-blur-sm px-7 py-4 text-sm font-semibold text-muted-foreground transition-all duration-300 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20"
                     >
                       <Trash2 className="h-4 w-4" strokeWidth={1.5} /> Clear All
                     </motion.button>
@@ -419,16 +518,23 @@ export default function Index() {
 
                 {/* ─── Image Grid ─── */}
                 <div className="mt-12">
-                  <div className="mb-5 flex items-center gap-3">
-                    <h3 className="text-sm font-bold text-foreground">Image Queue</h3>
-                    <motion.span
-                      key={stats.count}
-                      initial={{ scale: 0.5 }}
-                      animate={{ scale: 1 }}
-                      className="rounded-lg bg-primary/[0.08] px-2.5 py-1 font-mono text-xs font-bold text-primary tabular-nums"
-                    >
-                      {stats.count}
-                    </motion.span>
+                  <div className="mb-5 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <h3 className="text-sm font-bold text-foreground">Image Queue</h3>
+                      <motion.span
+                        key={stats.count}
+                        initial={{ scale: 0.5 }}
+                        animate={{ scale: 1 }}
+                        className="rounded-lg bg-primary/[0.08] px-2.5 py-1 font-mono text-xs font-bold text-primary tabular-nums"
+                      >
+                        {stats.count}
+                      </motion.span>
+                    </div>
+                    {hasCompleted && (
+                      <span className="flex items-center gap-1.5 text-[11px] font-medium text-success/60">
+                        <CheckCircle2 className="h-3 w-3" /> {stats.completedCount} done
+                      </span>
+                    )}
                   </div>
                   <motion.div
                     layout
@@ -436,7 +542,13 @@ export default function Index() {
                   >
                     <AnimatePresence mode="popLayout">
                       {images.map((img, i) => (
-                        <ImageCard key={img.id} image={img} onRemove={removeImage} index={i} />
+                        <ImageCard
+                          key={img.id}
+                          image={img}
+                          onRemove={removeImage}
+                          onPreview={setPreviewImage}
+                          index={i}
+                        />
                       ))}
                     </AnimatePresence>
                   </motion.div>
@@ -455,29 +567,28 @@ export default function Index() {
                 transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
                 className="mt-20"
               >
-                <div className="grid gap-4 sm:grid-cols-3">
-                  {[
-                    {
-                      icon: Zap,
-                      title: "Lightning Fast",
-                      desc: "Client-side processing — no uploads, no waiting, instant results.",
-                    },
-                    {
-                      icon: Shield,
-                      title: "100% Private",
-                      desc: "Your images never leave your device. Zero data collection.",
-                    },
-                    {
-                      icon: Layers,
-                      title: "Batch Processing",
-                      desc: "Compress hundreds of images at once with one-click ZIP download.",
-                    },
-                  ].map((f, i) => (
+                {/* Feature grid */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.1 }}
+                  className="mb-6 text-center"
+                >
+                  <h2 className="text-xl font-bold text-foreground sm:text-2xl">
+                    Why <span className="gradient-text">ImageForge</span>?
+                  </h2>
+                  <p className="mt-2 text-sm text-muted-foreground/60">
+                    The most powerful browser-based image compression tool — free, private, unlimited.
+                  </p>
+                </motion.div>
+
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {HERO_FEATURES.map((f, i) => (
                     <motion.div
                       key={f.title}
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.3 + i * 0.1, type: "spring", stiffness: 200 }}
+                      transition={{ delay: 0.2 + i * 0.08, type: "spring", stiffness: 200 }}
                       whileHover={{ y: -4 }}
                       className="glass-card p-8 text-center group"
                     >
@@ -489,18 +600,136 @@ export default function Index() {
                     </motion.div>
                   ))}
                 </div>
+
+                {/* ─── Comparison Table ─── */}
+                <motion.div
+                  initial={{ opacity: 0, y: 24 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.6, type: "spring", stiffness: 200 }}
+                  className="mt-16"
+                >
+                  <div className="mb-6 text-center">
+                    <h2 className="text-xl font-bold text-foreground sm:text-2xl">
+                      How We <span className="gradient-text">Compare</span>
+                    </h2>
+                    <p className="mt-2 text-sm text-muted-foreground/60">
+                      See why professionals choose ImageForge over the competition.
+                    </p>
+                  </div>
+
+                  <div className="glass-card overflow-hidden">
+                    <div className="grid grid-cols-3 gap-0 border-b border-border/30 bg-primary/[0.02]">
+                      <div className="px-5 py-4 text-[11px] font-semibold uppercase tracking-[0.15em] text-muted-foreground/50">Feature</div>
+                      <div className="px-5 py-4 text-center">
+                        <span className="gradient-text text-xs font-bold">ImageForge</span>
+                      </div>
+                      <div className="px-5 py-4 text-center text-xs font-medium text-muted-foreground/50">Others</div>
+                    </div>
+                    {COMPARISON_FEATURES.map((row, i) => (
+                      <motion.div
+                        key={row.feature}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.7 + i * 0.04 }}
+                        className={`grid grid-cols-3 gap-0 ${i < COMPARISON_FEATURES.length - 1 ? "border-b border-border/15" : ""}`}
+                      >
+                        <div className="px-5 py-3.5 text-xs font-medium text-foreground/80">{row.feature}</div>
+                        <div className="flex items-center justify-center px-5 py-3.5">
+                          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-success/10 text-success">
+                            <CheckCircle2 className="h-3.5 w-3.5" strokeWidth={2.5} />
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-center px-5 py-3.5">
+                          {row.them ? (
+                            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-success/10 text-success">
+                              <CheckCircle2 className="h-3.5 w-3.5" strokeWidth={2.5} />
+                            </span>
+                          ) : (
+                            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-muted/30 text-muted-foreground/30">
+                              ×
+                            </span>
+                          )}
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </motion.div>
+
+                {/* ─── How it works ─── */}
+                <motion.div
+                  initial={{ opacity: 0, y: 24 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.9, type: "spring", stiffness: 200 }}
+                  className="mt-16"
+                >
+                  <div className="mb-6 text-center">
+                    <h2 className="text-xl font-bold text-foreground sm:text-2xl">
+                      How It <span className="gradient-text">Works</span>
+                    </h2>
+                  </div>
+                  <div className="grid gap-6 sm:grid-cols-3">
+                    {[
+                      { step: "01", icon: ImageIcon, title: "Drop Images", desc: "Drag & drop or click to select images from your device." },
+                      { step: "02", icon: Settings2, title: "Configure", desc: "Choose format, quality, and resize. Fine-tune to your needs." },
+                      { step: "03", icon: Download, title: "Download", desc: "Get compressed files individually or as a single ZIP archive." },
+                    ].map((s, i) => (
+                      <motion.div
+                        key={s.step}
+                        initial={{ opacity: 0, y: 16 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 1 + i * 0.1 }}
+                        className="glass-card relative p-8 text-center"
+                      >
+                        <span className="absolute left-4 top-4 font-mono text-3xl font-black text-primary/[0.07]">{s.step}</span>
+                        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/[0.06] text-primary">
+                          <s.icon className="h-5 w-5" strokeWidth={1.5} />
+                        </div>
+                        <h3 className="mb-2 text-sm font-bold text-foreground">{s.title}</h3>
+                        <p className="text-xs leading-relaxed text-muted-foreground/60">{s.desc}</p>
+                      </motion.div>
+                    ))}
+                  </div>
+                </motion.div>
+
+                {/* ─── Stats showcase ─── */}
+                <motion.div
+                  initial={{ opacity: 0, y: 24 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 1.2, type: "spring", stiffness: 200 }}
+                  className="mt-16 grid grid-cols-2 gap-4 sm:grid-cols-4"
+                >
+                  {[
+                    { icon: HardDrive, value: "50 MB", label: "Max file size" },
+                    { icon: Layers, value: "200", label: "Max batch" },
+                    { icon: Clock, value: "0s", label: "Upload time" },
+                    { icon: Cpu, value: "100%", label: "Client-side" },
+                  ].map((s, i) => (
+                    <motion.div
+                      key={s.label}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 1.3 + i * 0.06 }}
+                      className="glass-card py-8 px-4 text-center"
+                    >
+                      <s.icon className="mx-auto mb-3 h-4 w-4 text-primary/50" strokeWidth={1.5} />
+                      <div className="font-mono text-2xl font-black text-foreground">{s.value}</div>
+                      <div className="mt-1 text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground/40">{s.label}</div>
+                    </motion.div>
+                  ))}
+                </motion.div>
               </motion.div>
             )}
           </AnimatePresence>
         </main>
 
         {/* Footer */}
-        <footer className="border-t border-border/20 py-10 text-center">
-          <p className="text-[11px] font-medium text-muted-foreground/30 tracking-wide">
-            ImageForge — all processing happens in your browser
-          </p>
-        </footer>
+        <Footer />
       </div>
+
+      {/* Image Preview Modal */}
+      {previewImage && (
+        <ImagePreviewModal image={previewImage} onClose={() => setPreviewImage(null)} />
+      )}
     </div>
   );
 }

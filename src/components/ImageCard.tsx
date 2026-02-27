@@ -5,10 +5,11 @@ import { type ImageFile, formatBytes, getCompressionRatio, downloadBlob } from "
 interface ImageCardProps {
   image: ImageFile;
   onRemove: (id: string) => void;
+  onPreview?: (image: ImageFile) => void;
   index: number;
 }
 
-export default function ImageCard({ image, onRemove, index }: ImageCardProps) {
+export default function ImageCard({ image, onRemove, onPreview, index }: ImageCardProps) {
   const ratio = image.compressedSize != null
     ? getCompressionRatio(image.originalSize, image.compressedSize)
     : null;
@@ -37,7 +38,10 @@ export default function ImageCard({ image, onRemove, index }: ImageCardProps) {
       `}
     >
       {/* Image preview */}
-      <div className="relative aspect-[4/3] overflow-hidden bg-muted/30">
+      <div
+        className="relative aspect-[4/3] overflow-hidden bg-muted/30 cursor-pointer"
+        onClick={() => onPreview?.(image)}
+      >
         <img
           src={image.previewUrl}
           alt={image.file.name}
