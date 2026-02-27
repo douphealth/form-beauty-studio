@@ -20,7 +20,8 @@ import {
 } from "@/lib/image-utils";
 
 const FORMAT_OPTIONS: { value: OutputFormat; label: string; desc: string; icon: string }[] = [
-  { value: "webp", label: "WebP", desc: "Best compression", icon: "⚡" },
+  { value: "avif", label: "AVIF", desc: "Best quality/size", icon: "🏆" },
+  { value: "webp", label: "WebP", desc: "Great compression", icon: "⚡" },
   { value: "jpeg", label: "JPEG", desc: "Universal", icon: "🌐" },
   { value: "png", label: "PNG", desc: "Lossless", icon: "💎" },
 ];
@@ -48,7 +49,7 @@ const HERO_FEATURES = [
   {
     icon: Zap,
     title: "Lightning Fast",
-    desc: "Client-side processing — no uploads, no waiting. Instant results on your machine.",
+    desc: "WASM-compiled codecs run locally — MozJPEG, libwebp, OxiPNG, and AVIF encoders.",
   },
   {
     icon: Shield,
@@ -68,7 +69,7 @@ const HERO_FEATURES = [
   {
     icon: Palette,
     title: "Multi-Format",
-    desc: "Convert between WebP, JPEG, and PNG. Choose the perfect format for every use case.",
+    desc: "Convert between AVIF, WebP, JPEG, and PNG. WASM-powered MozJPEG & libwebp encoders.",
   },
   {
     icon: MonitorSmartphone,
@@ -78,9 +79,10 @@ const HERO_FEATURES = [
 ];
 
 const INCLUDED_FEATURES = [
+  "WASM-powered codecs (MozJPEG, libwebp, OxiPNG, AVIF)",
   "Client-side compression (no server uploads)",
   "Batch processing with ZIP download",
-  "WebP, JPEG & PNG output formats",
+  "AVIF, WebP, JPEG & PNG output formats",
   "Adjustable quality slider (1–100%)",
   "Resize presets (4K, 2K, Full HD, HD, Web, Thumbnail)",
   "Click-to-preview with zoom controls",
