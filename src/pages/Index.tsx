@@ -256,7 +256,7 @@ export default function Index() {
                 <h1 className="text-base font-bold tracking-tight sm:text-lg">
                   <span className="gradient-text">ImageForge</span>
                 </h1>
-                <p className="text-[9px] font-semibold uppercase tracking-[0.25em] text-muted-foreground/60">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground/60">
                   Compression Studio
                 </p>
               </div>
@@ -264,16 +264,16 @@ export default function Index() {
 
             <div className="flex items-center gap-2">
               {/* Keyboard shortcut hint */}
-              <div className="hidden items-center gap-1.5 rounded-full border border-border/40 bg-card/30 backdrop-blur-sm px-3 py-1.5 text-[10px] font-medium text-muted-foreground/40 lg:inline-flex">
-                <Keyboard className="h-3 w-3" />
-                <kbd className="font-mono text-[9px]">⌘↵</kbd> Compress
+              <div className="hidden items-center gap-1.5 rounded-full border border-border/40 bg-card/30 backdrop-blur-sm px-3 py-1.5 text-xs font-medium text-muted-foreground/40 lg:inline-flex">
+                <Keyboard className="h-3.5 w-3.5" />
+                <kbd className="font-mono text-[10px]">⌘↵</kbd> Compress
                 <span className="mx-1 h-3 w-px bg-border/30" />
-                <kbd className="font-mono text-[9px]">⌘⇧D</kbd> ZIP
+                <kbd className="font-mono text-[10px]">⌘⇧D</kbd> ZIP
               </div>
-              <div className="hidden items-center gap-1.5 rounded-full border border-border/40 bg-card/30 backdrop-blur-sm px-3 py-1.5 text-[10px] font-medium text-muted-foreground/60 sm:inline-flex">
-                <Lock className="h-3 w-3" /> Private
+              <div className="hidden items-center gap-1.5 rounded-full border border-border/40 bg-card/30 backdrop-blur-sm px-3 py-1.5 text-xs font-medium text-muted-foreground/60 sm:inline-flex">
+                <Lock className="h-3.5 w-3.5" /> Private
                 <span className="mx-1.5 h-3 w-px bg-border/50" />
-                <Globe className="h-3 w-3" /> Browser-only
+                <Globe className="h-3.5 w-3.5" /> Browser-only
               </div>
               <ThemeToggle />
             </div>
@@ -321,7 +321,7 @@ export default function Index() {
                           <div className="grid gap-8 sm:grid-cols-3">
                             {/* Format */}
                             <div className="space-y-3">
-                              <label className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.15em] text-muted-foreground/70">
+                              <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground/70">
                                 <FileType className="h-3.5 w-3.5" strokeWidth={1.5} /> Output Format
                               </label>
                               <div className="flex gap-2">
@@ -338,8 +338,8 @@ export default function Index() {
                                     }`}
                                   >
                                     <div className="text-lg leading-none mb-1.5">{opt.icon}</div>
-                                    <div className="text-xs font-bold">{opt.label}</div>
-                                    <div className="mt-0.5 text-[10px] font-medium opacity-50">{opt.desc}</div>
+                                    <div className="text-sm font-bold">{opt.label}</div>
+                                    <div className="mt-0.5 text-[11px] font-medium opacity-50">{opt.desc}</div>
                                   </motion.button>
                                 ))}
                               </div>
@@ -347,7 +347,7 @@ export default function Index() {
 
                             {/* Quality */}
                             <div className="space-y-3">
-                              <label className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.15em] text-muted-foreground/70">
+                              <label className="flex items-center justify-between text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground/70">
                                 <span className="flex items-center gap-1.5">
                                   <Gauge className="h-3.5 w-3.5" strokeWidth={1.5} /> Quality
                                 </span>
@@ -364,24 +364,24 @@ export default function Index() {
                                   disabled={format === "png"}
                                 />
                               </div>
-                              <div className="flex justify-between text-[10px] font-medium text-muted-foreground/40">
+                              <div className="flex justify-between text-[11px] font-medium text-muted-foreground/40">
                                 <span>Smaller file</span>
                                 <span>Higher quality</span>
                               </div>
                               {format === "png" && (
-                                <p className="text-[10px] font-medium text-accent/70">PNG is lossless — quality doesn't apply</p>
+                                <p className="text-[11px] font-medium text-accent/70">PNG is lossless — quality doesn't apply</p>
                               )}
                             </div>
 
                             {/* Resize */}
                             <div className="space-y-3">
-                              <label className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.15em] text-muted-foreground/70">
+                              <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground/70">
                                 <Maximize className="h-3.5 w-3.5" strokeWidth={1.5} /> Max Dimension
                               </label>
                               <select
                                 value={maxDimension}
                                 onChange={(e) => setMaxDimension(Number(e.target.value))}
-                                className="w-full rounded-xl border border-border/40 bg-card/30 backdrop-blur-sm px-4 py-3.5 text-xs font-semibold text-foreground focus:border-primary/30 focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all duration-300"
+                                className="w-full rounded-xl border border-border/40 bg-card/30 backdrop-blur-sm px-4 py-3.5 text-sm font-semibold text-foreground focus:border-primary/30 focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all duration-300"
                               >
                                 {RESIZE_OPTIONS.map((opt) => (
                                   <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -422,7 +422,7 @@ export default function Index() {
                       >
                         {stat.value}
                       </motion.span>
-                      <span className="mt-2 text-[9px] font-semibold uppercase tracking-[0.2em] text-muted-foreground/50">{stat.label}</span>
+                      <span className="mt-2 text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground/50">{stat.label}</span>
                     </motion.div>
                   ))}
                 </motion.div>
@@ -600,8 +600,8 @@ export default function Index() {
                       <div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/[0.06] text-primary transition-transform duration-300 group-hover:scale-110">
                         <f.icon className="h-5 w-5" strokeWidth={1.5} />
                       </div>
-                      <h3 className="mb-2 text-sm font-bold text-foreground">{f.title}</h3>
-                      <p className="text-xs leading-relaxed text-muted-foreground/70">{f.desc}</p>
+                      <h3 className="mb-2 text-base font-bold text-foreground">{f.title}</h3>
+                      <p className="text-sm leading-relaxed text-muted-foreground/70">{f.desc}</p>
                     </motion.div>
                   ))}
                 </div>
@@ -635,7 +635,7 @@ export default function Index() {
                           <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-success/10 text-success">
                             <CheckCircle2 className="h-3.5 w-3.5" strokeWidth={2.5} />
                           </span>
-                          <span className="text-xs font-medium text-foreground/80">{feature}</span>
+                          <span className="text-sm font-medium text-foreground/80">{feature}</span>
                         </motion.div>
                       ))}
                     </div>
@@ -667,12 +667,12 @@ export default function Index() {
                         transition={{ delay: 1 + i * 0.1 }}
                         className="glass-card relative p-8 text-center"
                       >
-                        <span className="absolute left-4 top-4 font-mono text-3xl font-black text-primary/[0.07]">{s.step}</span>
+                        <span className="absolute left-4 top-4 font-mono text-4xl font-black text-primary/[0.07]">{s.step}</span>
                         <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/[0.06] text-primary">
                           <s.icon className="h-5 w-5" strokeWidth={1.5} />
                         </div>
-                        <h3 className="mb-2 text-sm font-bold text-foreground">{s.title}</h3>
-                        <p className="text-xs leading-relaxed text-muted-foreground/60">{s.desc}</p>
+                        <h3 className="mb-2 text-base font-bold text-foreground">{s.title}</h3>
+                        <p className="text-sm leading-relaxed text-muted-foreground/60">{s.desc}</p>
                       </motion.div>
                     ))}
                   </div>
@@ -700,7 +700,7 @@ export default function Index() {
                     >
                       <s.icon className="mx-auto mb-3 h-4 w-4 text-primary/50" strokeWidth={1.5} />
                       <div className="font-mono text-2xl font-black text-foreground">{s.value}</div>
-                      <div className="mt-1 text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground/40">{s.label}</div>
+                      <div className="mt-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/40">{s.label}</div>
                     </motion.div>
                   ))}
                 </motion.div>

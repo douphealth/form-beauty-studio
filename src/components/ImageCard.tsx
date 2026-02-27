@@ -56,7 +56,7 @@ export default function ImageCard({ image, onRemove, onPreview, index }: ImageCa
         {/* Status badge */}
         <div className="absolute left-2.5 top-2.5 z-10">
           {image.status === 'pending' && (
-            <span className="inline-flex items-center rounded-lg bg-card/70 backdrop-blur-xl px-2.5 py-1 text-[10px] font-semibold text-muted-foreground">
+             <span className="inline-flex items-center rounded-lg bg-card/70 backdrop-blur-xl px-2.5 py-1 text-[11px] font-semibold text-muted-foreground">
               Ready
             </span>
           )}
@@ -64,7 +64,7 @@ export default function ImageCard({ image, onRemove, onPreview, index }: ImageCa
             <motion.span
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[10px] font-bold text-primary-foreground shadow-lg"
+              className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-bold text-primary-foreground shadow-lg"
               style={{ background: 'var(--gradient-primary)' }}
             >
               <Loader2 className="h-3 w-3 animate-spin" /> Compressing
@@ -75,13 +75,13 @@ export default function ImageCard({ image, onRemove, onPreview, index }: ImageCa
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ type: "spring", stiffness: 500 }}
-              className="inline-flex items-center gap-1 rounded-lg bg-success px-3 py-1.5 text-[10px] font-bold text-success-foreground shadow-lg"
+              className="inline-flex items-center gap-1 rounded-lg bg-success px-3 py-1.5 text-[11px] font-bold text-success-foreground shadow-lg"
             >
               <Check className="h-3 w-3" strokeWidth={3} /> −{ratio}%
             </motion.span>
           )}
           {isError && (
-            <span className="inline-flex items-center gap-1 rounded-lg bg-destructive px-3 py-1.5 text-[10px] font-bold text-destructive-foreground shadow-lg">
+            <span className="inline-flex items-center gap-1 rounded-lg bg-destructive px-3 py-1.5 text-[11px] font-bold text-destructive-foreground shadow-lg">
               <AlertCircle className="h-3 w-3" /> Failed
             </span>
           )}
@@ -109,11 +109,11 @@ export default function ImageCard({ image, onRemove, onPreview, index }: ImageCa
 
       {/* Info footer */}
       <div className="relative z-10 p-3.5 space-y-1.5">
-        <p className="truncate text-[11px] font-mono text-muted-foreground/70 leading-none">
+        <p className="truncate text-xs font-mono text-muted-foreground/70 leading-none">
           {image.file.name}
         </p>
 
-        <div className="flex items-center gap-1.5 text-xs">
+        <div className="flex items-center gap-1.5 text-sm">
           <span className="text-muted-foreground font-medium tabular-nums">
             {formatBytes(image.originalSize)}
           </span>
@@ -128,7 +128,7 @@ export default function ImageCard({ image, onRemove, onPreview, index }: ImageCa
         </div>
 
         {isError && image.error && (
-          <p className="text-[10px] text-destructive leading-relaxed">{image.error}</p>
+          <p className="text-[11px] text-destructive leading-relaxed">{image.error}</p>
         )}
       </div>
     </motion.div>
