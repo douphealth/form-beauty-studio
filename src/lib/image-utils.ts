@@ -1,4 +1,4 @@
-export type OutputFormat = 'jpeg' | 'png' | 'webp';
+export type OutputFormat = 'jpeg' | 'png' | 'webp' | 'avif';
 
 export interface CompressionOptions {
   format: OutputFormat;
@@ -23,12 +23,14 @@ const MIME_MAP: Record<OutputFormat, string> = {
   jpeg: 'image/jpeg',
   png: 'image/png',
   webp: 'image/webp',
+  avif: 'image/avif',
 };
 
 const EXT_MAP: Record<OutputFormat, string> = {
   jpeg: '.jpg',
   png: '.png',
   webp: '.webp',
+  avif: '.avif',
 };
 
 export function getExtension(format: OutputFormat): string {
@@ -76,7 +78,31 @@ export function validateFile(file: File): string | null {
   return null;
 }
 
-export function compressImage(file: File, options: CompressionOptions): Promise<Blob> {
+export async function compressImage(file: File, options: CompressionOptions): Promise<Blob> {
+  try {
+    // Try WASM codec path first
+    const { decodeImage, resizeImageData, encodeImage, isWasmSupported } = await import('./codecs');
+    
+    if (await isWasmSupported()) {
+      let imageData = await decodeImage(file);
+      
+      // Apply max dimension constraints
+      const maxDim = options.maxDimension || MAX_DIMENSION;
+      if (imageData.width > maxDim || imageData.height > maxDim) {
+        imageData = resizeImageData(imageData, maxDim);
+      }
+      
+      return await encodeImage(imageData, options.format, options.quality * 100);
+    }
+  } catch (err) {
+    console.warn('WASM codec failed, falling back to Canvas API:', err);
+  }
+
+  // Fallback: Canvas API (original implementation)
+  return compressImageCanvas(file, options);
+}
+
+function compressImageCanvas(file: File, options: CompressionOptions): Promise<Blob> {
   return new Promise((resolve, reject) => {
     const objectUrl = URL.createObjectURL(file);
     const img = new Image();
@@ -166,8 +192,8 @@ export function downloadBlob(blob: Blob, filename: string) {
   URL.revokeObjectURL(url);
 }
 
-export const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/bmp', 'image/tiff'];
+export const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/avif', 'image/gif', 'image/bmp', 'image/tiff'];
 
 export function isAcceptedImage(file: File): boolean {
-  return ACCEPTED_TYPES.includes(file.type) || /\.(jpe?g|png|webp|gif|bmp|tiff?)$/i.test(file.name);
+  return ACCEPTED_TYPES.includes(file.type) || /\.(jpe?g|png|webp|avif|gif|bmp|tiff?)$/i.test(file.name);
 }

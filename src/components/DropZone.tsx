@@ -169,7 +169,7 @@ export default function DropZone({ onFilesAdded, hasFiles, currentCount = 0 }: D
 
         {/* Format badges */}
         <div className="flex flex-wrap items-center justify-center gap-2">
-          {["JPG", "PNG", "WebP", "GIF", "BMP", "TIFF"].map((fmt, i) => (
+          {["AVIF", "WebP", "JPG", "PNG", "GIF", "BMP", "TIFF"].map((fmt, i) => (
             <motion.span
               key={fmt}
               initial={{ opacity: 0, y: 8 }}

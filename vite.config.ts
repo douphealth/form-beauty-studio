@@ -18,4 +18,14 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  optimizeDeps: {
+    exclude: [
+      "@jsquash/jpeg",
+      "@jsquash/webp",
+      "@jsquash/png",
+      "@jsquash/avif",
+      "@jsquash/oxipng",
+      "@jsquash/resize",
+    ],
+  },
 }));
