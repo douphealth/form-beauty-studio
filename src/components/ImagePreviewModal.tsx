@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Download, ZoomIn, ZoomOut, ArrowLeftRight, Check } from "lucide-react";
 import { type ImageFile, formatBytes, getCompressionRatio, downloadBlob } from "@/lib/image-utils";
@@ -13,15 +13,38 @@ export default function ImagePreviewModal({ image, onClose }: ImagePreviewModalP
   const [sliderPos, setSliderPos] = useState(50);
   const [compareMode, setCompareMode] = useState(false);
   const [zoom, setZoom] = useState(1);
+  const sliderRef = useRef<HTMLDivElement>(null);
+  const draggingRef = useRef(false);
 
   const ratio = image?.compressedSize != null
     ? getCompressionRatio(image.originalSize, image.compressedSize)
     : null;
 
-  const handleSliderMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = ((e.clientX - rect.left) / rect.width) * 100;
+  const updateSliderFromClient = useCallback((clientX: number) => {
+    const el = sliderRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const x = ((clientX - rect.left) / rect.width) * 100;
     setSliderPos(Math.max(0, Math.min(100, x)));
+  }, []);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    updateSliderFromClient(e.clientX);
+  }, [updateSliderFromClient]);
+
+  const handleTouchStart = useCallback(() => {
+    draggingRef.current = true;
+  }, []);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
+    if (e.touches.length > 0) {
+      e.preventDefault();
+      updateSliderFromClient(e.touches[0].clientX);
+    }
+  }, [updateSliderFromClient]);
+
+  const handleTouchEnd = useCallback(() => {
+    draggingRef.current = false;
   }, []);
 
   if (!image) return null;
@@ -117,8 +140,12 @@ export default function ImagePreviewModal({ image, onClose }: ImagePreviewModalP
           <div className="relative overflow-auto bg-muted/20" style={{ maxHeight: "calc(90vh - 140px)" }}>
             {compareMode && isDone ? (
               <div
-                className="relative cursor-col-resize select-none"
-                onMouseMove={handleSliderMove}
+                ref={sliderRef}
+                className="relative cursor-col-resize select-none touch-none"
+                onMouseMove={handleMouseMove}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
               >
                 {/* Original (full width underneath) */}
                 <img
