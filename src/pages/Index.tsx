@@ -29,16 +29,17 @@ export default function Index() {
   const [settingsOpen, setSettingsOpen] = useState(true);
   const [previewImage, setPreviewImage] = useState<ImageFile | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const imagesRef = useRef(images);
+  imagesRef.current = images;
 
   // Cleanup all object URLs on unmount
   useEffect(() => {
     return () => {
-      images.forEach((img) => {
+      imagesRef.current.forEach((img) => {
         URL.revokeObjectURL(img.previewUrl);
         if (img.compressedUrl) URL.revokeObjectURL(img.compressedUrl);
       });
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleFilesAdded = useCallback((newFiles: ImageFile[]) => {
@@ -58,22 +59,46 @@ export default function Index() {
   }, []);
 
   const clearAll = useCallback(() => {
-    images.forEach((img) => {
-      URL.revokeObjectURL(img.previewUrl);
-      if (img.compressedUrl) URL.revokeObjectURL(img.compressedUrl);
+    setImages((prev) => {
+      prev.forEach((img) => {
+        URL.revokeObjectURL(img.previewUrl);
+        if (img.compressedUrl) URL.revokeObjectURL(img.compressedUrl);
+      });
+      return [];
     });
-    setImages([]);
-  }, [images]);
+  }, []);
+
+  // Throttled progress update — batch updates to reduce re-renders
+  const pendingUpdatesRef = useRef<Map<number, ImageFile>>(new Map());
+  const rafRef = useRef<number | null>(null);
+
+  const flushUpdates = useCallback(() => {
+    const updates = pendingUpdatesRef.current;
+    if (updates.size === 0) return;
+
+    const batch = new Map(updates);
+    updates.clear();
+    rafRef.current = null;
+
+    setImages((prev) => {
+      const next = [...prev];
+      batch.forEach((img, idx) => {
+        next[idx] = img;
+      });
+      return next;
+    });
+  }, []);
 
   const processAll = useCallback(async () => {
-    if (images.length === 0) return;
+    const currentImages = imagesRef.current;
+    if (currentImages.length === 0) return;
 
     abortRef.current?.abort();
     const controller = new AbortController();
     abortRef.current = controller;
 
     setProcessing(true);
-    setProgress({ current: 0, total: images.length });
+    setProgress({ current: 0, total: currentImages.length });
 
     const options: CompressionOptions = {
       format,
@@ -82,27 +107,35 @@ export default function Index() {
     };
 
     const results = await compressPool(
-      images,
+      currentImages,
       options,
       (update) => {
-        setImages((prev) => {
-          const next = [...prev];
-          next[update.index] = update.image;
-          return next;
-        });
-        setProgress({ current: update.completed, total: images.length });
+        // Batch updates via rAF to avoid per-image re-renders
+        pendingUpdatesRef.current.set(update.index, update.image);
+        setProgress({ current: update.completed, total: currentImages.length });
+
+        if (!rafRef.current) {
+          rafRef.current = requestAnimationFrame(flushUpdates);
+        }
       },
       controller.signal,
     );
+
+    // Final flush
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
+    pendingUpdatesRef.current.clear();
 
     setImages(results);
     setProcessing(false);
     const doneCount = results.filter((i) => i.status === "done").length;
     toast.success(`${doneCount} image${doneCount > 1 ? "s" : ""} compressed!`);
-  }, [images, format, quality, maxDimension]);
+  }, [format, quality, maxDimension, flushUpdates]);
 
   const downloadZip = useCallback(async () => {
-    const completed = images.filter((i) => i.status === "done" && i.compressedBlob);
+    const completed = imagesRef.current.filter((i) => i.status === "done" && i.compressedBlob);
     if (completed.length === 0) return;
 
     const zip = new JSZip();
@@ -110,13 +143,15 @@ export default function Index() {
     const blob = await zip.generateAsync({ type: "blob" });
     downloadBlob(blob, `imageforge-${Date.now()}.zip`);
     toast.success("ZIP downloaded!");
-  }, [images]);
+  }, []);
 
   const downloadAllIndividually = useCallback(() => {
-    const completed = images.filter((i) => i.status === "done" && i.compressedBlob);
+    const completed = imagesRef.current.filter((i) => i.status === "done" && i.compressedBlob);
     completed.forEach((img) => downloadBlob(img.compressedBlob!, img.outputFilename));
     toast.success(`${completed.length} files downloaded!`);
-  }, [images]);
+  }, []);
+
+  const toggleSettings = useCallback(() => setSettingsOpen((o) => !o), []);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -218,7 +253,7 @@ export default function Index() {
                   onQualityChange={setQuality}
                   onMaxDimensionChange={setMaxDimension}
                   isOpen={settingsOpen}
-                  onToggle={() => setSettingsOpen((o) => !o)}
+                  onToggle={toggleSettings}
                 />
 
                 <StatsBar
@@ -264,10 +299,7 @@ export default function Index() {
                       </span>
                     )}
                   </div>
-                  <motion.div
-                    layout
-                    className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
-                  >
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
                     <AnimatePresence mode="popLayout">
                       {images.map((img, i) => (
                         <ImageCard
@@ -279,7 +311,7 @@ export default function Index() {
                         />
                       ))}
                     </AnimatePresence>
-                  </motion.div>
+                  </div>
                 </div>
               </motion.div>
             )}

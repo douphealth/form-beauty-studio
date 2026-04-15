@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { motion } from "framer-motion";
 import { Download, X, Loader2, Check, AlertCircle } from "lucide-react";
 import { type ImageFile, formatBytes, getCompressionRatio, downloadBlob } from "@/lib/image-utils";
@@ -9,7 +10,7 @@ interface ImageCardProps {
   index: number;
 }
 
-export default function ImageCard({ image, onRemove, onPreview, index }: ImageCardProps) {
+function ImageCard({ image, onRemove, onPreview, index }: ImageCardProps) {
   const ratio = image.compressedSize != null
     ? getCompressionRatio(image.originalSize, image.compressedSize)
     : null;
@@ -18,9 +19,11 @@ export default function ImageCard({ image, onRemove, onPreview, index }: ImageCa
   const isDone = image.status === 'done';
   const isError = image.status === 'error';
 
+  // Cap stagger delay to prevent 8s waits on large batches
+  const staggerDelay = Math.min(index * 0.04, 0.6);
+
   return (
     <motion.div
-      layout
       initial={{ opacity: 0, y: 20, scale: 0.95 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, scale: 0.9, y: -10 }}
@@ -28,7 +31,7 @@ export default function ImageCard({ image, onRemove, onPreview, index }: ImageCa
         type: "spring",
         stiffness: 400,
         damping: 30,
-        delay: index * 0.04,
+        delay: staggerDelay,
       }}
       className={`
         glass-card overflow-hidden group relative
@@ -47,6 +50,7 @@ export default function ImageCard({ image, onRemove, onPreview, index }: ImageCa
           alt={image.file.name}
           className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.08]"
           loading="lazy"
+          decoding="async"
           draggable={false}
         />
 
@@ -134,3 +138,13 @@ export default function ImageCard({ image, onRemove, onPreview, index }: ImageCa
     </motion.div>
   );
 }
+
+export default memo(ImageCard, (prev, next) => {
+  // Only re-render when the image data actually changes
+  return (
+    prev.image.id === next.image.id &&
+    prev.image.status === next.image.status &&
+    prev.image.compressedSize === next.image.compressedSize &&
+    prev.index === next.index
+  );
+});

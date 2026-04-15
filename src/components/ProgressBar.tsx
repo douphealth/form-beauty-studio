@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface ProgressBarProps {
@@ -6,7 +7,7 @@ interface ProgressBarProps {
   total: number;
 }
 
-export default function ProgressBar({ processing, current, total }: ProgressBarProps) {
+function ProgressBar({ processing, current, total }: ProgressBarProps) {
   const pct = total > 0 ? (current / total) * 100 : 0;
 
   return (
@@ -47,3 +48,5 @@ export default function ProgressBar({ processing, current, total }: ProgressBarP
     </AnimatePresence>
   );
 }
+
+export default memo(ProgressBar);
