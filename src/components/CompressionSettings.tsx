@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Settings2, ChevronDown, FileType, Gauge, Maximize } from "lucide-react";
 import type { OutputFormat } from "@/lib/image-utils";
@@ -30,7 +31,7 @@ interface CompressionSettingsProps {
   onToggle: () => void;
 }
 
-export default function CompressionSettings({
+function CompressionSettings({
   format, quality, maxDimension,
   onFormatChange, onQualityChange, onMaxDimensionChange,
   isOpen, onToggle,
@@ -138,3 +139,5 @@ export default function CompressionSettings({
     </div>
   );
 }
+
+export default memo(CompressionSettings);

@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { motion } from "framer-motion";
 import { Zap, Download, Trash2, FileDown } from "lucide-react";
 
@@ -10,7 +11,7 @@ interface ActionButtonsProps {
   processing: boolean;
 }
 
-export default function ActionButtons({
+function ActionButtons({
   onCompress, onDownloadZip, onDownloadIndividual, onClearAll,
   hasCompleted, processing,
 }: ActionButtonsProps) {
@@ -72,3 +73,5 @@ export default function ActionButtons({
     </motion.div>
   );
 }
+
+export default memo(ActionButtons);
