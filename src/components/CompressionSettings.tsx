@@ -29,12 +29,15 @@ interface CompressionSettingsProps {
   onMaxDimensionChange: (d: number) => void;
   isOpen: boolean;
   onToggle: () => void;
+  autoPick?: boolean;
+  onAutoPickChange?: (v: boolean) => void;
 }
 
 function CompressionSettings({
   format, quality, maxDimension,
   onFormatChange, onQualityChange, onMaxDimensionChange,
   isOpen, onToggle,
+  autoPick, onAutoPickChange,
 }: CompressionSettingsProps) {
   return (
     <div className="mt-10">
