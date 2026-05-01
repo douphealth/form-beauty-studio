@@ -1,19 +1,21 @@
 import { memo } from "react";
 import { motion } from "framer-motion";
-import { Zap, Download, Trash2, FileDown } from "lucide-react";
+import { Zap, Download, Trash2, FileDown, RotateCw } from "lucide-react";
 
 interface ActionButtonsProps {
   onCompress: () => void;
   onDownloadZip: () => void;
   onDownloadIndividual: () => void;
   onClearAll: () => void;
+  onRetryFailed?: () => void;
   hasCompleted: boolean;
+  hasFailed?: boolean;
   processing: boolean;
 }
 
 function ActionButtons({
-  onCompress, onDownloadZip, onDownloadIndividual, onClearAll,
-  hasCompleted, processing,
+  onCompress, onDownloadZip, onDownloadIndividual, onClearAll, onRetryFailed,
+  hasCompleted, hasFailed, processing,
 }: ActionButtonsProps) {
   if (processing) return null;
 
@@ -34,6 +36,19 @@ function ActionButtons({
         Compress All
         <kbd className="hidden rounded-md bg-primary-foreground/20 px-1.5 py-0.5 font-mono text-[9px] sm:inline">⌘↵</kbd>
       </motion.button>
+
+      {hasFailed && (
+        <motion.button
+          onClick={onRetryFailed}
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          whileHover={{ y: -2 }}
+          whileTap={{ scale: 0.98 }}
+          className="inline-flex items-center gap-2 rounded-2xl border border-accent/30 bg-accent/[0.08] px-5 py-4 text-sm font-bold text-accent transition-all duration-300 hover:bg-accent hover:text-accent-foreground"
+        >
+          <RotateCw className="h-4 w-4" strokeWidth={2} /> Retry Failed
+        </motion.button>
+      )}
 
       {hasCompleted && (
         <>

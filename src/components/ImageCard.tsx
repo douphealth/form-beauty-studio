@@ -1,6 +1,6 @@
 import { memo } from "react";
 import { motion } from "framer-motion";
-import { Download, X, Loader2, Check, AlertCircle } from "lucide-react";
+import { Download, X, Loader2, Check, AlertCircle, CircleSlash, Sparkles } from "lucide-react";
 import { type ImageFile, formatBytes, getCompressionRatio, downloadBlob } from "@/lib/image-utils";
 
 interface ImageCardProps {
@@ -8,9 +8,11 @@ interface ImageCardProps {
   onRemove: (id: string) => void;
   onPreview?: (image: ImageFile) => void;
   index: number;
+  selected?: boolean;
+  onToggleSelect?: (id: string, e: React.MouseEvent) => void;
 }
 
-function ImageCard({ image, onRemove, onPreview, index }: ImageCardProps) {
+function ImageCard({ image, onRemove, onPreview, index, selected, onToggleSelect }: ImageCardProps) {
   const ratio = image.compressedSize != null
     ? getCompressionRatio(image.originalSize, image.compressedSize)
     : null;
@@ -18,8 +20,9 @@ function ImageCard({ image, onRemove, onPreview, index }: ImageCardProps) {
   const isProcessing = image.status === 'processing';
   const isDone = image.status === 'done';
   const isError = image.status === 'error';
+  const isCancelled = image.status === 'cancelled';
+  const hasOverride = !!image.override;
 
-  // Cap stagger delay to prevent 8s waits on large batches
   const staggerDelay = Math.min(index * 0.04, 0.6);
 
   return (
@@ -38,12 +41,20 @@ function ImageCard({ image, onRemove, onPreview, index }: ImageCardProps) {
         ${isProcessing ? 'ring-2 ring-primary/25 animate-pulse-glow' : ''}
         ${isDone ? 'ring-1 ring-success/15' : ''}
         ${isError ? 'ring-1 ring-destructive/15' : ''}
+        ${isCancelled ? 'ring-1 ring-muted-foreground/20 opacity-70' : ''}
+        ${selected ? 'ring-2 ring-primary/60' : ''}
       `}
     >
       {/* Image preview */}
       <div
         className="relative aspect-[4/3] overflow-hidden bg-muted/30 cursor-pointer"
-        onClick={() => onPreview?.(image)}
+        onClick={(e) => {
+          if (e.shiftKey || e.metaKey || e.ctrlKey) {
+            onToggleSelect?.(image.id, e);
+          } else {
+            onPreview?.(image);
+          }
+        }}
       >
         <img
           src={image.previewUrl}
@@ -54,11 +65,23 @@ function ImageCard({ image, onRemove, onPreview, index }: ImageCardProps) {
           draggable={false}
         />
 
-        {/* Hover gradient */}
         <div className="absolute inset-0 bg-gradient-to-t from-card/90 via-card/20 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
+        {/* Selection checkbox */}
+        <button
+          onClick={(e) => { e.stopPropagation(); onToggleSelect?.(image.id, e); }}
+          className={`absolute left-2.5 bottom-2.5 z-10 flex h-6 w-6 items-center justify-center rounded-md border-2 backdrop-blur-md transition-all ${
+            selected
+              ? "border-primary bg-primary text-primary-foreground"
+              : "border-border/60 bg-card/50 text-transparent opacity-0 group-hover:opacity-100 hover:border-primary"
+          }`}
+          aria-label={selected ? "Deselect image" : "Select image"}
+        >
+          {selected && <Check className="h-3.5 w-3.5" strokeWidth={3} />}
+        </button>
+
         {/* Status badge */}
-        <div className="absolute left-2.5 top-2.5 z-10">
+        <div className="absolute left-2.5 top-2.5 z-10 flex flex-col gap-1.5">
           {image.status === 'pending' && (
              <span className="inline-flex items-center rounded-lg bg-card/70 backdrop-blur-xl px-2.5 py-1 text-[11px] font-semibold text-muted-foreground">
               Ready
@@ -87,6 +110,21 @@ function ImageCard({ image, onRemove, onPreview, index }: ImageCardProps) {
           {isError && (
             <span className="inline-flex items-center gap-1 rounded-lg bg-destructive px-3 py-1.5 text-[11px] font-bold text-destructive-foreground shadow-lg">
               <AlertCircle className="h-3 w-3" /> Failed
+            </span>
+          )}
+          {isCancelled && (
+            <span className="inline-flex items-center gap-1 rounded-lg bg-muted px-3 py-1.5 text-[11px] font-bold text-muted-foreground shadow-lg">
+              <CircleSlash className="h-3 w-3" /> Cancelled
+            </span>
+          )}
+          {hasOverride && (
+            <span className="inline-flex items-center gap-1 rounded-lg bg-accent/90 px-2 py-0.5 text-[10px] font-bold text-accent-foreground shadow">
+              <Sparkles className="h-2.5 w-2.5" /> custom
+            </span>
+          )}
+          {isDone && image.chosenFormat && image.override?.auto && (
+            <span className="inline-flex items-center rounded-lg bg-card/80 backdrop-blur-xl px-2 py-0.5 text-[10px] font-bold uppercase text-foreground shadow">
+              {image.chosenFormat}
             </span>
           )}
         </div>
@@ -140,11 +178,13 @@ function ImageCard({ image, onRemove, onPreview, index }: ImageCardProps) {
 }
 
 export default memo(ImageCard, (prev, next) => {
-  // Only re-render when the image data actually changes
   return (
     prev.image.id === next.image.id &&
     prev.image.status === next.image.status &&
     prev.image.compressedSize === next.image.compressedSize &&
+    prev.image.override === next.image.override &&
+    prev.image.chosenFormat === next.image.chosenFormat &&
+    prev.selected === next.selected &&
     prev.index === next.index
   );
 });
