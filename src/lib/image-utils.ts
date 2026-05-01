@@ -106,6 +106,46 @@ export async function compressImage(file: File, options: CompressionOptions): Pr
   return compressImageCanvas(file, options);
 }
 
+/**
+ * Auto-pick: encode WebP, AVIF, JPEG in parallel and return the smallest.
+ * Decodes the image once, resizes once, then encodes in parallel for speed.
+ */
+export async function compressImageAuto(
+  file: File,
+  options: Omit<CompressionOptions, 'format'>,
+): Promise<{ blob: Blob; format: OutputFormat }> {
+  try {
+    const { decodeImage, resizeImageData, encodeImage, isWasmSupported } = await import('./codecs');
+    if (await isWasmSupported()) {
+      let imageData = await decodeImage(file);
+      const maxDim = options.maxDimension || MAX_DIMENSION;
+      if (imageData.width > maxDim || imageData.height > maxDim) {
+        imageData = resizeImageData(imageData, maxDim);
+      }
+      const formats: OutputFormat[] = ['webp', 'avif', 'jpeg'];
+      const results = await Promise.all(
+        formats.map(async (f) => {
+          try {
+            const blob = await encodeImage(imageData, f, options.quality * 100);
+            return { blob, format: f };
+          } catch {
+            return null;
+          }
+        }),
+      );
+      const valid = results.filter((r): r is { blob: Blob; format: OutputFormat } => r !== null);
+      if (valid.length === 0) throw new Error('All encoders failed');
+      valid.sort((a, b) => a.blob.size - b.blob.size);
+      return valid[0];
+    }
+  } catch (err) {
+    console.warn('Auto-pick WASM path failed, falling back to single WebP:', err);
+  }
+  // Fallback: single webp via canvas
+  const blob = await compressImageCanvas(file, { ...options, format: 'webp' });
+  return { blob, format: 'webp' };
+}
+
 function compressImageCanvas(file: File, options: CompressionOptions): Promise<Blob> {
   return new Promise((resolve, reject) => {
     const objectUrl = URL.createObjectURL(file);
