@@ -67,10 +67,26 @@ function CompressionSettings({
               <div className="grid gap-8 sm:grid-cols-3">
                 {/* Format */}
                 <div className="space-y-3">
-                  <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground/70">
-                    <FileType className="h-3.5 w-3.5" strokeWidth={1.5} /> Output Format
+                  <label className="flex items-center justify-between gap-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground/70">
+                    <span className="flex items-center gap-1.5">
+                      <FileType className="h-3.5 w-3.5" strokeWidth={1.5} /> Output Format
+                    </span>
+                    {onAutoPickChange && (
+                      <button
+                        type="button"
+                        onClick={() => onAutoPickChange(!autoPick)}
+                        className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-bold normal-case tracking-normal transition-all ${
+                          autoPick
+                            ? "border-accent/40 bg-accent/15 text-accent"
+                            : "border-border/40 bg-card/40 text-muted-foreground hover:text-foreground"
+                        }`}
+                        title="Encode WebP+AVIF+JPEG and keep the smallest"
+                      >
+                        🪄 Auto-pick {autoPick ? "ON" : "OFF"}
+                      </button>
+                    )}
                   </label>
-                  <div className="flex gap-2">
+                  <div className={`flex gap-2 transition-opacity ${autoPick ? "opacity-40 pointer-events-none" : ""}`}>
                     {FORMAT_OPTIONS.map((opt) => (
                       <motion.button
                         key={opt.value}
@@ -89,6 +105,11 @@ function CompressionSettings({
                       </motion.button>
                     ))}
                   </div>
+                  {autoPick && (
+                    <p className="text-[11px] font-medium text-accent/80">
+                      Encodes WebP, AVIF & JPEG in parallel — keeps the smallest per image.
+                    </p>
+                  )}
                 </div>
 
                 {/* Quality */}
