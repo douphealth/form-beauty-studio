@@ -14,9 +14,13 @@ export interface ImageFile {
   compressedBlob: Blob | null;
   compressedSize: number | null;
   compressedUrl: string | null;
-  status: 'pending' | 'processing' | 'done' | 'error';
+  status: 'pending' | 'processing' | 'done' | 'error' | 'cancelled';
   error?: string;
   outputFilename: string;
+  /** Per-image override of global compression settings */
+  override?: Partial<CompressionOptions> & { auto?: boolean };
+  /** Format actually used (set after compress, useful when auto-pick) */
+  chosenFormat?: OutputFormat;
 }
 
 const MIME_MAP: Record<OutputFormat, string> = {
