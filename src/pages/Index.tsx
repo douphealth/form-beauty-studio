@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, Lock, Globe, Keyboard, CheckCircle2 } from "lucide-react";
+import { Sparkles, Lock, Globe, Keyboard, CheckCircle2, Wand2 } from "lucide-react";
 import JSZip from "jszip";
 import { toast } from "sonner";
 import DropZone from "@/components/DropZone";
@@ -13,24 +13,49 @@ import StatsBar from "@/components/StatsBar";
 import ActionButtons from "@/components/ActionButtons";
 import ProgressBar from "@/components/ProgressBar";
 import HeroFeatures from "@/components/HeroFeatures";
+import PresetBar from "@/components/PresetBar";
+import SelectionToolbar from "@/components/SelectionToolbar";
 import { compressPool } from "@/lib/compress-pool";
+import { PRESETS, getPreset, type PresetId } from "@/lib/presets";
 import {
   type ImageFile, type OutputFormat, type CompressionOptions,
   formatBytes, getCompressionRatio, downloadBlob,
 } from "@/lib/image-utils";
 
+const AUTO_COMPRESS_KEY = "imageforge:auto-compress";
+const PRESET_KEY = "imageforge:preset";
+
 export default function Index() {
   const [images, setImages] = useState<ImageFile[]>([]);
-  const [format, setFormat] = useState<OutputFormat>("webp");
-  const [quality, setQuality] = useState(80);
-  const [maxDimension, setMaxDimension] = useState(0);
+  const [presetId, setPresetId] = useState<PresetId>(() => {
+    const saved = localStorage.getItem(PRESET_KEY) as PresetId | null;
+    return saved && PRESETS.some((p) => p.id === saved) ? saved : "web";
+  });
+  const initialPreset = getPreset(presetId) ?? PRESETS[0];
+  const [format, setFormat] = useState<OutputFormat>(
+    initialPreset.format === "auto" ? "webp" : initialPreset.format
+  );
+  const [autoPick, setAutoPick] = useState<boolean>(initialPreset.format === "auto");
+  const [quality, setQuality] = useState(initialPreset.quality);
+  const [maxDimension, setMaxDimension] = useState(initialPreset.maxDimension);
+  const [autoCompress, setAutoCompress] = useState<boolean>(() => {
+    return localStorage.getItem(AUTO_COMPRESS_KEY) === "true";
+  });
   const [processing, setProcessing] = useState(false);
+  const [paused, setPaused] = useState(false);
   const [progress, setProgress] = useState({ current: 0, total: 0 });
   const [settingsOpen, setSettingsOpen] = useState(true);
   const [previewImage, setPreviewImage] = useState<ImageFile | null>(null);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+
   const abortRef = useRef<AbortController | null>(null);
+  const pausedRef = useRef(false);
   const imagesRef = useRef(images);
   imagesRef.current = images;
+
+  // Persist preferences
+  useEffect(() => { localStorage.setItem(AUTO_COMPRESS_KEY, String(autoCompress)); }, [autoCompress]);
+  useEffect(() => { localStorage.setItem(PRESET_KEY, presetId); }, [presetId]);
 
   // Cleanup all object URLs on unmount
   useEffect(() => {
@@ -42,10 +67,155 @@ export default function Index() {
     };
   }, []);
 
+  // Apply preset
+  const applyPreset = useCallback((id: PresetId) => {
+    const p = getPreset(id);
+    if (!p || id === "custom") return;
+    setPresetId(id);
+    if (p.format === "auto") {
+      setAutoPick(true);
+    } else {
+      setAutoPick(false);
+      setFormat(p.format);
+    }
+    setQuality(p.quality);
+    setMaxDimension(p.maxDimension);
+  }, []);
+
+  // Detect "custom" if user manually changes settings
+  const markCustom = useCallback(() => {
+    setPresetId("custom");
+  }, []);
+
+  const handleFormatChange = useCallback((f: OutputFormat) => {
+    setFormat(f);
+    setAutoPick(false);
+    markCustom();
+  }, [markCustom]);
+
+  const handleQualityChange = useCallback((q: number) => {
+    setQuality(q);
+    markCustom();
+  }, [markCustom]);
+
+  const handleMaxDimensionChange = useCallback((d: number) => {
+    setMaxDimension(d);
+    markCustom();
+  }, [markCustom]);
+
+  // Throttled progress update
+  const pendingUpdatesRef = useRef<Map<number, ImageFile>>(new Map());
+  const rafRef = useRef<number | null>(null);
+
+  const flushUpdates = useCallback(() => {
+    const updates = pendingUpdatesRef.current;
+    if (updates.size === 0) return;
+    const batch = new Map(updates);
+    updates.clear();
+    rafRef.current = null;
+    setImages((prev) => {
+      const next = [...prev];
+      batch.forEach((img, idx) => { next[idx] = img; });
+      return next;
+    });
+  }, []);
+
+  const runCompression = useCallback(async (
+    targetImages: ImageFile[],
+    opts: { onlyRetry?: boolean } = {}
+  ) => {
+    if (targetImages.length === 0) return;
+
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+    pausedRef.current = false;
+    setPaused(false);
+    setProcessing(true);
+    setProgress({ current: 0, total: targetImages.length });
+
+    const options: CompressionOptions = {
+      format,
+      quality: quality / 100,
+      maxDimension: maxDimension || null,
+    };
+
+    const results = await compressPool(
+      targetImages,
+      options,
+      (update) => {
+        // Find the index in current state by id
+        const currentIdx = imagesRef.current.findIndex((i) => i.id === update.image.id);
+        if (currentIdx >= 0) {
+          pendingUpdatesRef.current.set(currentIdx, update.image);
+        }
+        setProgress({ current: update.completed, total: targetImages.length });
+        if (!rafRef.current) {
+          rafRef.current = requestAnimationFrame(flushUpdates);
+        }
+      },
+      {
+        signal: controller.signal,
+        isPaused: () => pausedRef.current,
+        autoPick,
+        onlyRetry: opts.onlyRetry,
+      },
+    );
+
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
+    pendingUpdatesRef.current.clear();
+
+    // Merge results back by id
+    setImages((prev) => {
+      const map = new Map(results.map((r) => [r.id, r]));
+      return prev.map((img) => map.get(img.id) ?? img);
+    });
+
+    setProcessing(false);
+    setPaused(false);
+
+    if (controller.signal.aborted) {
+      toast.warning("Compression cancelled");
+      return;
+    }
+
+    const doneCount = results.filter((i) => i.status === "done").length;
+    const failedCount = results.filter((i) => i.status === "error").length;
+    if (doneCount > 0) {
+      toast.success(`${doneCount} image${doneCount > 1 ? "s" : ""} compressed!`);
+    }
+    if (failedCount > 0) {
+      toast.error(`${failedCount} failed — use Retry Failed to try again`);
+    }
+  }, [format, quality, maxDimension, autoPick, flushUpdates]);
+
+  const processAll = useCallback(() => {
+    return runCompression(imagesRef.current);
+  }, [runCompression]);
+
+  const retryFailed = useCallback(() => {
+    const failed = imagesRef.current.filter(
+      (i) => i.status === "error" || i.status === "cancelled"
+    );
+    if (failed.length === 0) {
+      toast.info("Nothing to retry");
+      return;
+    }
+    return runCompression(failed, { onlyRetry: true });
+  }, [runCompression]);
+
+  // Handle file additions — auto-compress new ones if enabled
   const handleFilesAdded = useCallback((newFiles: ImageFile[]) => {
     setImages((prev) => [...prev, ...newFiles]);
     toast.success(`${newFiles.length} image${newFiles.length > 1 ? "s" : ""} added`);
-  }, []);
+    if (autoCompress) {
+      // Defer to let state settle
+      setTimeout(() => runCompression(newFiles), 50);
+    }
+  }, [autoCompress, runCompression]);
 
   const removeImage = useCallback((id: string) => {
     setImages((prev) => {
@@ -56,9 +226,16 @@ export default function Index() {
       }
       return prev.filter((i) => i.id !== id);
     });
+    setSelected((prev) => {
+      if (!prev.has(id)) return prev;
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
   }, []);
 
   const clearAll = useCallback(() => {
+    abortRef.current?.abort();
     setImages((prev) => {
       prev.forEach((img) => {
         URL.revokeObjectURL(img.previewUrl);
@@ -66,78 +243,89 @@ export default function Index() {
       });
       return [];
     });
+    setSelected(new Set());
   }, []);
 
-  // Throttled progress update — batch updates to reduce re-renders
-  const pendingUpdatesRef = useRef<Map<number, ImageFile>>(new Map());
-  const rafRef = useRef<number | null>(null);
+  // Pause / cancel
+  const pause = useCallback(() => {
+    pausedRef.current = true;
+    setPaused(true);
+  }, []);
+  const resume = useCallback(() => {
+    pausedRef.current = false;
+    setPaused(false);
+  }, []);
+  const cancel = useCallback(() => {
+    abortRef.current?.abort();
+    pausedRef.current = false;
+    setPaused(false);
+  }, []);
 
-  const flushUpdates = useCallback(() => {
-    const updates = pendingUpdatesRef.current;
-    if (updates.size === 0) return;
-
-    const batch = new Map(updates);
-    updates.clear();
-    rafRef.current = null;
-
-    setImages((prev) => {
-      const next = [...prev];
-      batch.forEach((img, idx) => {
-        next[idx] = img;
-      });
+  // Selection handlers
+  const toggleSelect = useCallback((id: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
       return next;
     });
   }, []);
 
-  const processAll = useCallback(async () => {
-    const currentImages = imagesRef.current;
-    if (currentImages.length === 0) return;
+  const selectAll = useCallback(() => {
+    setSelected(new Set(imagesRef.current.map((i) => i.id)));
+  }, []);
 
-    abortRef.current?.abort();
-    const controller = new AbortController();
-    abortRef.current = controller;
+  const clearSelection = useCallback(() => setSelected(new Set()), []);
 
-    setProcessing(true);
-    setProgress({ current: 0, total: currentImages.length });
-
-    const options: CompressionOptions = {
-      format,
-      quality: quality / 100,
-      maxDimension: maxDimension || null,
-    };
-
-    const results = await compressPool(
-      currentImages,
-      options,
-      (update) => {
-        // Batch updates via rAF to avoid per-image re-renders
-        pendingUpdatesRef.current.set(update.index, update.image);
-        setProgress({ current: update.completed, total: currentImages.length });
-
-        if (!rafRef.current) {
-          rafRef.current = requestAnimationFrame(flushUpdates);
-        }
+  const applyToSelection = useCallback(() => {
+    const ids = selected;
+    if (ids.size === 0) return;
+    setImages((prev) => prev.map((img) => ids.has(img.id) ? {
+      ...img,
+      override: {
+        format: autoPick ? undefined : format,
+        quality: quality / 100,
+        maxDimension: maxDimension || null,
+        auto: autoPick,
       },
-      controller.signal,
-    );
+    } : img));
+    toast.success(`Applied current settings to ${ids.size} image${ids.size > 1 ? "s" : ""}`);
+  }, [selected, format, quality, maxDimension, autoPick]);
 
-    // Final flush
-    if (rafRef.current) {
-      cancelAnimationFrame(rafRef.current);
-      rafRef.current = null;
-    }
-    pendingUpdatesRef.current.clear();
+  const autoPickSelection = useCallback(() => {
+    const ids = selected;
+    if (ids.size === 0) return;
+    setImages((prev) => prev.map((img) => ids.has(img.id) ? {
+      ...img,
+      override: {
+        ...img.override,
+        auto: true,
+        quality: quality / 100,
+        maxDimension: maxDimension || null,
+      },
+    } : img));
+    toast.success(`Auto-pick enabled for ${ids.size} image${ids.size > 1 ? "s" : ""}`);
+  }, [selected, quality, maxDimension]);
 
-    setImages(results);
-    setProcessing(false);
-    const doneCount = results.filter((i) => i.status === "done").length;
-    toast.success(`${doneCount} image${doneCount > 1 ? "s" : ""} compressed!`);
-  }, [format, quality, maxDimension, flushUpdates]);
+  const deleteSelection = useCallback(() => {
+    const ids = selected;
+    if (ids.size === 0) return;
+    setImages((prev) => {
+      prev.forEach((img) => {
+        if (ids.has(img.id)) {
+          URL.revokeObjectURL(img.previewUrl);
+          if (img.compressedUrl) URL.revokeObjectURL(img.compressedUrl);
+        }
+      });
+      return prev.filter((img) => !ids.has(img.id));
+    });
+    setSelected(new Set());
+    toast.success(`Removed ${ids.size} image${ids.size > 1 ? "s" : ""}`);
+  }, [selected]);
 
   const downloadZip = useCallback(async () => {
     const completed = imagesRef.current.filter((i) => i.status === "done" && i.compressedBlob);
     if (completed.length === 0) return;
-
     const zip = new JSZip();
     completed.forEach((img) => zip.file(img.outputFilename, img.compressedBlob!));
     const blob = await zip.generateAsync({ type: "blob" });
@@ -157,29 +345,45 @@ export default function Index() {
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLSelectElement) return;
-
       if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
         e.preventDefault();
         processAll();
       }
       if (e.key === "Escape") {
         setPreviewImage(null);
+        clearSelection();
       }
       if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === "d") {
         e.preventDefault();
         downloadZip();
       }
+      if ((e.metaKey || e.ctrlKey) && e.key === "a" && imagesRef.current.length > 0) {
+        e.preventDefault();
+        selectAll();
+      }
+      if ((e.key === " " || e.code === "Space") && processing) {
+        e.preventDefault();
+        if (pausedRef.current) resume(); else pause();
+      }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [processAll, downloadZip]);
+  }, [processAll, downloadZip, selectAll, clearSelection, processing, pause, resume]);
 
   const stats = useMemo(() => {
     const totalOriginal = images.reduce((s, i) => s + i.originalSize, 0);
     const completed = images.filter((i) => i.status === "done" && i.compressedSize != null);
     const totalCompressed = completed.reduce((s, i) => s + (i.compressedSize || 0), 0);
     const savedPct = completed.length > 0 ? getCompressionRatio(totalOriginal, totalCompressed) : 0;
-    return { count: images.length, totalOriginal, totalCompressed, savedPct, completedCount: completed.length };
+    const failedCount = images.filter((i) => i.status === "error" || i.status === "cancelled").length;
+    return {
+      count: images.length,
+      totalOriginal,
+      totalCompressed,
+      savedPct,
+      completedCount: completed.length,
+      failedCount,
+    };
   }, [images]);
 
   const hasCompleted = stats.completedCount > 0;
@@ -217,11 +421,25 @@ export default function Index() {
             </div>
 
             <div className="flex items-center gap-2">
+              {/* Auto-compress toggle */}
+              <button
+                onClick={() => setAutoCompress((v) => !v)}
+                className={`hidden items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition-all sm:inline-flex ${
+                  autoCompress
+                    ? "border-primary/40 bg-primary/[0.08] text-primary"
+                    : "border-border/40 bg-card/30 text-muted-foreground hover:text-foreground"
+                }`}
+                title="Auto-compress newly added images"
+              >
+                <Wand2 className="h-3.5 w-3.5" strokeWidth={2} />
+                Auto-compress {autoCompress ? "ON" : "OFF"}
+              </button>
+
               <div className="hidden items-center gap-1.5 rounded-full border border-border/40 bg-card/30 backdrop-blur-sm px-3 py-1.5 text-xs font-medium text-muted-foreground/40 lg:inline-flex">
                 <Keyboard className="h-3.5 w-3.5" />
                 <kbd className="font-mono text-[10px]">⌘↵</kbd> Compress
                 <span className="mx-1 h-3 w-px bg-border/30" />
-                <kbd className="font-mono text-[10px]">⌘⇧D</kbd> ZIP
+                <kbd className="font-mono text-[10px]">Space</kbd> Pause
               </div>
               <div className="hidden items-center gap-1.5 rounded-full border border-border/40 bg-card/30 backdrop-blur-sm px-3 py-1.5 text-xs font-medium text-muted-foreground/60 sm:inline-flex">
                 <Lock className="h-3.5 w-3.5" /> Private
@@ -245,15 +463,19 @@ export default function Index() {
                 exit={{ opacity: 0, y: -12 }}
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
               >
+                <PresetBar activeId={presetId} onSelect={applyPreset} />
+
                 <CompressionSettings
                   format={format}
                   quality={quality}
                   maxDimension={maxDimension}
-                  onFormatChange={setFormat}
-                  onQualityChange={setQuality}
-                  onMaxDimensionChange={setMaxDimension}
+                  onFormatChange={handleFormatChange}
+                  onQualityChange={handleQualityChange}
+                  onMaxDimensionChange={handleMaxDimensionChange}
                   isOpen={settingsOpen}
                   onToggle={toggleSettings}
+                  autoPick={autoPick}
+                  onAutoPickChange={(v) => { setAutoPick(v); markCustom(); }}
                 />
 
                 <StatsBar
@@ -268,6 +490,10 @@ export default function Index() {
                   processing={processing}
                   current={progress.current}
                   total={progress.total}
+                  paused={paused}
+                  onPause={pause}
+                  onResume={resume}
+                  onCancel={cancel}
                 />
 
                 <ActionButtons
@@ -275,7 +501,9 @@ export default function Index() {
                   onDownloadZip={downloadZip}
                   onDownloadIndividual={downloadAllIndividually}
                   onClearAll={clearAll}
+                  onRetryFailed={retryFailed}
                   hasCompleted={hasCompleted}
+                  hasFailed={stats.failedCount > 0}
                   processing={processing}
                 />
 
@@ -292,6 +520,9 @@ export default function Index() {
                       >
                         {stats.count}
                       </motion.span>
+                      <span className="hidden text-[11px] font-medium text-muted-foreground/50 sm:inline">
+                        ⇧/⌘+click to select
+                      </span>
                     </div>
                     {hasCompleted && (
                       <span className="flex items-center gap-1.5 text-[11px] font-medium text-success/60">
@@ -299,6 +530,17 @@ export default function Index() {
                       </span>
                     )}
                   </div>
+
+                  <SelectionToolbar
+                    selectedCount={selected.size}
+                    totalCount={images.length}
+                    onSelectAll={selectAll}
+                    onClearSelection={clearSelection}
+                    onApplyToSelection={applyToSelection}
+                    onDeleteSelection={deleteSelection}
+                    onAutoPickSelection={autoPickSelection}
+                  />
+
                   <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
                     <AnimatePresence mode="popLayout">
                       {images.map((img, i) => (
@@ -308,6 +550,8 @@ export default function Index() {
                           onRemove={removeImage}
                           onPreview={setPreviewImage}
                           index={i}
+                          selected={selected.has(img.id)}
+                          onToggleSelect={toggleSelect}
                         />
                       ))}
                     </AnimatePresence>
