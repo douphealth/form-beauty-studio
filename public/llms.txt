@@ -1,0 +1,13 @@
+# ImageForge
+
+> Private, browser-based image compression studio. Compress, convert, and resize images to WebP, AVIF, JPEG, and PNG entirely on-device — no uploads, no accounts, no tracking.
+
+ImageForge runs the @jsquash WebAssembly codecs in the browser to batch-compress images with smart presets (Web, Email, Social, Print), per-image overrides, auto-pick smallest format, pause/resume/cancel, and ZIP export.
+
+## Pages
+
+- [Home](/): Drag-and-drop batch image compression studio with format, quality, and resize controls.
+
+## Optional
+
+- [404](/404): Page-not-found fallback.
