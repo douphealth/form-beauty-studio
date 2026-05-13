@@ -451,7 +451,7 @@ export default function Index() {
                 <span className="mx-1 h-3 w-px bg-border/30" />
                 <kbd className="font-mono text-[10px]">Space</kbd> Pause
               </div>
-              <div className="hidden items-center gap-1.5 rounded-full border border-border/40 bg-card/30 backdrop-blur-sm px-3 py-1.5 text-xs font-medium text-muted-foreground/60 sm:inline-flex">
+              <div className="hidden items-center gap-1.5 rounded-full border border-border/40 bg-card/30 backdrop-blur-sm px-3 py-1.5 text-xs font-medium text-muted-foreground sm:inline-flex">
                 <Lock className="h-3.5 w-3.5" /> Private
                 <span className="mx-1.5 h-3 w-px bg-border/50" />
                 <Globe className="h-3.5 w-3.5" /> Browser-only
