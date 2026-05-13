@@ -58,7 +58,7 @@ function ImageCard({ image, onRemove, onPreview, index, selected, onToggleSelect
       >
         <img
           src={image.previewUrl}
-          alt={image.file.name}
+          alt={`Preview of uploaded image, ${formatBytes(image.originalSize)}`}
           className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.08]"
           loading="lazy"
           decoding="async"
