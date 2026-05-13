@@ -142,6 +142,7 @@ function ImageCard({ image, onRemove, onPreview, index, selected, onToggleSelect
         {isDone && image.compressedBlob && (
           <button
             onClick={(e) => { e.stopPropagation(); downloadBlob(image.compressedBlob!, image.outputFilename); }}
+            aria-label={`Download compressed ${image.outputFilename}`}
             className="absolute inset-x-3 bottom-3 z-10 flex items-center justify-center gap-1.5 rounded-xl py-2.5 text-xs font-bold text-primary-foreground opacity-0 transition-all duration-300 group-hover:opacity-100"
             style={{ background: 'var(--gradient-primary)' }}
           >
