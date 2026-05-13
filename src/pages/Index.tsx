@@ -422,8 +422,9 @@ export default function Index() {
               <div>
                 <h1 className="text-base font-bold tracking-tight sm:text-lg">
                   <span className="gradient-text">ImageForge</span>
+                  <span className="sr-only"> — Compression Studio</span>
                 </h1>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground/60">
+                <p aria-hidden="true" className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
                   Compression Studio
                 </p>
               </div>
