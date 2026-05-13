@@ -391,6 +391,14 @@ export default function Index() {
 
   return (
     <div className="min-h-screen bg-background transition-colors duration-700">
+      <Helmet>
+        <title>ImageForge — Enterprise Image Compression Studio</title>
+        <meta name="description" content="Compress, convert, and resize images in WebP, AVIF, JPEG, and PNG. Free, private, runs entirely in your browser — no uploads, no accounts." />
+        <link rel="canonical" href="https://imagealchemy.app/" />
+        <meta property="og:title" content="ImageForge — Enterprise Image Compression Studio" />
+        <meta property="og:description" content="Private, browser-based batch compression for WebP, AVIF, JPEG, and PNG with smart presets and auto-pick smallest format." />
+        <meta property="og:url" content="https://imagealchemy.app/" />
+      </Helmet>
       {/* Ambient orbs */}
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
         <div className="glow-orb absolute -left-48 -top-48 h-[700px] w-[700px] rounded-full bg-primary" />
