@@ -1,5 +1,6 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Helmet } from "react-helmet-async";
 import { Sparkles, Lock, Globe, Keyboard, CheckCircle2, Wand2 } from "lucide-react";
 import JSZip from "jszip";
 import { toast } from "sonner";
