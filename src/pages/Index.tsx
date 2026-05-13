@@ -473,8 +473,10 @@ export default function Index() {
                 exit={{ opacity: 0, y: -12 }}
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
               >
+                <h2 className="sr-only">Compression presets</h2>
                 <PresetBar activeId={presetId} onSelect={applyPreset} />
 
+                <h2 className="sr-only">Compression settings</h2>
                 <CompressionSettings
                   format={format}
                   quality={quality}
@@ -488,6 +490,7 @@ export default function Index() {
                   onAutoPickChange={(v) => { setAutoPick(v); markCustom(); }}
                 />
 
+                <h2 className="sr-only">Batch statistics</h2>
                 <StatsBar
                   count={stats.count}
                   totalOriginal={stats.totalOriginal}
