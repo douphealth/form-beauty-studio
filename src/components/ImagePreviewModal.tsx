@@ -197,7 +197,7 @@ export default function ImagePreviewModal({ image, onClose }: ImagePreviewModalP
               <div className="flex items-center justify-center p-4">
                 <img
                   src={showCompressed && isDone ? image.compressedUrl! : image.previewUrl}
-                  alt={image.file.name}
+                  alt={`${showCompressed ? "Compressed" : "Original"} preview of ${image.file.name}`}
                   className="max-w-full transition-transform duration-300"
                   style={{ transform: `scale(${zoom})` }}
                   draggable={false}
