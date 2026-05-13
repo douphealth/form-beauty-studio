@@ -445,7 +445,7 @@ export default function Index() {
                 Auto-compress {autoCompress ? "ON" : "OFF"}
               </button>
 
-              <div className="hidden items-center gap-1.5 rounded-full border border-border/40 bg-card/30 backdrop-blur-sm px-3 py-1.5 text-xs font-medium text-muted-foreground/40 lg:inline-flex">
+              <div className="hidden items-center gap-1.5 rounded-full border border-border/40 bg-card/30 backdrop-blur-sm px-3 py-1.5 text-xs font-medium text-muted-foreground lg:inline-flex">
                 <Keyboard className="h-3.5 w-3.5" />
                 <kbd className="font-mono text-[10px]">⌘↵</kbd> Compress
                 <span className="mx-1 h-3 w-px bg-border/30" />
