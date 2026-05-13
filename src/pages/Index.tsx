@@ -1,5 +1,6 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Helmet } from "react-helmet-async";
 import { Sparkles, Lock, Globe, Keyboard, CheckCircle2, Wand2 } from "lucide-react";
 import JSZip from "jszip";
 import { toast } from "sonner";
@@ -390,6 +391,14 @@ export default function Index() {
 
   return (
     <div className="min-h-screen bg-background transition-colors duration-700">
+      <Helmet>
+        <title>ImageForge — Enterprise Image Compression Studio</title>
+        <meta name="description" content="Compress, convert, and resize images in WebP, AVIF, JPEG, and PNG. Free, private, runs entirely in your browser — no uploads, no accounts." />
+        <link rel="canonical" href="https://imagealchemy.app/" />
+        <meta property="og:title" content="ImageForge — Enterprise Image Compression Studio" />
+        <meta property="og:description" content="Private, browser-based batch compression for WebP, AVIF, JPEG, and PNG with smart presets and auto-pick smallest format." />
+        <meta property="og:url" content="https://imagealchemy.app/" />
+      </Helmet>
       {/* Ambient orbs */}
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
         <div className="glow-orb absolute -left-48 -top-48 h-[700px] w-[700px] rounded-full bg-primary" />
@@ -413,8 +422,9 @@ export default function Index() {
               <div>
                 <h1 className="text-base font-bold tracking-tight sm:text-lg">
                   <span className="gradient-text">ImageForge</span>
+                  <span className="sr-only"> — Compression Studio</span>
                 </h1>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground/60">
+                <p aria-hidden="true" className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
                   Compression Studio
                 </p>
               </div>
@@ -435,13 +445,13 @@ export default function Index() {
                 Auto-compress {autoCompress ? "ON" : "OFF"}
               </button>
 
-              <div className="hidden items-center gap-1.5 rounded-full border border-border/40 bg-card/30 backdrop-blur-sm px-3 py-1.5 text-xs font-medium text-muted-foreground/40 lg:inline-flex">
+              <div className="hidden items-center gap-1.5 rounded-full border border-border/40 bg-card/30 backdrop-blur-sm px-3 py-1.5 text-xs font-medium text-muted-foreground lg:inline-flex">
                 <Keyboard className="h-3.5 w-3.5" />
                 <kbd className="font-mono text-[10px]">⌘↵</kbd> Compress
                 <span className="mx-1 h-3 w-px bg-border/30" />
                 <kbd className="font-mono text-[10px]">Space</kbd> Pause
               </div>
-              <div className="hidden items-center gap-1.5 rounded-full border border-border/40 bg-card/30 backdrop-blur-sm px-3 py-1.5 text-xs font-medium text-muted-foreground/60 sm:inline-flex">
+              <div className="hidden items-center gap-1.5 rounded-full border border-border/40 bg-card/30 backdrop-blur-sm px-3 py-1.5 text-xs font-medium text-muted-foreground sm:inline-flex">
                 <Lock className="h-3.5 w-3.5" /> Private
                 <span className="mx-1.5 h-3 w-px bg-border/50" />
                 <Globe className="h-3.5 w-3.5" /> Browser-only
@@ -463,8 +473,10 @@ export default function Index() {
                 exit={{ opacity: 0, y: -12 }}
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
               >
+                <h2 className="sr-only">Compression presets</h2>
                 <PresetBar activeId={presetId} onSelect={applyPreset} />
 
+                <h2 className="sr-only">Compression settings</h2>
                 <CompressionSettings
                   format={format}
                   quality={quality}
@@ -478,6 +490,7 @@ export default function Index() {
                   onAutoPickChange={(v) => { setAutoPick(v); markCustom(); }}
                 />
 
+                <h2 className="sr-only">Batch statistics</h2>
                 <StatsBar
                   count={stats.count}
                   totalOriginal={stats.totalOriginal}
@@ -511,7 +524,7 @@ export default function Index() {
                 <div className="mt-12">
                   <div className="mb-5 flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <h3 className="text-sm font-bold text-foreground">Image Queue</h3>
+                      <h2 className="text-sm font-bold text-foreground">Image Queue</h2>
                       <motion.span
                         key={stats.count}
                         initial={{ scale: 0.5 }}
@@ -520,12 +533,12 @@ export default function Index() {
                       >
                         {stats.count}
                       </motion.span>
-                      <span className="hidden text-[11px] font-medium text-muted-foreground/50 sm:inline">
+                      <span className="hidden text-[11px] font-medium text-muted-foreground sm:inline">
                         ⇧/⌘+click to select
                       </span>
                     </div>
                     {hasCompleted && (
-                      <span className="flex items-center gap-1.5 text-[11px] font-medium text-success/60">
+                      <span className="flex items-center gap-1.5 text-[11px] font-medium text-success">
                         <CheckCircle2 className="h-3 w-3" /> {stats.completedCount} done
                       </span>
                     )}

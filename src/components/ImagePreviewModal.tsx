@@ -114,6 +114,7 @@ export default function ImagePreviewModal({ image, onClose }: ImagePreviewModalP
               <div className="flex items-center gap-1 rounded-xl border border-border/40 px-1 py-0.5">
                 <button
                   onClick={() => setZoom((z) => Math.max(0.5, z - 0.25))}
+                  aria-label="Zoom out"
                   className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
                 >
                   <ZoomOut className="h-3.5 w-3.5" />
@@ -121,6 +122,7 @@ export default function ImagePreviewModal({ image, onClose }: ImagePreviewModalP
                 <span className="min-w-[36px] text-center font-mono text-[10px] text-muted-foreground">{Math.round(zoom * 100)}%</span>
                 <button
                   onClick={() => setZoom((z) => Math.min(3, z + 0.25))}
+                  aria-label="Zoom in"
                   className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
                 >
                   <ZoomIn className="h-3.5 w-3.5" />
@@ -129,6 +131,7 @@ export default function ImagePreviewModal({ image, onClose }: ImagePreviewModalP
 
               <button
                 onClick={onClose}
+                aria-label="Close preview"
                 className="flex h-8 w-8 items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
               >
                 <X className="h-4 w-4" />
@@ -150,7 +153,7 @@ export default function ImagePreviewModal({ image, onClose }: ImagePreviewModalP
                 {/* Original (full width underneath) */}
                 <img
                   src={image.previewUrl}
-                  alt="Original"
+                  alt={`Original uncompressed version of ${image.file.name}`}
                   className="block w-full"
                   style={{ transform: `scale(${zoom})`, transformOrigin: "center" }}
                   draggable={false}
@@ -162,7 +165,7 @@ export default function ImagePreviewModal({ image, onClose }: ImagePreviewModalP
                 >
                   <img
                     src={image.compressedUrl!}
-                    alt="Compressed"
+                    alt={`Compressed version of ${image.file.name}`}
                     className="block w-full"
                     style={{
                       transform: `scale(${zoom})`,
@@ -194,7 +197,7 @@ export default function ImagePreviewModal({ image, onClose }: ImagePreviewModalP
               <div className="flex items-center justify-center p-4">
                 <img
                   src={showCompressed && isDone ? image.compressedUrl! : image.previewUrl}
-                  alt={image.file.name}
+                  alt={`${showCompressed ? "Compressed" : "Original"} preview of ${image.file.name}`}
                   className="max-w-full transition-transform duration-300"
                   style={{ transform: `scale(${zoom})` }}
                   draggable={false}
