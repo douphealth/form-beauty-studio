@@ -132,6 +132,7 @@ function ImageCard({ image, onRemove, onPreview, index, selected, onToggleSelect
         {/* Remove button */}
         <button
           onClick={(e) => { e.stopPropagation(); onRemove(image.id); }}
+          aria-label={`Remove ${image.file.name} from queue`}
           className="absolute right-2.5 top-2.5 z-10 flex h-7 w-7 items-center justify-center rounded-lg bg-card/50 backdrop-blur-xl text-muted-foreground opacity-0 transition-all duration-300 hover:bg-destructive hover:text-destructive-foreground group-hover:opacity-100"
         >
           <X className="h-3.5 w-3.5" strokeWidth={2.5} />
