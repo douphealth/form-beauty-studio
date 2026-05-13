@@ -524,7 +524,7 @@ export default function Index() {
                 <div className="mt-12">
                   <div className="mb-5 flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <h3 className="text-sm font-bold text-foreground">Image Queue</h3>
+                      <h2 className="text-sm font-bold text-foreground">Image Queue</h2>
                       <motion.span
                         key={stats.count}
                         initial={{ scale: 0.5 }}
@@ -533,12 +533,12 @@ export default function Index() {
                       >
                         {stats.count}
                       </motion.span>
-                      <span className="hidden text-[11px] font-medium text-muted-foreground/50 sm:inline">
+                      <span className="hidden text-[11px] font-medium text-muted-foreground sm:inline">
                         ⇧/⌘+click to select
                       </span>
                     </div>
                     {hasCompleted && (
-                      <span className="flex items-center gap-1.5 text-[11px] font-medium text-success/60">
+                      <span className="flex items-center gap-1.5 text-[11px] font-medium text-success">
                         <CheckCircle2 className="h-3 w-3" /> {stats.completedCount} done
                       </span>
                     )}
