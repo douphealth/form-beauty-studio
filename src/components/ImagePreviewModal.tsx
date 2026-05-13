@@ -153,7 +153,7 @@ export default function ImagePreviewModal({ image, onClose }: ImagePreviewModalP
                 {/* Original (full width underneath) */}
                 <img
                   src={image.previewUrl}
-                  alt="Original"
+                  alt={`Original uncompressed version of ${image.file.name}`}
                   className="block w-full"
                   style={{ transform: `scale(${zoom})`, transformOrigin: "center" }}
                   draggable={false}
@@ -165,7 +165,7 @@ export default function ImagePreviewModal({ image, onClose }: ImagePreviewModalP
                 >
                   <img
                     src={image.compressedUrl!}
-                    alt="Compressed"
+                    alt={`Compressed version of ${image.file.name}`}
                     className="block w-full"
                     style={{
                       transform: `scale(${zoom})`,
