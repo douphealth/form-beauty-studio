@@ -5,15 +5,16 @@
  * which throws under React's server renderer. Every component imports motion
  * through here instead of "framer-motion" directly.
  *
- * Client: re-exports real framer-motion (lazy, so SSR never evaluates its
- * module scope). Server: renders the plain DOM tag minus motion-only props,
- * so pre-rendered markup stays structurally identical and hydrates cleanly.
+ * Client: real framer-motion components. Server: plain DOM tags minus
+ * motion-only props, so pre-rendered markup stays structurally identical and
+ * hydrates cleanly.
+ *
+ * NOTE: use a *static* import, never require(). A bare require() is not
+ * rewritten by the bundler and ships to the browser verbatim, where
+ * `require is not defined` throws during client render and blanks the page.
  */
-import {
-  createElement,
-  type ComponentType,
-  type ReactNode,
-} from "react";
+import { createElement, type ComponentType, type ReactNode } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 type MotionTag =
   | "div" | "section" | "nav" | "a" | "span" | "p" | "button" | "li" | "ul" | "article";
@@ -46,8 +47,6 @@ function ServerMotion(tag: MotionTag): ComponentType<any> {
 
 function makeMotion(tag: MotionTag): ComponentType<any> {
   if (isServer) return ServerMotion(tag);
-  // Client only — evaluated on first use, never during SSR.
-  const { motion } = require("framer-motion");
   return motion[tag] as unknown as ComponentType<any>;
 }
 
@@ -63,8 +62,4 @@ export const MotionUl = makeMotion("ul");
 export const MotionArticle = makeMotion("article");
 
 /** Server: children without animation. Client: real AnimatePresence. */
-export const AnimatePresence = ({ children, ...rest }: { children?: ReactNode } & Record<string, unknown>) => {
-  if (isServer) return <>{children}</>;
-  const FP = require("framer-motion").AnimatePresence;
-  return <FP {...rest}>{children}</FP>;
-};
+export { AnimatePresence };

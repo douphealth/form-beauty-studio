@@ -5,13 +5,14 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && node scripts/prerender.mjs && node scripts/build-og.mjs",
+    "build": "vite build && node scripts/prerender.mjs && node scripts/build-og.mjs && node scripts/hydrate-test.mjs",
     "build:dev": "vite build --mode development",
     "prerender": "node scripts/prerender.mjs",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "verify": "tsc --noEmit -p tsconfig.app.json && node scripts/hydrate-test.mjs"
   },
   "dependencies": {
     "@jsquash/avif": "^2.1.1",
