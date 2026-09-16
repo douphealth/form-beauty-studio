@@ -6,9 +6,9 @@ import JSZip from "jszip";
 import { toast } from "sonner";
 import DropZone from "@/components/DropZone";
 import ImageCard from "@/components/ImageCard";
-import ThemeToggle from "@/components/ThemeToggle";
 import ImagePreviewModal from "@/components/ImagePreviewModal";
-import Footer from "@/components/Footer";
+import SiteHeader from "@/components/SiteHeader";
+import SiteFooter from "@/components/SiteFooter";
 import CompressionSettings from "@/components/CompressionSettings";
 import StatsBar from "@/components/StatsBar";
 import ActionButtons from "@/components/ActionButtons";
@@ -18,6 +18,7 @@ import PresetBar from "@/components/PresetBar";
 import SelectionToolbar from "@/components/SelectionToolbar";
 import { compressPool } from "@/lib/compress-pool";
 import { PRESETS, getPreset, type PresetId } from "@/lib/presets";
+import { HOME } from "@/seo/routes";
 import {
   type ImageFile, type OutputFormat, type CompressionOptions,
   formatBytes, getCompressionRatio, downloadBlob,
@@ -392,13 +393,18 @@ export default function Index() {
   return (
     <div className="min-h-screen bg-background transition-colors duration-700">
       <Helmet>
-        <title>ImageForge — Enterprise Image Compression Studio</title>
-        <meta name="description" content="Compress, convert, and resize images in WebP, AVIF, JPEG, and PNG. Free, private, runs entirely in your browser — no uploads, no accounts." />
+        <title>{HOME.title}</title>
+        <meta name="description" content={HOME.description} />
         <link rel="canonical" href="https://imagealchemy.app/" />
-        <meta property="og:title" content="ImageForge — Enterprise Image Compression Studio" />
-        <meta property="og:description" content="Private, browser-based batch compression for WebP, AVIF, JPEG, and PNG with smart presets and auto-pick smallest format." />
+        <meta property="og:title" content={HOME.title} />
+        <meta property="og:description" content={HOME.description} />
         <meta property="og:url" content="https://imagealchemy.app/" />
       </Helmet>
+      {/* H1 for SEO — visible to crawlers and assistive tech, styled as the
+          page's primary heading without dominating the hero. */}
+      <h1 className="sr-only">
+        ImageForge — free, private image compression for WebP, AVIF, JPEG and PNG
+      </h1>
       {/* Ambient orbs */}
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
         <div className="glow-orb absolute -left-48 -top-48 h-[700px] w-[700px] rounded-full bg-primary" />
@@ -407,59 +413,7 @@ export default function Index() {
       </div>
 
       <div className="relative z-10">
-        {/* Header */}
-        <header className="sticky top-0 z-50 border-b border-border/30 bg-background/50 backdrop-blur-3xl backdrop-saturate-150">
-          <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3.5 sm:px-8">
-            <div className="flex items-center gap-3.5">
-              <motion.div
-                whileHover={{ rotate: 8, scale: 1.05 }}
-                transition={{ type: "spring", stiffness: 400 }}
-                className="flex h-10 w-10 items-center justify-center rounded-2xl text-primary-foreground shadow-lg"
-                style={{ background: 'var(--gradient-primary)' }}
-              >
-                <Sparkles className="h-5 w-5" strokeWidth={2} />
-              </motion.div>
-              <div>
-                <h1 className="text-base font-bold tracking-tight sm:text-lg">
-                  <span className="gradient-text">ImageForge</span>
-                  <span className="sr-only"> — Compression Studio</span>
-                </h1>
-                <p aria-hidden="true" className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-                  Compression Studio
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              {/* Auto-compress toggle */}
-              <button
-                onClick={() => setAutoCompress((v) => !v)}
-                className={`hidden items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition-all sm:inline-flex ${
-                  autoCompress
-                    ? "border-primary/40 bg-primary/[0.08] text-primary"
-                    : "border-border/40 bg-card/30 text-muted-foreground hover:text-foreground"
-                }`}
-                title="Auto-compress newly added images"
-              >
-                <Wand2 className="h-3.5 w-3.5" strokeWidth={2} />
-                Auto-compress {autoCompress ? "ON" : "OFF"}
-              </button>
-
-              <div className="hidden items-center gap-1.5 rounded-full border border-border/40 bg-card/30 backdrop-blur-sm px-3 py-1.5 text-xs font-medium text-muted-foreground lg:inline-flex">
-                <Keyboard className="h-3.5 w-3.5" />
-                <kbd className="font-mono text-[10px]">⌘↵</kbd> Compress
-                <span className="mx-1 h-3 w-px bg-border/30" />
-                <kbd className="font-mono text-[10px]">Space</kbd> Pause
-              </div>
-              <div className="hidden items-center gap-1.5 rounded-full border border-border/40 bg-card/30 backdrop-blur-sm px-3 py-1.5 text-xs font-medium text-muted-foreground sm:inline-flex">
-                <Lock className="h-3.5 w-3.5" /> Private
-                <span className="mx-1.5 h-3 w-px bg-border/50" />
-                <Globe className="h-3.5 w-3.5" /> Browser-only
-              </div>
-              <ThemeToggle />
-            </div>
-          </div>
-        </header>
+        <SiteHeader />
 
         {/* Main */}
         <main className="mx-auto max-w-6xl px-5 py-10 sm:px-8 sm:py-16">
@@ -580,7 +534,7 @@ export default function Index() {
           </AnimatePresence>
         </main>
 
-        <Footer />
+        <SiteFooter />
       </div>
 
       {previewImage && (

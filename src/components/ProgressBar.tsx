@@ -1,5 +1,5 @@
 import { memo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { MotionDiv, MotionSection, MotionNav, MotionA, MotionSpan, MotionP, MotionButton, MotionLi, AnimatePresence } from "@/lib/motion";
 import { Pause, Play, X } from "lucide-react";
 
 interface ProgressBarProps {
@@ -18,7 +18,7 @@ function ProgressBar({ processing, current, total, paused, onPause, onResume, on
   return (
     <AnimatePresence>
       {processing && (
-        <motion.div
+        <MotionDiv
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: "auto" }}
           exit={{ opacity: 0, height: 0 }}
@@ -30,7 +30,7 @@ function ProgressBar({ processing, current, total, paused, onPause, onResume, on
                 {paused ? (
                   <Pause className="h-4 w-4 text-accent" strokeWidth={2.5} />
                 ) : (
-                  <motion.div
+                  <MotionDiv
                     animate={{ rotate: 360 }}
                     transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                     className="h-4 w-4 rounded-full border-2 border-primary/20 border-t-primary"
@@ -66,7 +66,7 @@ function ProgressBar({ processing, current, total, paused, onPause, onResume, on
               </div>
             </div>
             <div className="h-2 overflow-hidden rounded-full bg-muted/50">
-              <motion.div
+              <MotionDiv
                 className="h-full rounded-full"
                 style={{ background: paused ? 'hsl(var(--accent))' : 'var(--gradient-primary)' }}
                 initial={{ width: 0 }}
@@ -75,7 +75,7 @@ function ProgressBar({ processing, current, total, paused, onPause, onResume, on
               />
             </div>
           </div>
-        </motion.div>
+        </MotionDiv>
       )}
     </AnimatePresence>
   );

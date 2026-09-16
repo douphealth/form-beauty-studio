@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { MotionDiv, MotionSection, MotionNav, MotionA, MotionSpan, MotionP, MotionButton, MotionLi } from "@/lib/motion";
 import {
   Sparkles, ExternalLink, Heart, Globe, Code2, Rocket, Shield, Star,
 } from "lucide-react";
@@ -32,7 +32,7 @@ export default function Footer() {
         {/* Trust badges */}
         <div className="flex flex-wrap items-center justify-center gap-4 border-b border-border/15 py-8 sm:gap-8">
           {TRUST_ITEMS.map((item, i) => (
-            <motion.div
+            <MotionDiv
               key={item.text}
               initial={{ opacity: 0, y: 12 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -42,14 +42,14 @@ export default function Footer() {
             >
               <item.icon className="h-3.5 w-3.5 text-primary/40" strokeWidth={1.5} />
               {item.text}
-            </motion.div>
+            </MotionDiv>
           ))}
         </div>
 
         {/* Main footer content */}
         <div className="grid gap-10 py-12 sm:grid-cols-[1fr_auto_1fr] sm:gap-16">
           {/* Brand */}
-          <motion.div
+          <MotionDiv
             initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
@@ -81,13 +81,13 @@ export default function Footer() {
                 <Shield className="h-3 w-3" /> Zero Tracking
               </span>
             </div>
-          </motion.div>
+          </MotionDiv>
 
           {/* Divider */}
           <div className="hidden w-px bg-border/15 sm:block" />
 
           {/* Creator */}
-          <motion.div
+          <MotionDiv
             initial={{ opacity: 0, x: 20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
@@ -108,7 +108,7 @@ export default function Footer() {
             </p>
             <div className="flex flex-wrap gap-1.5">
               {CREATOR_SITES.map((site, i) => (
-                <motion.a
+                <MotionA
                   key={site.name}
                   href={site.url}
                   target="_blank"
@@ -122,10 +122,10 @@ export default function Footer() {
                 >
                   {site.name}
                   <ExternalLink className="h-2.5 w-2.5 opacity-0 transition-opacity group-hover:opacity-100" />
-                </motion.a>
+                </MotionA>
               ))}
             </div>
-          </motion.div>
+          </MotionDiv>
         </div>
 
         {/* Bottom bar */}

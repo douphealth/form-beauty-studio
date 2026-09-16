@@ -1,19 +1,19 @@
-import { motion } from "framer-motion";
+import { MotionDiv, MotionSection, MotionNav, MotionA, MotionSpan, MotionP, MotionButton, MotionLi } from "@/lib/motion";
 import { Moon, Sun } from "lucide-react";
-import { useTheme } from "@/hooks/use-theme";
+import { useTheme } from "../hooks/use-theme";
 
 export default function ThemeToggle() {
   const { theme, toggle } = useTheme();
 
   return (
-    <motion.button
+    <MotionButton
       onClick={toggle}
       whileHover={{ scale: 1.08 }}
       whileTap={{ scale: 0.92 }}
       className="relative flex h-10 w-10 items-center justify-center rounded-2xl border border-border/50 bg-card/40 backdrop-blur-xl text-muted-foreground transition-colors duration-300 hover:text-foreground hover:border-primary/20 hover:bg-primary/[0.04]"
       aria-label="Toggle theme"
     >
-      <motion.div
+      <MotionDiv
         key={theme}
         initial={{ rotate: -90, scale: 0, opacity: 0 }}
         animate={{ rotate: 0, scale: 1, opacity: 1 }}
@@ -25,7 +25,7 @@ export default function ThemeToggle() {
         ) : (
           <Sun className="h-[18px] w-[18px]" strokeWidth={1.5} />
         )}
-      </motion.div>
-    </motion.button>
+      </MotionDiv>
+    </MotionButton>
   );
 }

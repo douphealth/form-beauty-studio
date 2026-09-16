@@ -1,5 +1,5 @@
 import { memo } from "react";
-import { motion } from "framer-motion";
+import { MotionDiv, MotionSection, MotionNav, MotionA, MotionSpan, MotionP, MotionButton, MotionLi } from "@/lib/motion";
 import { PRESETS, type PresetId } from "@/lib/presets";
 
 interface PresetBarProps {
@@ -22,7 +22,7 @@ function PresetBar({ activeId, onSelect }: PresetBarProps) {
         {PRESETS.map((p) => {
           const active = p.id === activeId;
           return (
-            <motion.button
+            <MotionButton
               key={p.id}
               onClick={() => onSelect(p.id)}
               whileHover={{ y: -2 }}
@@ -40,7 +40,7 @@ function PresetBar({ activeId, onSelect }: PresetBarProps) {
               <div className="mt-0.5 text-[10px] font-medium text-muted-foreground/60 leading-tight">
                 {p.description}
               </div>
-            </motion.button>
+            </MotionButton>
           );
         })}
       </div>

@@ -1,5 +1,5 @@
 import { memo } from "react";
-import { motion } from "framer-motion";
+import { MotionDiv, MotionSection, MotionNav, MotionA, MotionSpan, MotionP, MotionButton, MotionLi } from "@/lib/motion";
 import { Download, X, Loader2, Check, AlertCircle, CircleSlash, Sparkles } from "lucide-react";
 import { type ImageFile, formatBytes, getCompressionRatio, downloadBlob } from "@/lib/image-utils";
 
@@ -26,7 +26,7 @@ function ImageCard({ image, onRemove, onPreview, index, selected, onToggleSelect
   const staggerDelay = Math.min(index * 0.04, 0.6);
 
   return (
-    <motion.div
+    <MotionDiv
       initial={{ opacity: 0, y: 20, scale: 0.95 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, scale: 0.9, y: -10 }}
@@ -88,24 +88,24 @@ function ImageCard({ image, onRemove, onPreview, index, selected, onToggleSelect
             </span>
           )}
           {isProcessing && (
-            <motion.span
+            <MotionSpan
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-bold text-primary-foreground shadow-lg"
               style={{ background: 'var(--gradient-primary)' }}
             >
               <Loader2 className="h-3 w-3 animate-spin" /> Compressing
-            </motion.span>
+            </MotionSpan>
           )}
           {isDone && ratio !== null && (
-            <motion.span
+            <MotionSpan
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ type: "spring", stiffness: 500 }}
               className="inline-flex items-center gap-1 rounded-lg bg-success px-3 py-1.5 text-[11px] font-bold text-success-foreground shadow-lg"
             >
               <Check className="h-3 w-3" strokeWidth={3} /> −{ratio}%
-            </motion.span>
+            </MotionSpan>
           )}
           {isError && (
             <span className="inline-flex items-center gap-1 rounded-lg bg-destructive px-3 py-1.5 text-[11px] font-bold text-destructive-foreground shadow-lg">
@@ -175,7 +175,7 @@ function ImageCard({ image, onRemove, onPreview, index, selected, onToggleSelect
           <p className="text-[11px] text-destructive leading-relaxed">{image.error}</p>
         )}
       </div>
-    </motion.div>
+    </MotionDiv>
   );
 }
 

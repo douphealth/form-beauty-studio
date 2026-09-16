@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { MotionDiv, MotionSection, MotionNav, MotionA, MotionSpan, MotionP, MotionButton, MotionLi } from "@/lib/motion";
 import {
   Zap, Shield, Layers, Eye, Palette, MonitorSmartphone,
   CheckCircle2, Image as ImageIcon, Settings2, Download,
@@ -56,7 +56,7 @@ const INCLUDED_FEATURES = [
 
 export default function HeroFeatures() {
   return (
-    <motion.div
+    <MotionDiv
       initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -12 }}
@@ -75,7 +75,7 @@ export default function HeroFeatures() {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {HERO_FEATURES.map((f, i) => (
-          <motion.div
+          <MotionDiv
             key={f.title}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -88,12 +88,12 @@ export default function HeroFeatures() {
             </div>
             <h3 className="mb-2 text-base font-bold text-foreground">{f.title}</h3>
             <p className="text-sm leading-relaxed text-muted-foreground/70">{f.desc}</p>
-          </motion.div>
+          </MotionDiv>
         ))}
       </div>
 
       {/* What's Included */}
-      <motion.div
+      <MotionDiv
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.6, type: "spring", stiffness: 200 }}
@@ -111,7 +111,7 @@ export default function HeroFeatures() {
         <div className="glass-card p-6 sm:p-8">
           <div className="grid gap-3 sm:grid-cols-2">
             {INCLUDED_FEATURES.map((feature, i) => (
-              <motion.div
+              <MotionDiv
                 key={feature}
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -122,14 +122,14 @@ export default function HeroFeatures() {
                   <CheckCircle2 className="h-3.5 w-3.5" strokeWidth={2.5} />
                 </span>
                 <span className="text-sm font-medium text-foreground/80">{feature}</span>
-              </motion.div>
+              </MotionDiv>
             ))}
           </div>
         </div>
-      </motion.div>
+      </MotionDiv>
 
       {/* How it works */}
-      <motion.div
+      <MotionDiv
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.9, type: "spring", stiffness: 200 }}
@@ -146,7 +146,7 @@ export default function HeroFeatures() {
             { step: "02", icon: Settings2, title: "Configure", desc: "Choose format, quality, and resize. Fine-tune to your needs." },
             { step: "03", icon: Download, title: "Download", desc: "Get compressed files individually or as a single ZIP archive." },
           ].map((s, i) => (
-            <motion.div
+            <MotionDiv
               key={s.step}
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
@@ -159,13 +159,13 @@ export default function HeroFeatures() {
               </div>
               <h3 className="mb-2 text-base font-bold text-foreground">{s.title}</h3>
               <p className="text-sm leading-relaxed text-muted-foreground/60">{s.desc}</p>
-            </motion.div>
+            </MotionDiv>
           ))}
         </div>
-      </motion.div>
+      </MotionDiv>
 
       {/* Stats showcase */}
-      <motion.div
+      <MotionDiv
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1.2, type: "spring", stiffness: 200 }}
@@ -177,7 +177,7 @@ export default function HeroFeatures() {
           { icon: Clock, value: "0s", label: "Upload time" },
           { icon: Cpu, value: "100%", label: "Client-side" },
         ].map((s, i) => (
-          <motion.div
+          <MotionDiv
             key={s.label}
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -187,9 +187,9 @@ export default function HeroFeatures() {
             <s.icon className="mx-auto mb-3 h-4 w-4 text-primary/50" strokeWidth={1.5} />
             <div className="font-mono text-2xl font-black text-foreground">{s.value}</div>
             <div className="mt-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/40">{s.label}</div>
-          </motion.div>
+          </MotionDiv>
         ))}
-      </motion.div>
-    </motion.div>
+      </MotionDiv>
+    </MotionDiv>
   );
 }

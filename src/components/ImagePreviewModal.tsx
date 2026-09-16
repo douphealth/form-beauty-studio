@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { MotionDiv, MotionSection, MotionNav, MotionA, MotionSpan, MotionP, MotionButton, MotionLi, AnimatePresence } from "@/lib/motion";
 import { X, Download, ZoomIn, ZoomOut, ArrowLeftRight, Check } from "lucide-react";
 import { type ImageFile, formatBytes, getCompressionRatio, downloadBlob } from "@/lib/image-utils";
 
@@ -53,14 +53,14 @@ export default function ImagePreviewModal({ image, onClose }: ImagePreviewModalP
 
   return (
     <AnimatePresence>
-      <motion.div
+      <MotionDiv
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         className="fixed inset-0 z-[100] flex items-center justify-center bg-background/80 backdrop-blur-2xl p-4"
         onClick={onClose}
       >
-        <motion.div
+        <MotionDiv
           initial={{ scale: 0.9, opacity: 0, y: 20 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.95, opacity: 0, y: 10 }}
@@ -217,8 +217,8 @@ export default function ImagePreviewModal({ image, onClose }: ImagePreviewModalP
               </button>
             </div>
           )}
-        </motion.div>
-      </motion.div>
+        </MotionDiv>
+      </MotionDiv>
     </AnimatePresence>
   );
 }

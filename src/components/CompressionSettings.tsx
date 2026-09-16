@@ -1,5 +1,5 @@
 import { memo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { MotionDiv, MotionSection, MotionNav, MotionA, MotionSpan, MotionP, MotionButton, MotionLi, AnimatePresence } from "@/lib/motion";
 import { Settings2, ChevronDown, FileType, Gauge, Maximize } from "lucide-react";
 import type { OutputFormat } from "@/lib/image-utils";
 
@@ -49,14 +49,14 @@ function CompressionSettings({
           <Settings2 className="h-4 w-4 text-primary" strokeWidth={1.5} />
           Compression Settings
         </span>
-        <motion.span animate={{ rotate: isOpen ? 180 : 0 }}>
+        <MotionSpan animate={{ rotate: isOpen ? 180 : 0 }}>
           <ChevronDown className="h-4 w-4 text-muted-foreground" />
-        </motion.span>
+        </MotionSpan>
       </button>
 
       <AnimatePresence>
         {isOpen && (
-          <motion.div
+          <MotionDiv
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
@@ -88,7 +88,7 @@ function CompressionSettings({
                   </label>
                   <div className={`flex gap-2 transition-opacity ${autoPick ? "opacity-40 pointer-events-none" : ""}`}>
                     {FORMAT_OPTIONS.map((opt) => (
-                      <motion.button
+                      <MotionButton
                         key={opt.value}
                         onClick={() => onFormatChange(opt.value)}
                         whileHover={{ y: -1 }}
@@ -102,7 +102,7 @@ function CompressionSettings({
                         <div className="text-lg leading-none mb-1.5">{opt.icon}</div>
                         <div className="text-sm font-bold">{opt.label}</div>
                         <div className="mt-0.5 text-[11px] font-medium opacity-50">{opt.desc}</div>
-                      </motion.button>
+                      </MotionButton>
                     ))}
                   </div>
                   {autoPick && (
@@ -161,7 +161,7 @@ function CompressionSettings({
                 </div>
               </div>
             </div>
-          </motion.div>
+          </MotionDiv>
         )}
       </AnimatePresence>
     </div>

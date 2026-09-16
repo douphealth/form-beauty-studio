@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { MotionDiv, MotionSection, MotionNav, MotionA, MotionSpan, MotionP, MotionButton, MotionLi, AnimatePresence } from "@/lib/motion";
 import { Upload, Image as ImageIcon, ArrowDown, Lock, Zap, Layers } from "lucide-react";
 import { toast } from "sonner";
 import { createImageFile, validateFile, MAX_FILE_COUNT, type ImageFile } from "@/lib/image-utils";
@@ -76,7 +76,7 @@ export default function DropZone({ onFilesAdded, hasFiles, currentCount = 0 }: D
   ];
 
   return (
-    <motion.div
+    <MotionDiv
       onDragOver={(e) => e.preventDefault()}
       onDragEnter={onDragEnter}
       onDragLeave={onDragLeave}
@@ -103,7 +103,7 @@ export default function DropZone({ onFilesAdded, hasFiles, currentCount = 0 }: D
       {/* Animated glow on drag */}
       <AnimatePresence>
         {dragging && (
-          <motion.div
+          <MotionDiv
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
@@ -112,7 +112,7 @@ export default function DropZone({ onFilesAdded, hasFiles, currentCount = 0 }: D
           >
             <div className="absolute left-1/2 top-1/2 h-[400px] w-[400px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/[0.08]"
               style={{ filter: 'blur(80px)' }} />
-          </motion.div>
+          </MotionDiv>
         )}
       </AnimatePresence>
 
@@ -127,7 +127,7 @@ export default function DropZone({ onFilesAdded, hasFiles, currentCount = 0 }: D
 
       <div className="relative z-10">
         {/* Icon */}
-        <motion.div
+        <MotionDiv
           animate={dragging ? { scale: 1.15, y: -8 } : { scale: 1, y: 0 }}
           transition={{ type: "spring", stiffness: 300, damping: 25 }}
           className={`
@@ -141,20 +141,20 @@ export default function DropZone({ onFilesAdded, hasFiles, currentCount = 0 }: D
         >
           <AnimatePresence mode="wait">
             {hasFiles ? (
-              <motion.div key="img" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}>
+              <MotionDiv key="img" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}>
                 <ImageIcon className="h-9 w-9" strokeWidth={1.5} />
-              </motion.div>
+              </MotionDiv>
             ) : dragging ? (
-              <motion.div key="arrow" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}>
+              <MotionDiv key="arrow" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}>
                 <ArrowDown className="h-9 w-9 animate-bounce-subtle" strokeWidth={1.5} />
-              </motion.div>
+              </MotionDiv>
             ) : (
-              <motion.div key="upload" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}>
+              <MotionDiv key="upload" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}>
                 <Upload className="h-9 w-9" strokeWidth={1.5} />
-              </motion.div>
+              </MotionDiv>
             )}
           </AnimatePresence>
-        </motion.div>
+        </MotionDiv>
 
         {/* Headline */}
         <h2 className="mb-3 text-2xl font-bold tracking-tight text-foreground sm:text-3xl md:text-4xl">
@@ -170,7 +170,7 @@ export default function DropZone({ onFilesAdded, hasFiles, currentCount = 0 }: D
         {/* Format badges */}
         <div className="flex flex-wrap items-center justify-center gap-2">
           {["AVIF", "WebP", "JPG", "PNG", "GIF", "BMP", "TIFF"].map((fmt, i) => (
-            <motion.span
+            <MotionSpan
               key={fmt}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
@@ -178,7 +178,7 @@ export default function DropZone({ onFilesAdded, hasFiles, currentCount = 0 }: D
               className="rounded-full border border-border/50 bg-card/40 backdrop-blur-sm px-3.5 py-1.5 text-[11px] font-semibold text-muted-foreground transition-colors duration-300 group-hover:border-primary/15 group-hover:text-foreground/80"
             >
               {fmt}
-            </motion.span>
+            </MotionSpan>
           ))}
         </div>
 
@@ -186,7 +186,7 @@ export default function DropZone({ onFilesAdded, hasFiles, currentCount = 0 }: D
         {!hasFiles && (
           <div className="mt-10 flex items-center justify-center gap-6">
             {features.map((f, i) => (
-              <motion.div
+              <MotionDiv
                 key={f.text}
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -195,11 +195,11 @@ export default function DropZone({ onFilesAdded, hasFiles, currentCount = 0 }: D
               >
                 <f.icon className="h-3.5 w-3.5 text-primary/50" strokeWidth={1.5} />
                 {f.text}
-              </motion.div>
+              </MotionDiv>
             ))}
           </div>
         )}
       </div>
-    </motion.div>
+    </MotionDiv>
   );
 }

@@ -1,0 +1,18 @@
+{
+  "name": "ImageForge — Private Image Compression Studio",
+  "short_name": "ImageForge",
+  "description": "Compress, convert and resize images to WebP, AVIF, JPEG and PNG entirely in your browser. Free, private, unlimited.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0b0a14",
+  "theme_color": "#7c3aed",
+  "categories": ["productivity", "utilities", "graphics"],
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "any",
+      "type": "image/x-icon"
+    }
+  ]
+}

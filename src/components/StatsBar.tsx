@@ -1,5 +1,5 @@
 import { memo } from "react";
-import { motion } from "framer-motion";
+import { MotionDiv, MotionSection, MotionNav, MotionA, MotionSpan, MotionP, MotionButton, MotionLi } from "@/lib/motion";
 import { Layers, Package, ArrowRight, Zap } from "lucide-react";
 import { formatBytes } from "@/lib/image-utils";
 
@@ -29,31 +29,31 @@ function StatsBar({ count, totalOriginal, totalCompressed, savedPct, hasComplete
   ];
 
   return (
-    <motion.div
+    <MotionDiv
       className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4"
       variants={stagger.container}
       initial="initial"
       animate="animate"
     >
       {items.map((stat) => (
-        <motion.div
+        <MotionDiv
           key={stat.label}
           variants={stagger.item}
           className="glass-card flex flex-col items-center py-6 px-4 text-center group"
         >
           <stat.icon className={`mb-2.5 h-4 w-4 ${stat.color} opacity-60`} strokeWidth={1.5} />
-          <motion.span
+          <MotionSpan
             key={stat.value}
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             className={`font-mono text-xl font-black tabular-nums leading-none ${stat.color}`}
           >
             {stat.value}
-          </motion.span>
+          </MotionSpan>
           <span className="mt-2 text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground/50">{stat.label}</span>
-        </motion.div>
+        </MotionDiv>
       ))}
-    </motion.div>
+    </MotionDiv>
   );
 }
 

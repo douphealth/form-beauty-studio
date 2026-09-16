@@ -2,8 +2,13 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
+import { seoSitemapPlugin } from "./plugins/seo-sitemap-plugin";
 
-// https://vitejs.dev/config/
+// Pre-rendering lives in scripts/prerender.mjs (run as a build post-step)
+// because importing TSX from the config breaks esbuild's JSX factory.
+// See scripts/prerender.mjs for the reasoning.
+
+// https://vite.dev/config/
 export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
@@ -12,7 +17,11 @@ export default defineConfig(({ mode }) => ({
       overlay: false,
     },
   },
-  plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
+  plugins: [
+    react(),
+    mode === "development" && componentTagger(),
+    seoSitemapPlugin(),
+  ].filter(Boolean),
   worker: {
     format: "es",
   },

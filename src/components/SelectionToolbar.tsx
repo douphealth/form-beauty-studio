@@ -1,5 +1,5 @@
 import { memo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { MotionDiv, MotionSection, MotionNav, MotionA, MotionSpan, MotionP, MotionButton, MotionLi, AnimatePresence } from "@/lib/motion";
 import { CheckSquare, Square, Trash2, Wand2, X } from "lucide-react";
 
 interface SelectionToolbarProps {
@@ -26,7 +26,7 @@ function SelectionToolbar({
   return (
     <AnimatePresence>
       {selectedCount > 0 && (
-        <motion.div
+        <MotionDiv
           initial={{ opacity: 0, y: -8, height: 0 }}
           animate={{ opacity: 1, y: 0, height: "auto" }}
           exit={{ opacity: 0, y: -8, height: 0 }}
@@ -75,7 +75,7 @@ function SelectionToolbar({
               </button>
             </div>
           </div>
-        </motion.div>
+        </MotionDiv>
       )}
     </AnimatePresence>
   );

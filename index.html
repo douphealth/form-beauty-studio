@@ -2,26 +2,39 @@
 <html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ImageForge — Enterprise Image Compression Studio</title>
-    <meta name="description" content="Compress, convert, and optimize images in any format with enterprise-grade quality. Free, private, runs in your browser." />
-    <meta name="author" content="ImageForge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#0b0a14" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#7c3aed" media="(prefers-color-scheme: light)" />
+    <title>ImageForge — Free Private Image Compressor (WebP, AVIF, JPEG, PNG)</title>
+    <meta name="description" content="Compress and convert images to WebP, AVIF, JPEG and PNG in your browser. Free, private, unlimited batch compression — no uploads, no accounts, no tracking." />
+    <meta name="author" content="Alexios Papaioannou" />
     <meta name="google-site-verification" content="14oLTHyIyHNo-L4ghE-rt_750ym8Z0kJ5HifHwPUYEo" />
+    <meta name="robots" content="index,follow,max-image-preview:large" />
+    <link rel="canonical" href="https://imagealchemy.app/" />
 
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="ImageForge — Enterprise Image Compression Studio" />
-    <meta property="og:description" content="Compress, convert, and optimize images in any format with enterprise-grade quality. Free, private, runs in your browser." />
+    <meta property="og:site_name" content="ImageForge" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:title" content="ImageForge — Free Private Image Compressor (WebP, AVIF, JPEG, PNG)" />
+    <meta property="og:description" content="Compress and convert images to WebP, AVIF, JPEG and PNG in your browser. Free, private, unlimited batch compression — no uploads, no accounts, no tracking." />
     <meta property="og:url" content="https://imagealchemy.app/" />
-    <meta property="og:image" content="https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/d95a9396-c846-4e67-b273-14e3b980bcf7/id-preview-1da7369c--049f5486-5bb1-4ae8-a598-0be47c0403e5.lovable.app-1772207974617.png" />
+    <meta property="og:image" content="https://imagealchemy.app/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="ImageForge — compress images, keep the quality" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="ImageForge — Enterprise Image Compression Studio" />
-    <meta name="twitter:description" content="Compress, convert, and optimize images in any format with enterprise-grade quality. Free, private, runs in your browser." />
-    <meta name="twitter:image" content="https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/d95a9396-c846-4e67-b273-14e3b980bcf7/id-preview-1da7369c--049f5486-5bb1-4ae8-a598-0be47c0403e5.lovable.app-1772207974617.png" />
+    <meta name="twitter:title" content="ImageForge — Free Private Image Compressor (WebP, AVIF, JPEG, PNG)" />
+    <meta name="twitter:description" content="Compress and convert images to WebP, AVIF, JPEG and PNG in your browser. Free, private, unlimited batch compression — no uploads, no accounts, no tracking." />
+    <meta name="twitter:image" content="https://imagealchemy.app/og-image.png" />
+
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" />
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" media="print" onload="this.media='all'" />
 
     <script type="application/ld+json">
     {
@@ -32,15 +45,22 @@
           "@id": "https://imagealchemy.app/#org",
           "name": "ImageForge",
           "url": "https://imagealchemy.app/",
-          "description": "Private, browser-based image compression studio."
+          "description": "Private, browser-based image compression studio.",
+          "founder": { "@type": "Person", "name": "Alexios Papaioannou" },
+          "sameAs": ["https://github.com/douphealth/form-beauty-studio"]
         },
         {
           "@type": "WebSite",
           "@id": "https://imagealchemy.app/#website",
           "url": "https://imagealchemy.app/",
           "name": "ImageForge",
-          "description": "Compress, convert, and optimize images in any format with enterprise-grade quality.",
-          "publisher": { "@id": "https://imagealchemy.app/#org" }
+          "description": "Compress, convert, and optimize images to WebP, AVIF, JPEG and PNG — free, private, browser-based.",
+          "publisher": { "@id": "https://imagealchemy.app/#org" },
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": "https://imagealchemy.app/learn?q={search_term_string}",
+            "query-input": "required name=search_term_string"
+          }
         },
         {
           "@type": "SoftwareApplication",
@@ -48,8 +68,35 @@
           "url": "https://imagealchemy.app/",
           "applicationCategory": "MultimediaApplication",
           "operatingSystem": "Web",
+          "browserRequirements": "Requires JavaScript and WebAssembly. All modern browsers supported.",
+          "featureList": "AVIF, WebP, JPEG and PNG compression and conversion; batch processing; smart presets; auto-pick smallest format; before/after comparison; ZIP export; fully client-side processing",
           "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
-          "description": "Client-side image compression for AVIF, WebP, JPEG, and PNG with smart presets, batch processing, and auto-pick smallest format."
+          "description": "Client-side image compression for AVIF, WebP, JPEG, and PNG with smart presets, batch processing, and auto-pick smallest format. No uploads, no accounts, no tracking."
+        },
+        {
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "Is ImageForge free to use?",
+              "acceptedAnswer": { "@type": "Answer", "text": "Yes. ImageForge is completely free with no account, no subscription, no watermark and no limits. Batch process up to 200 images at a time, as often as you like." }
+            },
+            {
+              "@type": "Question",
+              "name": "Does ImageForge upload my images?",
+              "acceptedAnswer": { "@type": "Answer", "text": "No. All compression and conversion happens in your browser using WebAssembly codecs. Your images never leave your device, which makes it safe for confidential and client work." }
+            },
+            {
+              "@type": "Question",
+              "name": "What image formats does ImageForge support?",
+              "acceptedAnswer": { "@type": "Answer", "text": "Input: any common image format your browser can decode. Output: AVIF, WebP, JPEG and PNG, with conversion between them and an Auto-Pick mode that keeps the smallest result." }
+            },
+            {
+              "@type": "Question",
+              "name": "What is the best image format for the web?",
+              "acceptedAnswer": { "@type": "Answer", "text": "WebP is the best overall default — universally supported and 25-35% smaller than JPEG and PNG. AVIF is roughly 20% smaller than WebP and is now supported by all major browsers. Reserve JPEG for maximum compatibility and PNG for pixel-perfect flat graphics." }
+            }
+          ]
         }
       ]
     }
