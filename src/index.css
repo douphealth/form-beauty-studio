@@ -277,6 +277,135 @@
     pointer-events: none;
     border-radius: inherit;
   }
+
+  /* ════════════════════════════════════════════════════════════ */
+  /* 2026 motion layer — hover spotlights, shimmer text, marquee    */
+  /* ════════════════════════════════════════════════════════════ */
+
+  /* Card hover spotlight. Position is written by React on pointermove
+     (--mx / --my, 0-100%) so the glow tracks the cursor. Falls back to
+     the centre when JS is disabled or the pointer leaves. */
+  .spotlight {
+    --mx: 50%;
+    --my: 50%;
+    position: relative;
+  }
+  .spotlight::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    background: radial-gradient(
+      340px circle at var(--mx) var(--my),
+      hsl(var(--primary) / 0.10),
+      transparent 60%
+    );
+  }
+  .spotlight:hover::after,
+  .spotlight:focus-visible::after { opacity: 1; }
+
+  /* Gradient text with a travelling shimmer sweep. */
+  .shimmer-text {
+    background: linear-gradient(
+      100deg,
+      hsl(var(--primary)) 0%,
+      hsl(var(--primary-glow)) 22%,
+      hsl(var(--accent)) 44%,
+      hsl(var(--primary-glow)) 66%,
+      hsl(var(--primary)) 100%
+    );
+    background-size: 250% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    animation: shimmer-text 7s ease-in-out infinite;
+  }
+
+  /* Conic gradient ring — the "aurora" border on hero elements. */
+  .aurora-ring { position: relative; }
+  .aurora-ring::before {
+    content: '';
+    position: absolute;
+    inset: -1.5px;
+    border-radius: inherit;
+    padding: 1.5px;
+    background: conic-gradient(
+      from var(--aurora-from, 0deg),
+      hsl(var(--primary) / 0.0),
+      hsl(var(--primary) / 0.55),
+      hsl(var(--accent) / 0.45),
+      hsl(190 90% 55% / 0.35),
+      hsl(var(--primary) / 0.0)
+    );
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    animation: aurora-spin 9s linear infinite;
+    pointer-events: none;
+  }
+
+  /* Fading dot grid — depth behind the hero without a heavy image. */
+  .grid-fade {
+    background-image: radial-gradient(
+      hsl(var(--foreground) / 0.045) 1px,
+      transparent 1px
+    );
+    background-size: 28px 28px;
+    -webkit-mask-image: radial-gradient(ellipse 75% 60% at 50% 0%, #000 30%, transparent 100%);
+    mask-image: radial-gradient(ellipse 75% 60% at 50% 0%, #000 30%, transparent 100%);
+  }
+
+  /* Infinite marquee for the trust strip. Duplicate content in the DOM and
+     the -50% translate lands the copy exactly where the original started. */
+  .marquee {
+    display: flex;
+    width: max-content;
+    animation: marquee 34s linear infinite;
+  }
+  .marquee-reverse { animation-direction: reverse; }
+  .marquee-paused:hover .marquee { animation-play-state: paused; }
+
+  /* Bento card entrance — staggered by index via inline transition-delay. */
+  .bento-card {
+    opacity: 0;
+    transform: translateY(18px);
+    transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .bento-card.in-view {
+    opacity: 1;
+    transform: none;
+  }
+
+  .lift {
+    transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+                box-shadow 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+                border-color 0.4s ease;
+  }
+  .lift:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-card-hover);
+    border-color: hsl(var(--primary) / 0.14);
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .reveal.in-view { opacity: 1; transform: none; }
+
+  /* Comparison slider grabber */
+  .cmp-handle {
+    cursor: ew-resize;
+    touch-action: pan-y;
+  }
+  .cmp-handle:active { cursor: grabbing; }
 }
 
 /* ═══════════════════════════════════════ */
@@ -306,6 +435,53 @@
 @keyframes progress-glow {
   0%, 100% { box-shadow: 0 0 8px 0 hsl(var(--primary) / 0.3); }
   50% { box-shadow: 0 0 24px 4px hsl(var(--primary) / 0.5); }
+}
+
+@keyframes shimmer-text {
+  0%, 100% { background-position: 0% 50%; }
+  50%      { background-position: 100% 50%; }
+}
+
+@keyframes aurora-spin {
+  to { --aurora-from: 360deg; }
+}
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+@keyframes float-y {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-10px); }
+}
+
+@keyframes pulse-ring {
+  0%   { transform: scale(0.9); opacity: 0.55; }
+  70%  { transform: scale(1.35); opacity: 0; }
+  100% { transform: scale(1.35); opacity: 0; }
+}
+
+/* @property lets --aurora-from actually animate; without it the conic angle
+   snaps instead of sweeping. Registered at the top level on purpose. */
+@property --aurora-from {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+/* Respect the OS setting — every animation above is decorative. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .marquee { animation: none !important; }
+  .bento-card, .reveal { opacity: 1 !important; transform: none !important; }
 }
 
 /* Custom range slider */

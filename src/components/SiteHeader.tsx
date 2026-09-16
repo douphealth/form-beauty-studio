@@ -1,24 +1,75 @@
-import { useState } from "react";
-import { Link, NavLink } from "react-router-dom";
-import { MotionDiv, MotionSection, MotionNav, MotionA, MotionSpan, MotionP, MotionButton, MotionLi, AnimatePresence } from "@/lib/motion";
-import { Sparkles, Menu, X } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Link, NavLink, useLocation } from "react-router-dom";
+import { MotionDiv, AnimatePresence, MotionNav } from "@/lib/motion";
+import { Sparkles, Menu, X, ArrowUpRight } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
 import { NAV_GROUPS } from "../seo/site";
 
+/**
+ * Header with a scroll progress bar.
+ *
+ * The top bar reads `document.scrollingElement` in a rAF-throttled scroll
+ * listener rather than onScroll + setState, so a long page never re-renders
+ * the whole header tree on every frame.
+ */
 export default function SiteHeader() {
   const [open, setOpen] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    let raf = 0;
+    const onScroll = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        const el = document.scrollingElement;
+        if (!el) return;
+        const max = el.scrollHeight - el.clientHeight;
+        setProgress(max > 0 ? (el.scrollTop / max) * 100 : 0);
+      });
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, []);
+
+  // Close the mobile menu whenever the route changes.
+  useEffect(() => { setOpen(false); }, [pathname]);
+
   return (
     <header className="sticky top-0 z-50 border-b border-border/30 bg-background/50 backdrop-blur-3xl backdrop-saturate-150">
+      {/* Scroll progress — width via transform so it stays on the compositor. */}
+      <div
+        className="h-0.5 origin-left"
+        style={{
+          background: "var(--gradient-primary)",
+          transform: `scaleX(${Math.max(progress, 0.001) / 100})`,
+          willChange: "transform",
+        }}
+        aria-hidden="true"
+      />
+
       <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3.5 sm:px-8">
-        <Link to="/" className="flex items-center gap-3">
+        <Link to="/" className="group flex items-center gap-3">
           <MotionDiv
             whileHover={{ rotate: 8, scale: 1.05 }}
             transition={{ type: "spring", stiffness: 400 }}
-            className="flex h-10 w-10 items-center justify-center rounded-2xl text-primary-foreground shadow-lg"
+            className="relative flex h-10 w-10 items-center justify-center rounded-2xl text-primary-foreground shadow-lg"
             style={{ background: "var(--gradient-primary)" }}
             aria-hidden="true"
           >
             <Sparkles className="h-5 w-5" strokeWidth={2} />
+            <span
+              className="absolute inset-0 rounded-2xl"
+              style={{ animation: "pulse-ring 3s ease-out infinite", boxShadow: "0 0 0 2px hsl(var(--primary) / 0.35)" }}
+              aria-hidden="true"
+            />
           </MotionDiv>
           <span className="flex flex-col">
             <span className="gradient-text text-base font-bold tracking-tight sm:text-lg">ImageForge</span>
@@ -27,27 +78,32 @@ export default function SiteHeader() {
             </span>
           </span>
         </Link>
-        <nav className="hidden items-center gap-1 lg:flex" aria-label="Primary">
+
+        <nav className="hidden items-center gap-0.5 lg:flex" aria-label="Primary">
           {NAV_GROUPS.map((group) => (
             <div key={group.label} className="group relative">
               <button
                 type="button"
-                className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-primary/[0.06] hover:text-foreground"
+                className="flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-primary/[0.06] hover:text-foreground"
               >
                 {group.label}
+                <span className="text-[10px] opacity-60 transition-transform duration-200 group-hover:translate-y-0.5">▾</span>
               </button>
-              <div className="invisible absolute left-1/2 top-full z-50 w-64 -translate-x-1/2 pt-2 opacity-0 transition-all duration-200 group-hover:visible group-hover:opacity-100">
+              <div className="invisible absolute left-1/2 top-full z-50 w-72 -translate-x-1/2 pt-2 opacity-0 transition-all duration-200 group-hover:visible group-hover:opacity-100">
                 <div className="glass-card overflow-hidden rounded-2xl p-2 shadow-2xl">
                   {group.items.map((item) => (
                     <NavLink
                       key={item.path}
                       to={item.path}
                       className={({ isActive }) =>
-                        "block rounded-xl px-3 py-2 text-sm font-medium transition-colors " +
-                        (isActive ? "bg-primary/[0.08] text-primary" : "text-muted-foreground hover:bg-primary/[0.04] hover:text-foreground")
+                        "flex items-center justify-between gap-2 rounded-xl px-3 py-2 text-sm font-medium transition-colors " +
+                        (isActive
+                          ? "bg-primary/[0.08] text-primary"
+                          : "text-muted-foreground hover:bg-primary/[0.04] hover:text-foreground")
                       }
                     >
                       {item.label}
+                      <ArrowUpRight className="h-3 w-3 opacity-0 transition-opacity group-hover:opacity-40" />
                     </NavLink>
                   ))}
                 </div>
@@ -55,6 +111,7 @@ export default function SiteHeader() {
             </div>
           ))}
         </nav>
+
         <div className="flex items-center gap-2">
           <Link
             to="/"
@@ -75,6 +132,7 @@ export default function SiteHeader() {
           </button>
         </div>
       </div>
+
       <AnimatePresence>
         {open && (
           <MotionNav
@@ -99,7 +157,9 @@ export default function SiteHeader() {
                         onClick={() => setOpen(false)}
                         className={({ isActive }) =>
                           "rounded-xl px-3 py-2 text-sm font-medium transition-colors " +
-                          (isActive ? "bg-primary/[0.08] text-primary" : "text-muted-foreground hover:bg-primary/[0.04] hover:text-foreground")
+                          (isActive
+                            ? "bg-primary/[0.08] text-primary"
+                            : "text-muted-foreground hover:bg-primary/[0.04] hover:text-foreground")
                         }
                       >
                         {item.label}

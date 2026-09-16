@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from "react";
-import { MotionDiv, MotionSection, MotionNav, MotionA, MotionSpan, MotionP, MotionButton, MotionLi, AnimatePresence } from "@/lib/motion";
+import { MotionDiv, MotionSpan, AnimatePresence } from "@/lib/motion";
 import { Upload, Image as ImageIcon, ArrowDown, Lock, Zap, Layers } from "lucide-react";
 import { toast } from "sonner";
 import { createImageFile, validateFile, MAX_FILE_COUNT, type ImageFile } from "@/lib/image-utils";
@@ -9,6 +9,8 @@ interface DropZoneProps {
   hasFiles: boolean;
   currentCount?: number;
 }
+
+const FORMATS = ["AVIF", "WebP", "JPG", "PNG", "GIF", "BMP", "TIFF"];
 
 export default function DropZone({ onFilesAdded, hasFiles, currentCount = 0 }: DropZoneProps) {
   const [dragging, setDragging] = useState(false);
@@ -85,20 +87,21 @@ export default function DropZone({ onFilesAdded, hasFiles, currentCount = 0 }: D
       whileHover={{ scale: 1.003 }}
       whileTap={{ scale: 0.998 }}
       className={`
-        relative cursor-pointer overflow-hidden rounded-3xl border-2 border-dashed
-        transition-colors duration-500 group
+        aurora-ring relative w-full cursor-pointer overflow-hidden rounded-[2rem]
+        border border-border/50 transition-colors duration-500 group
         ${hasFiles ? "py-10 px-8 md:py-12" : "py-16 px-8 md:py-24"}
         text-center
         ${dragging
           ? "border-primary/60 bg-primary/[0.04]"
           : hasFiles
             ? "border-success/25 bg-success/[0.02] hover:border-success/40"
-            : "border-border/50 hover:border-primary/25"
+            : "hover:border-primary/25"
         }
       `}
     >
-      {/* Mesh gradient background */}
-      <div className="pointer-events-none absolute inset-0 mesh-bg opacity-60" />
+      {/* Layered depth: fading dot grid + mesh, both pointer-events-none */}
+      <div className="pointer-events-none absolute inset-0 grid-fade opacity-70" aria-hidden="true" />
+      <div className="pointer-events-none absolute inset-0 mesh-bg opacity-60" aria-hidden="true" />
 
       {/* Animated glow on drag */}
       <AnimatePresence>
@@ -110,8 +113,10 @@ export default function DropZone({ onFilesAdded, hasFiles, currentCount = 0 }: D
             transition={{ duration: 0.5 }}
             className="pointer-events-none absolute inset-0"
           >
-            <div className="absolute left-1/2 top-1/2 h-[400px] w-[400px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/[0.08]"
-              style={{ filter: 'blur(80px)' }} />
+            <div
+              className="absolute left-1/2 top-1/2 h-[400px] w-[400px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/[0.08]"
+              style={{ filter: "blur(80px)" }}
+            />
           </MotionDiv>
         )}
       </AnimatePresence>
@@ -122,7 +127,7 @@ export default function DropZone({ onFilesAdded, hasFiles, currentCount = 0 }: D
         multiple
         accept="image/*"
         className="hidden"
-        onChange={(e) => { e.target.files && handleFiles(e.target.files); e.target.value = ''; }}
+        onChange={(e) => { e.target.files && handleFiles(e.target.files); e.target.value = ""; }}
       />
 
       <div className="relative z-10">
@@ -133,10 +138,7 @@ export default function DropZone({ onFilesAdded, hasFiles, currentCount = 0 }: D
           className={`
             mx-auto mb-8 flex h-20 w-20 items-center justify-center rounded-3xl
             transition-colors duration-500
-            ${hasFiles
-              ? "bg-success/10 text-success"
-              : "bg-primary/[0.07] text-primary"
-            }
+            ${hasFiles ? "bg-success/10 text-success" : "bg-primary/[0.07] text-primary"}
           `}
         >
           <AnimatePresence mode="wait">
@@ -163,13 +165,12 @@ export default function DropZone({ onFilesAdded, hasFiles, currentCount = 0 }: D
         <p className="mx-auto mb-8 max-w-md text-sm leading-relaxed text-muted-foreground sm:text-base">
           {hasFiles
             ? "Drag more files or click to browse"
-            : "Drag & drop or click to select — everything runs locally"
-          }
+            : "Drag & drop or click to select — everything runs locally"}
         </p>
 
         {/* Format badges */}
         <div className="flex flex-wrap items-center justify-center gap-2">
-          {["AVIF", "WebP", "JPG", "PNG", "GIF", "BMP", "TIFF"].map((fmt, i) => (
+          {FORMATS.map((fmt, i) => (
             <MotionSpan
               key={fmt}
               initial={{ opacity: 0, y: 8 }}
