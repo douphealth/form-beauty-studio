@@ -12,7 +12,7 @@ interface CtaProps {
 
 export default function ToolCta({
   title = "Compress your images now — free and private",
-  description = "Drop your files and ImageForge compresses them in your browser. No uploads, no accounts, no limits. Batch process hundreds at once and download a ZIP.",
+  description = "Drop your files and ImageAlchemy compresses them in your browser. No uploads, no accounts, no limits. Batch process hundreds at once and download a ZIP.",
   format = "auto",
   actionLabel = "Open the compressor",
   className = "",

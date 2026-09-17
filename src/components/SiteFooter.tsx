@@ -20,7 +20,7 @@ export default function SiteFooter() {
                 <Sparkles className="h-5 w-5" strokeWidth={2} />
               </span>
               <span className="flex flex-col">
-                <span className="gradient-text text-base font-bold tracking-tight sm:text-lg">ImageForge</span>
+                <span className="gradient-text text-base font-bold tracking-tight sm:text-lg">ImageAlchemy</span>
                 <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
                   Compression Studio
                 </span>

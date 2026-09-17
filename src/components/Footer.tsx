@@ -63,7 +63,7 @@ export default function Footer() {
                 <Sparkles className="h-4 w-4" strokeWidth={2} />
               </div>
               <div>
-                <span className="gradient-text text-sm font-bold tracking-tight">ImageForge</span>
+                <span className="gradient-text text-sm font-bold tracking-tight">ImageAlchemy</span>
                 <p className="text-[9px] font-semibold uppercase tracking-[0.25em] text-muted-foreground/40">
                   Compression Studio
                 </p>
@@ -131,7 +131,7 @@ export default function Footer() {
         {/* Bottom bar */}
         <div className="flex flex-col items-center justify-between gap-3 border-t border-border/10 py-6 sm:flex-row">
           <p className="text-[10px] text-muted-foreground/25">
-            © {new Date().getFullYear()} ImageForge. All processing happens locally in your browser.
+            © {new Date().getFullYear()} ImageAlchemy. All processing happens locally in your browser.
           </p>
           <p className="flex items-center gap-1 text-[10px] text-muted-foreground/25">
             Crafted with <Heart className="h-2.5 w-2.5 text-destructive/40" /> by Alexios Papaioannou

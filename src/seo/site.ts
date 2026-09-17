@@ -5,7 +5,7 @@
 
 export const SITE = {
   /** Product name (kept consistent everywhere — brand + domain do NOT match, see notes) */
-  name: "ImageForge",
+  name: "ImageAlchemy",
   tagline: "Private Image Compression Studio",
   domain: "imagealchemy.app",
   origin: "https://imagealchemy.app",
@@ -20,8 +20,26 @@ export const SITE = {
   themeColor: "#7c3aed",
   themeColorDark: "#0b0a14",
   author: "Alexios Papaioannou",
-  /** The genuine source repository */
+  /**
+   * Source repository.
+   *
+   * HONESTY NOTE — read before emitting this into JSON-LD `sameAs`.
+   *
+   * This URL does contain the code that powers this site: pushing to it
+   * triggers the production rebuild. But the repository is *named*
+   * `form-beauty-studio` and its README is still the stock Lovable template
+   * ("Welcome to your Lovable project", `REPLACE_WITH_PROJECT_ID`). A search
+   * engine or an AI agent that follows `sameAs` lands on a page that never
+   * mentions ImageAlchemy, which weakens rather than strengthens the entity.
+   *
+   * `repository` is therefore used ONLY where a truthful "the code lives here"
+   * pointer is genuinely useful (the About page, for humans). It is deliberately
+   * NOT emitted as `sameAs` in the JSON-LD graph — see json-ld.ts. To make the
+   * claim strong, push an ImageAlchemy-branded README, then flip
+   * `repositoryIsBranded` to true.
+   */
   repository: "https://github.com/douphealth/form-beauty-studio",
+  repositoryIsBranded: false,
   /** Regions served — free web tool, available worldwide */
   areaServed: "Worldwide",
   /** Supported output formats */
@@ -71,6 +89,17 @@ export const NAV_GROUPS: { label: string; items: { path: string; label: string }
     ],
   },
 ];
+
+/**
+ * The Pro entry point, kept out of NAV_GROUPS on purpose.
+ *
+ * NAV_PATHS is used to build the footer's "every page" link block and the
+ * llms.txt link list — both of which should describe the *content* of the site,
+ * not its checkout. The Pro page is also noindex, so listing it as a site page
+ * would contradict its robots tag. It gets its own prominent button in the
+ * header instead.
+ */
+export const PRO_NAV_ITEM = { path: "/pro", label: "Pro" };
 
 /** Flat list of every navigable + indexable path (drives the nav + footer). */
 export const NAV_PATHS = NAV_GROUPS.flatMap((g) => g.items.map((i) => i.path));

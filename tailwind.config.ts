@@ -94,6 +94,27 @@ export default {
           "50%": { transform: "scale(1.08)", opacity: "0.8" },
           "100%": { transform: "scale(1)", opacity: "1" },
         },
+        /**
+         * A gentle horizontal hint used on the before/after comparison pill.
+         *
+         * Static instructional text gets ignored; a slow, small motion reads as
+         * "this is interactive" without being distracting. The 1.5 s hold at
+         * each end matters — a constant oscillation looks like a loading state,
+         * whereas a pause reads as an invitation. Kept under 6 px so it never
+         * competes with the photograph above it.
+         */
+        "nudge-x": {
+          "0%, 100%": { transform: "translateX(0)" },
+          "20%": { transform: "translateX(-5px)" },
+          "40%": { transform: "translateX(5px)" },
+          "60%": { transform: "translateX(-3px)" },
+          "80%": { transform: "translateX(3px)" },
+        },
+        /** Scales the divider grip while dragging — a clear "you have hold of it". */
+        "grip-pulse": {
+          "0%, 100%": { boxShadow: "0 0 0 0 rgba(255,255,255,0.35)" },
+          "50%": { boxShadow: "0 0 0 10px rgba(255,255,255,0)" },
+        },
       },
       animation: {
         "fade-in": "fade-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards",
@@ -104,6 +125,8 @@ export default {
         "spin-slow": "spin-slow 16s linear infinite",
         "bounce-subtle": "bounce-subtle 2.5s ease-in-out infinite",
         "counter-pulse": "counter-pulse 0.4s ease-out",
+        "nudge-x": "nudge-x 4s ease-in-out infinite",
+        "grip-pulse": "grip-pulse 1.4s ease-out infinite",
       },
     },
   },

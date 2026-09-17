@@ -9,6 +9,7 @@ import { ALL_ROUTES } from "@/seo/routes";
 
 const Index = lazy(() => import("./pages/Index"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const Pro = lazy(() => import("./pages/Pro"));
 const ContentPage = lazy(() => import("./content/ContentPage"));
 
 const queryClient = new QueryClient();
@@ -30,7 +31,10 @@ export default function App() {
             <Suspense fallback={<Loading />}>
               <Routes>
                 <Route path="/" element={<Index />} />
-                {ALL_ROUTES.filter((r) => r.path !== "/").map((route) => (
+                {ALL_ROUTES.filter((r) => r.path !== "/" && r.standalone).map((route) => (
+                  <Route key={route.path} path={route.path} element={<Pro />} />
+                ))}
+                {ALL_ROUTES.filter((r) => r.path !== "/" && !r.standalone).map((route) => (
                   <Route
                     key={route.path}
                     path={route.path}

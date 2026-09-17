@@ -47,7 +47,7 @@ function svg() {
   <rect x="72" y="66" width="72" height="72" rx="20" fill="url(#brand)"/>
   <path d="M108 84 l16 34 -16 -8 -16 8 z" fill="#ffffff" opacity="0.95"/>
 
-  <text x="164" y="116" font-family="'Space Grotesk','Segoe UI',sans-serif" font-size="30" font-weight="700" fill="#f4f2fb" letter-spacing="0.5">ImageForge</text>
+  <text x="164" y="116" font-family="'Space Grotesk','Segoe UI',sans-serif" font-size="30" font-weight="700" fill="#f4f2fb" letter-spacing="0.5">ImageAlchemy</text>
 
   <!-- Headline -->
   <text x="72" y="270" font-family="'Space Grotesk','Segoe UI',sans-serif" font-size="76" font-weight="700" fill="#ffffff" letter-spacing="-2">Compress images.</text>

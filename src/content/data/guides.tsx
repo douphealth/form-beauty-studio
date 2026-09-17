@@ -51,7 +51,7 @@ export const GUIDE_CONTENT: Record<string, ContentEntry> = {
         id: "compress-and-strip",
         heading: "Step 4 — Compress losslessly and strip metadata",
         body: [
-          P(<>After format, quality and dimensions are set, a lossless re-optimization pass (OxiPNG for PNG, MozJPEG's trellis and progressive settings for JPEG) removes redundant data and EXIF metadata your visitors don't need. This is what ImageForge does in its final pass.</>),
+          P(<>After format, quality and dimensions are set, a lossless re-optimization pass (OxiPNG for PNG, MozJPEG's trellis and progressive settings for JPEG) removes redundant data and EXIF metadata your visitors don't need. This is what ImageAlchemy does in its final pass.</>),
           P(<>Metadata alone — camera model, GPS coordinates, editing history — can account for several percent of file size. Stripping it is also a privacy win for your users.</>),
         ],
       },
@@ -81,8 +81,8 @@ export const GUIDE_CONTENT: Record<string, ContentEntry> = {
         answer: "Yes. Google has confirmed page speed is a ranking signal, and images are the largest contributor to page weight on most sites. Slow LCP (Largest Contentful Paint) — very often an unoptimized hero image — directly hurts Core Web Vitals scores, which feed into rankings and can also limit eligibility for rich results and the mobile news carousel.",
       },
       {
-        question: "Is ImageForge free and private?",
-        answer: "Yes. ImageForge runs entirely in your browser using WebAssembly codecs. Your images are never uploaded to a server, no account is required, there is no tracking, and there is no limit on how many images you can process.",
+        question: "Is ImageAlchemy free and private?",
+        answer: "Yes. ImageAlchemy runs entirely in your browser using WebAssembly codecs. Your images are never uploaded to a server, no account is required, there is no tracking, and there is no limit on how many images you can process.",
       },
     ],
     related: [

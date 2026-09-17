@@ -1,0 +1,42 @@
+name = "imagealchemy-audit-proxy"
+main = "src/index.ts"
+compatibility_date = "2026-09-01"
+compatibility_flags = ["nodejs_compat"]
+
+# ── Observability ────────────────────────────────────────────────────────────
+# Workers Logs is aggregate-only. We never log the audited URL: doing so would
+# turn this Worker into a record of which competitor sites each visitor checked,
+# which is exactly the kind of data this product exists to avoid collecting.
+[observability]
+enabled = true
+head_sampling_rate = 1
+
+[vars]
+# Comma-separated origin allowlist. Replace with your real hosts before deploy,
+# and make sure VITE_AUDIT_PROXY_URL in the app's .env matches this Worker.
+ALLOWED_ORIGINS = "https://imagealchemy.app,https://www.imagealchemy.app"
+MAX_HTML_BYTES = "4194304"
+
+# ── Secrets ──────────────────────────────────────────────────────────────────
+# Do NOT put secrets in this file — it is committed. Set them with:
+#
+#   npx wrangler secret put AUDIT_TOKEN
+#
+# Then bake the same value into the app build as VITE_AUDIT_TOKEN. This raises
+# the bar from "anyone who finds the URL can use it" to "anyone who reads the
+# bundle can use it" — which is a real but modest improvement, and the honest
+# ceiling for a purely client-side app. The rate limiter is the control that
+# actually matters.
+
+# ── Optional rate limiting ───────────────────────────────────────────────────
+# In-memory counters reset whenever the Worker instance recycles, which under
+# load is often enough to be useless. Bind a KV namespace and the limiter
+# becomes durable:
+#
+#   npx wrangler kv namespace create AUDIT_RATE_LIMIT
+#
+# then uncomment the block below and paste the id from the command output.
+#
+# [[kv_namespaces]]
+# binding = "RATE_LIMIT"
+# id = "REPLACE_WITH_KV_NAMESPACE_ID"

@@ -24,8 +24,8 @@ import {
   formatBytes, getCompressionRatio, downloadBlob,
 } from "@/lib/image-utils";
 
-const AUTO_COMPRESS_KEY = "imageforge:auto-compress";
-const PRESET_KEY = "imageforge:preset";
+const AUTO_COMPRESS_KEY = "imagealchemy:auto-compress";
+const PRESET_KEY = "imagealchemy:preset";
 
 export default function Index() {
   const [images, setImages] = useState<ImageFile[]>([]);
@@ -331,7 +331,7 @@ export default function Index() {
     const zip = new JSZip();
     completed.forEach((img) => zip.file(img.outputFilename, img.compressedBlob!));
     const blob = await zip.generateAsync({ type: "blob" });
-    downloadBlob(blob, `imageforge-${Date.now()}.zip`);
+    downloadBlob(blob, `imagealchemy-${Date.now()}.zip`);
     toast.success("ZIP downloaded!");
   }, []);
 
@@ -403,7 +403,7 @@ export default function Index() {
       {/* H1 for SEO — visible to crawlers and assistive tech, styled as the
           page's primary heading without dominating the hero. */}
       <h1 className="sr-only">
-        ImageForge — free, private image compression for WebP, AVIF, JPEG and PNG
+        ImageAlchemy — free, private image compression for WebP, AVIF, JPEG and PNG
       </h1>
       {/* Ambient orbs */}
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">

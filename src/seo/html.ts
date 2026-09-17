@@ -33,6 +33,42 @@ export function escapeHtml(value: string): string {
   return String(value).replace(/[&<>"']/g, (c) => ESC[c] ?? c);
 }
 
+/**
+ * Reduce a string that may contain markup to clean, single-spaced plain text.
+ *
+ * WHY THIS IS NOT OPTIONAL
+ * ------------------------
+ * The prerender step flattens React nodes to a string before putting them into
+ * JSON-LD. `nodeToText()` walks `props.children`, but it joins with an empty
+ * separator and has no idea about tags, so:
+ *
+ *   <><strong>Batch</strong> — up to 200 files</>
+ *     →  "Batch— up to 200 files"          (missing space after the tag)
+ *   <>see <a href="/x">the guide</a> now</>
+ *     →  "see the guide now"               (href dropped, spacing luck)
+ *   <>"a" &nbsp; "b"</>
+ *     →  "a\u00a0b"                        (non-breaking space in output)
+ *
+ * The emitted FAQ answer then does NOT match the visible text on the page, and
+ * Google validates FAQPage markup against the rendered content. Running the
+ * flattened string through here normalises it so the two agree exactly.
+ *
+ * This is a defensive cleanup, not a renderer: it runs on already-flattened
+ * text, never on live DOM.
+ */
+export function stripHtml(value: string): string {
+  return String(value)
+    .replace(/<[^>]*>/g, "")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 /** Absolute URL for a path — canonical, OG, sitemap. */
 export function absUrl(path: string): string {
   if (path.startsWith("http")) return path;
@@ -156,6 +192,7 @@ ${articleDates}
     <meta property="og:image" content="${image}" />
     <meta property="og:image:width" content="${SITE.ogImageWidth}" />
     <meta property="og:image:height" content="${SITE.ogImageHeight}" />
+    <meta property="og:image:type" content="image/png" />
     <meta property="og:image:alt" content="${escapedTitle}" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="${escapedTitle}" />
@@ -165,6 +202,14 @@ ${articleDates}
     <link rel="icon" href="/favicon.ico" sizes="any" />
     <link rel="manifest" href="/site.webmanifest" />
     <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
+    <!--
+      Agent-facing discovery. llms.txt is the emerging convention (llmstxt.org)
+      for telling large-language-model crawlers which URLs matter, and the
+      markdown alternate lets an agent that prefers prose fetch a cheaper
+      representation instead of parsing the full document.
+    -->
+    <link rel="llms" type="text/plain" href="/llms.txt" />
+    <link rel="alternate" type="text/markdown" href="${url}.md" title="Markdown version" />
 ${fontLinks}
 ${cssTags}
 ${jsTags}

@@ -14,7 +14,7 @@ export const GUIDE_CONTENT: Record<string, ContentEntry> = {
         id: "the-30-second-version",
         heading: "The 30-second version",
         body: [
-          P(<>Open <a href="https://imagealchemy.app/">ImageForge</a>, drop your images in, pick the <strong>Web</strong> preset, and download. That alone handles steps 1–4 below for most people and typically saves <strong>50–70%</strong> of file size.</>),
+          P(<>Open <a href="https://imagealchemy.app/">ImageAlchemy</a>, drop your images in, pick the <strong>Web</strong> preset, and download. That alone handles steps 1–4 below for most people and typically saves <strong>50–70%</strong> of file size.</>),
         ],
       },
       {
@@ -42,14 +42,14 @@ export const GUIDE_CONTENT: Record<string, ContentEntry> = {
         id: "step-4-lossless-pass",
         heading: "Step 4 — Run a lossless pass and strip metadata",
         body: [
-          P(<>A lossless optimizer re-encodes the file with better entropy coding and drops EXIF data (camera model, GPS, software). Quality stays identical; the file shrinks a few percent more. ImageForge applies this automatically with OxiPNG and MozJPEG's progressive + trellis settings.</>),
+          P(<>A lossless optimizer re-encodes the file with better entropy coding and drops EXIF data (camera model, GPS, software). Quality stays identical; the file shrinks a few percent more. ImageAlchemy applies this automatically with OxiPNG and MozJPEG's progressive + trellis settings.</>),
         ],
       },
       {
         id: "step-5-verify",
         heading: "Step 5 — Verify before you ship",
         body: [
-          P(<>Check the result at 100% zoom and at display size. Compare the original and the compressed version side by side — ImageForge's before/after slider is built for exactly this. If you can't see a difference at the size your visitors will see it, the compression was free.</>),
+          P(<>Check the result at 100% zoom and at display size. Compare the original and the compressed version side by side — ImageAlchemy's before/after slider is built for exactly this. If you can't see a difference at the size your visitors will see it, the compression was free.</>),
         ],
       },
     ],
@@ -60,7 +60,7 @@ export const GUIDE_CONTENT: Record<string, ContentEntry> = {
       },
       {
         question: "What is the best free image compressor?",
-        answer: "For privacy and batch processing, a browser-based tool like ImageForge is best — nothing is uploaded, there are no file limits, and you can process hundreds of images at once. Squoosh is good for single images and detailed per-format control. TinyPNG is convenient but uploads your files and limits batch size on the free tier.",
+        answer: "For privacy and batch processing, a browser-based tool like ImageAlchemy is best — nothing is uploaded, there are no file limits, and you can process hundreds of images at once. Squoosh is good for single images and detailed per-format control. TinyPNG is convenient but uploads your files and limits batch size on the free tier.",
       },
       {
         question: "Does compressing images reduce quality?",
@@ -72,7 +72,7 @@ export const GUIDE_CONTENT: Record<string, ContentEntry> = {
       },
       {
         question: "Is it safe to compress images online?",
-        answer: "It depends on the tool. Server-based compressors upload your images to their servers. ImageForge performs all compression locally in your browser using WebAssembly codecs — files never leave your device, which makes it safe even for confidential or client work.",
+        answer: "It depends on the tool. Server-based compressors upload your images to their servers. ImageAlchemy performs all compression locally in your browser using WebAssembly codecs — files never leave your device, which makes it safe even for confidential or client work.",
       },
     ],
     related: [

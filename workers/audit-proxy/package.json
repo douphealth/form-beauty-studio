@@ -1,0 +1,16 @@
+{
+  "name": "imagealchemy-audit-proxy",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ImageAlchemy Website Image Audit — the one serverless piece that fetches a page's HTML so the browser can audit it.",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "tail": "wrangler tail"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20241127.0",
+    "wrangler": "^3.95.0"
+  }
+}

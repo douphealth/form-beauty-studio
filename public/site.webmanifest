@@ -1,6 +1,6 @@
 {
-  "name": "ImageForge — Private Image Compression Studio",
-  "short_name": "ImageForge",
+  "name": "ImageAlchemy — Private Image Compression Studio",
+  "short_name": "ImageAlchemy",
   "description": "Compress, convert and resize images to WebP, AVIF, JPEG and PNG entirely in your browser. Free, private, unlimited.",
   "start_url": "/",
   "scope": "/",

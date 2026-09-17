@@ -35,7 +35,7 @@ export const GUIDE_CONTENT: Record<string, ContentEntry> = {
         id: "encoding-speed",
         heading: "Encoding speed",
         body: [
-          P(<>WebP encodes faster. AVIF's AV1-based encoder is slower — often 3–10× for a single image — though multi-threaded AVIF encoders and hardware acceleration have closed much of the gap. For interactive tools like ImageForge this is why AVIF runs in a background worker.</>),
+          P(<>WebP encodes faster. AVIF's AV1-based encoder is slower — often 3–10× for a single image — though multi-threaded AVIF encoders and hardware acceleration have closed much of the gap. For interactive tools like ImageAlchemy this is why AVIF runs in a background worker.</>),
         ],
       },
       {
@@ -71,7 +71,7 @@ export const GUIDE_CONTENT: Record<string, ContentEntry> = {
       },
       {
         question: "Can I convert WebP to AVIF or AVIF to WebP?",
-        answer: "Yes — ImageForge converts between AVIF, WebP, JPEG and PNG in the browser. Drop in a WebP and choose AVIF output (or use Auto-Pick, which encodes all three and keeps the smallest). Nothing is uploaded.",
+        answer: "Yes — ImageAlchemy converts between AVIF, WebP, JPEG and PNG in the browser. Drop in a WebP and choose AVIF output (or use Auto-Pick, which encodes all three and keeps the smallest). Nothing is uploaded.",
       },
       {
         question: "Should I use AVIF for a website in 2026?",

@@ -47,7 +47,7 @@ export const GUIDE_CONTENT: Record<string, ContentEntry> = {
         heading: "Measuring and prioritizing fixes",
         body: [
           P(<>Measure with PageSpeed Insights or Search Console (field data) and Chrome DevTools' Performance panel (lab data). Fix LCP first — it has the largest effect on both scores and perceived speed. Then CLS (cheap and quick: add dimensions), then INP.</>),
-          P(<>Run your images through ImageForge before anything else. Getting format and dimensions right fixes more Core Web Vitals problems than any code change.</>),
+          P(<>Run your images through ImageAlchemy before anything else. Getting format and dimensions right fixes more Core Web Vitals problems than any code change.</>),
         ],
       },
     ],

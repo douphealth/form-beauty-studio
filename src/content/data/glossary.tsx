@@ -95,12 +95,12 @@ export const GLOSSARY_CONTENT: Record<string, ContentEntry> = {
     keywords: ["mozjpeg", "jpeg encoder", "jpeg compression", "progressive jpeg"],
     sections: [
       { id: "definition", heading: "Definition", body: [P(<>MozJPEG is a JPEG encoder maintained by Mozilla. It improves on the standard libjpeg encoder with <strong>trellis quantization</strong> (choosing coefficients that compress better at equal visual quality) and <strong>progressive encoding</strong>, producing JPEGs that are typically 10–15% smaller at the same visual quality while remaining 100% standard JPEG files.</>)] },
-      { id: "in-practice", heading: "In practice", body: [P(<>Because MozJPEG output is a standard JPEG, it works everywhere JPEG works — no browser or tool changes needed. The catch is that few online compressors actually use it. ImageForge uses MozJPEG for its JPEG output path.</>)] },
+      { id: "in-practice", heading: "In practice", body: [P(<>Because MozJPEG output is a standard JPEG, it works everywhere JPEG works — no browser or tool changes needed. The catch is that few online compressors actually use it. ImageAlchemy uses MozJPEG for its JPEG output path.</>)] },
     ],
     faqs: [
       { question: "What does MozJPEG do?", answer: "MozJPEG is an improved JPEG encoder. Using trellis quantization and progressive encoding, it produces standard JPEG files that are roughly 10–15% smaller than those from the default libjpeg encoder, at the same visual quality." },
       { question: "Are MozJPEG files different from normal JPEGs?", answer: "No. MozJPEG output is a 100% standard JPEG file — every browser, editor and device reads it. The improvement is purely in how the file is encoded, not in the format itself." },
-      { question: "Is MozJPEG free?", answer: "Yes. MozJPEG is open source, maintained by Mozilla, and royalty-free to use. ImageForge uses it as its JPEG encoder." },
+      { question: "Is MozJPEG free?", answer: "Yes. MozJPEG is open source, maintained by Mozilla, and royalty-free to use. ImageAlchemy uses it as its JPEG encoder." },
     ],
     related: [
       { path: "/formats/jpeg", label: "JPEG compressor" },

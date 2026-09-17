@@ -188,6 +188,7 @@ const manifest = await loadTs("src/seo/routes.ts");
 const content = await loadTs("src/content/index.ts");
 const jsonLd = await loadTs("src/seo/json-ld.ts");
 const htmlMod = await loadTs("src/seo/html.ts");
+const { stripHtml } = htmlMod;
 
 // 3. Grab the built asset paths from the generated index.html.
 const indexHtml = fs.readFileSync(path.join(outDir, "index.html"), "utf8");
@@ -197,6 +198,9 @@ const scripts = scriptMatch ? [scriptMatch[1]] : [];
 const stylesheets = styleMatch ? [styleMatch[1]] : [];
 
 let ok = 0;
+
+/** Every document written this run — drives the assertions below. */
+const written = [];
 
 /**
  * Static home-page markup for crawlers and AI bots that don't run JavaScript.
@@ -209,11 +213,11 @@ let ok = 0;
  */
 function renderHomeStatic() {
   return [
-    '<h1>ImageForge — Free Private Image Compression for WebP, AVIF, JPEG &amp; PNG</h1>',
-    '<p>ImageForge is a <strong>free online image compressor and converter</strong> that runs entirely in your browser. Compress, convert and resize images in bulk — no uploads, no accounts, no tracking. Everything is processed locally with WebAssembly, so an entire batch of up to 200 images never leaves your device.</p>',
+    '<h1>ImageAlchemy — Free Private Image Compression for WebP, AVIF, JPEG &amp; PNG</h1>',
+    '<p>ImageAlchemy is a <strong>free online image compressor and converter</strong> that runs entirely in your browser. Compress, convert and resize images in bulk — no uploads, no accounts, no tracking. Everything is processed locally with WebAssembly, so an entire batch of up to 200 images never leaves your device.</p>',
     '<h2>Why compress images?</h2>',
     '<p>Unoptimized images are the largest content type on most pages and the most common cause of slow <a href="/learn/core-web-vitals-images">Core Web Vitals</a>. Converting a 2&nbsp;MB JPEG to WebP at quality 80 typically yields a 400–600&nbsp;KB file — a <strong>70%+ reduction</strong> in bytes with no visible quality loss. Smaller files mean faster LCP, better crawl coverage, higher mobile rankings and less bandwidth cost.</p>',
-    '<h2>What ImageForge does</h2>',
+    '<h2>What ImageAlchemy does</h2>',
     '<ul>',
     '<li><strong>Batch compression</strong> — up to 200 images at once, with a one-click ZIP download of the whole set.</li>',
     '<li><strong>Every modern format</strong> — <a href="/formats/avif">AVIF</a>, <a href="/formats/webp">WebP</a>, <a href="/formats/jpeg">JPEG</a> and <a href="/formats/png">PNG</a>, with conversion between them and an <em>Auto-Pick</em> mode that picks the smallest format per image.</li>',
@@ -238,7 +242,47 @@ function renderHomeStatic() {
     '<li><a href="/learn/responsive-images">Responsive images with srcset and sizes</a></li>',
     '<li><a href="/glossary">Image compression glossary</a></li>',
     '</ul>',
+    // The Pro upsell is included in the STATIC home markup on purpose.
+    //
+    // HeroFeatures — which carries the Pro showcase in the hydrated app — only
+    // renders client-side, so without this block the paid feature is completely
+    // invisible in the pre-rendered document. The previous audit found that
+    // every route served the same root document; the lesson generalises: what a
+    // non-JS crawler sees is the only text this site reliably publishes.
+    //
+    // The /pro page is noindex, so this link passes no ranking signal — which is
+    // correct. The intent is discoverability for a reader, not for a crawler.
+    '<h2>Which images should you fix first?</h2>',
+    '<p>The <a href="/pro">Website Image Audit</a> reports every image any page loads — measured, ranked by what they cost you, with the fix written out. One-time purchase, no subscription. The compressor above stays free.</p>',
     '<p><a href="#root">Open the compression studio above, or drop your images to begin.</a></p>',
+  ].join("\n");
+}
+
+/**
+ * Static markup for /pro.
+ *
+ * Two jobs: give a non-JS crawler a real document, and give a human something
+ * to read in the moment between page load and the licence check resolving.
+ * Both want the same thing — what the feature does and what it costs — so the
+ * copy here is the same pitch the paywall renders, just without interactivity.
+ */
+function renderProStatic() {
+  return [
+    '<h1>Website Image Audit — find every wasted byte on any site</h1>',
+    '<p>ImageAlchemy Pro audits any public web page and measures every image it loads. You get the total image weight, each file\'s real size, its format and caching headers, and a prioritised list of fixes with the bytes each one saves. It is the difference between "this file got smaller" and "these eleven files are costing you 1.4 seconds".</p>',
+    '<h2>What the audit reports</h2>',
+    '<ul>',
+    '<li><strong>Every image on the page, measured</strong> — including <code>srcset</code> candidates, <code>&lt;picture&gt;</code> sources, preloaded images and CSS backgrounds.</li>',
+    '<li><strong>A weighted score out of 100</strong>, broken down by image weight, format, delivery and markup.</li>',
+    '<li><strong>A prioritised fix list</strong> — legacy formats, oversized files, missing lazy loading, absent width and height, weak cache headers, missing alt text.</li>',
+    '<li><strong>Core Web Vitals impact</strong> — estimated transfer time on a 4G connection, plus the layout-shift and largest-contentful-paint problems visible in the markup.</li>',
+    '<li><strong>A Markdown report</strong> you can paste into a ticket, a client email or a CMS.</li>',
+    '</ul>',
+    '<h2>Pricing</h2>',
+    '<p>ImageAlchemy Pro is a <strong>one-time purchase</strong>. No subscription, no account, no expiry. The licence works offline in your browser. The free compressor — batch compression, conversion and resizing for up to 200 images — stays free forever, and your images never leave your device either way.</p>',
+    '<h2>How to fix what the audit finds</h2>',
+    '<p>Most findings are resolved by re-encoding to a modern format and right-sizing. The free <a href="/">ImageAlchemy compressor</a> does both in your browser: see the <a href="/formats/webp">WebP</a> and <a href="/formats/avif">AVIF</a> format guides, the <a href="/tools/image-resizer">image resizer</a>, or the <a href="/learn/core-web-vitals-images">guide to images and Core Web Vitals</a>.</p>',
+    '<p><a href="/">Compress images free</a> · <a href="/learn">Optimization guides</a> · <a href="/glossary">Glossary</a></p>',
   ].join("\n");
 }
 
@@ -248,6 +292,17 @@ for (const route of manifest.ALL_ROUTES) {
   let body = "";
   if (isHome) {
     body = renderHomeStatic();
+  } else if (route.standalone) {
+    // Standalone tool surfaces (/pro) render through their own component in the
+    // React router, not through ContentPage. Pre-rendering them here is still
+    // necessary: without it the shipped HTML is an empty <div id="root">, so a
+    // crawler that does not execute JavaScript sees a blank page, and the
+    // hydration check in verify-crawl reports a document with no H1.
+    //
+    // The markup is deliberately the *marketing* frame of the page (what the
+    // feature is and what it costs), which is also what a human sees before the
+    // licence check resolves. The audit tool itself appears after hydration.
+    body = renderProStatic();
   } else if (entry) {
     const rendered = renderContentRoute(route.path);
     body = rendered.html;
@@ -259,21 +314,224 @@ for (const route of manifest.ALL_ROUTES) {
     body,
     scripts,
     stylesheets,
+    // Forward the route's indexability. This was MISSING, and the consequence
+    // was real: renderHtmlDocument() defaults to "index,follow", so every route
+    // flagged `noindex` in the manifest — /privacy and /pro — shipped a
+    // prerendered document telling crawlers to index it. The runtime React
+    // Helmet tag would have said noindex on hydration, but the pre-rendered
+    // static document is what a non-JS crawler reads, and it is the one that
+    // wins. A noindex route that ships as indexable is worse than no tag at
+    // all, because it looks correct in the source and disagrees with itself in
+    // the output.
+    robots: route.noindex ? "noindex,follow" : "index,follow,max-image-preview:large",
     jsonLd: jsonLd.buildSeoJsonLd({
       path: route.path,
       title: route.title,
       description: route.description,
       kind: route.kind,
-      // Flatten React nodes to plain text so FAQPage schema is valid and
-      // self-contained for rich results.
-      faqs: entry ? entry.faqs.map((f) => ({ question: f.question, answer: nodeToText(f.answer) })) : undefined,
+      // FAQ answers are flattened to plain text because schema.org expects a
+      // string, not HTML. nodeToText() alone was NOT enough: it concatenates
+      // nested children without separators, so a React node like
+      //   <><strong>Batch</strong> — up to 200 images…</>
+      // came out as "Batch— up to 200 images…" and inline <a> text was glued to
+      // surrounding words. stripHtml() normalises whitespace and removes any
+      // residual tags, so the emitted answer matches the visible copy exactly —
+      // which matters, because FAQPage rich results are validated against the
+      // rendered page.
+      faqs: entry ? entry.faqs.map((f) => ({ question: f.question, answer: stripHtml(nodeToText(f.answer)) })) : undefined,
       keywords: entry ? entry.keywords : undefined,
+      // Hub pages list their children, so crawlers see the pages as a set
+      // rather than as unrelated URLs that happen to link to each other.
+      listItems: entry ? entry.related.map((r) => ({ label: r.label, path: r.path })) : undefined,
+      // Glossary entries declare the term they define.
+      term: manifest.GLOSSARY_TERM_BY_PATH[route.path],
+      dateModified: manifest.DEFAULT_CONTENT_DATE,
     }),
   });
-  const filePath = path.join(outDir, route.path === "/" ? "index.html" : route.path + ".html");
-  fs.mkdirSync(path.dirname(filePath), { recursive: true });
-  fs.writeFileSync(filePath, doc);
+
+  // ── Directory index ────────────────────────────────────────────────────
+  //
+  // THE BUG THIS FIXES (the single highest-impact defect in the previous
+  // build): this line used to be
+  //     route.path + ".html"      →  dist/learn.html
+  // A static host serving `https://site/learn` looks for, in order:
+  //     /learn            (exact file)
+  //     /learn/index.html (directory index)
+  //     /learn.html       (NEVER consulted for an extensionless URL)
+  // So every route except `/` fell through to the SPA fallback and served the
+  // homepage document. All 28 sitemap URLs returned one byte-identical file —
+  // verified: md5 258b238d0aa0ade51bca409692b22a65 at 7,624 bytes for every
+  // path. Google saw one page and 28 duplicates of it.
+  //
+  // Writing the directory index as the PRIMARY artefact fixes that. The legacy
+  // `<route>.html` file is kept as a secondary copy so that any existing
+  // inbound link to the old path shape still resolves.
+  const primaryPath =
+    route.path === "/"
+      ? path.join(outDir, "index.html")
+      : path.join(outDir, route.path.replace(/^\//, ""), "index.html");
+
+  fs.mkdirSync(path.dirname(primaryPath), { recursive: true });
+  fs.writeFileSync(primaryPath, doc);
+
+  // Secondary legacy copy — skip for the root to avoid clobbering index.html.
+  if (route.path !== "/") {
+    const legacyPath = path.join(outDir, route.path.replace(/^\//, "") + ".html");
+    fs.mkdirSync(path.dirname(legacyPath), { recursive: true });
+    fs.writeFileSync(legacyPath, doc);
+  }
+
+  written.push({ route, primaryPath, doc });
   ok++;
 }
 
-console.log(`[seo] pre-rendered ${ok} routes -> dist/`);
+// ── Assertions ────────────────────────────────────────────────────────────
+//
+// Every one of these guards exists because the corresponding failure was
+// observed in a real build and shipped silently. A build that emits broken
+// crawl artefacts must fail loudly at build time, not quietly at Google's
+// next recrawl.
+function assert(condition, message) {
+  if (!condition) {
+    console.error(`\nFATAL: ${message}\n`);
+    process.exit(1);
+  }
+}
+
+assert(ok > 0, "prerender produced zero routes — the route manifest is empty or failed to load");
+
+const expected = manifest.ALL_ROUTES.length;
+assert(
+  ok === expected,
+  `prerendered ${ok} routes but the manifest declares ${expected}`,
+);
+
+for (const { route, primaryPath } of written) {
+  assert(
+    fs.existsSync(primaryPath),
+    `no directory index written for ${route.path} (expected ${path.relative(root, primaryPath)})`,
+  );
+}
+
+// Duplicate titles make it impossible for a search engine to tell the pages
+// apart — the second symptom of the original bug.
+const titleSeen = new Map();
+for (const { route } of written) {
+  const key = route.title.trim();
+  if (titleSeen.has(key)) {
+    assert(false, `duplicate <title> on ${route.path} and ${titleSeen.get(key)}: "${key}"`);
+  }
+  titleSeen.set(key, route.path);
+}
+
+// A title that names the wrong product is worse than no title: it invites the
+// search engine to invent a brand. This guard previously caught the literal
+// string "Enterprise" appearing in a title that never came from this codebase.
+const FORBIDDEN_IN_OUTPUT = ["Enterprise"];
+for (const { route, doc } of written) {
+  for (const word of FORBIDDEN_IN_OUTPUT) {
+    assert(
+      !doc.includes(word),
+      `the string "${word}" (not part of this product) appears in the output for ${route.path}`,
+    );
+  }
+}
+
+// Every prerendered document must carry a real heading, or the page is
+// invisible to a crawler that does not execute JavaScript.
+for (const { route, doc } of written) {
+  const bodyStart = doc.indexOf("<body");
+  const bodyOnly = bodyStart === -1 ? doc : doc.slice(bodyStart);
+  assert(
+    /<h1[\s>]/i.test(bodyOnly),
+    `${route.path} has no <h1> inside <body> — crawlers would see an untitled page`,
+  );
+}
+
+// Indexability must match the manifest. This guard exists because the two
+// silently disagreed once: /privacy and /pro declared `noindex: true` and still
+// shipped "index,follow" in the static document, so a crawler that did not run
+// JavaScript was explicitly invited to index a page the author meant to hide.
+for (const { route, doc } of written) {
+  const head = doc.slice(0, doc.indexOf("</head>"));
+  const match = head.match(/<meta\s+name="robots"\s+content="([^"]*)"/i);
+  assert(match, `${route.path} has no robots meta tag in <head>`);
+  const value = match[1].toLowerCase();
+  if (route.noindex) {
+    assert(
+      value.includes("noindex"),
+      `${route.path} is marked noindex in the manifest but ships "${value}"`,
+    );
+  } else {
+    assert(
+      value.includes("index") && !value.includes("noindex"),
+      `${route.path} is indexable in the manifest but ships "${value}"`,
+    );
+  }
+}
+
+// The social preview card is referenced on every page; it must exist.
+assert(
+  fs.existsSync(path.join(outDir, "og-image.png")),
+  "dist/og-image.png is missing — every og:image reference would 404 (run scripts/build-og.mjs first)",
+);
+
+// ── 404 + host config ─────────────────────────────────────────────────────
+//
+// Without this, an unknown path returns HTTP 200 carrying the homepage
+// document. That is a "soft 404": it dilutes the homepage's canonical signal
+// and lets typos get indexed as duplicates of `/`.
+const notFoundDoc = htmlMod.renderHtmlDocument({
+  path: "/404",
+  title: "Page not found — ImageAlchemy",
+  description: "The page you were looking for does not exist. Head back to the image compressor.",
+  body: [
+    "<h1>Page not found</h1>",
+    '<p>That URL does not exist on ImageAlchemy. The <a href="/">free image compressor</a> is one click away.</p>',
+    '<p>Or browse the <a href="/learn">image optimization guides</a> and the <a href="/glossary">glossary</a>.</p>',
+  ].join("\n"),
+  scripts,
+  stylesheets,
+  // noindex so a 404 can never be indexed as a real page.
+  jsonLd: jsonLd.buildSeoJsonLd({
+    path: "/404",
+    title: "Page not found — ImageAlchemy",
+    description: "The page you were looking for does not exist.",
+    kind: "page",
+    noindex: true,
+  }),
+});
+fs.writeFileSync(path.join(outDir, "404.html"), notFoundDoc);
+
+// Cloudflare Pages / Netlify convention. Harmless if the host ignores them,
+// and the correct fix if it does not.
+fs.writeFileSync(
+  path.join(outDir, "_redirects"),
+  [
+    "# Serve the real 404 document with a real 404 status for unknown paths.",
+    "# Without this the SPA fallback returns 200 + the homepage for every typo.",
+    "/*    /404.html   404",
+    "",
+  ].join("\n"),
+);
+fs.writeFileSync(
+  path.join(outDir, "_headers"),
+  [
+    "/*",
+    "  X-Content-Type-Options: nosniff",
+    "  Referrer-Policy: strict-origin-when-cross-origin",
+    "",
+    "# Hashed, fingerprinted build output — safe to cache forever.",
+    "/assets/*",
+    "  Cache-Control: public, max-age=31536000, immutable",
+    "",
+    "# HTML must revalidate or users get a stale shell after a deploy.",
+    "/*.html",
+    "  Cache-Control: public, max-age=0, must-revalidate",
+    "",
+  ].join("\n"),
+);
+
+console.log(`[seo] pre-rendered ${ok} routes -> dist/ (${written.length * 2 - 1} HTML docs, ${titleSeen.size} unique titles)`);
+console.log(`[seo] wrote 404.html, _redirects, _headers`);
+

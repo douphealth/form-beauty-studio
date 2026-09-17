@@ -3,7 +3,7 @@ import { Link, NavLink, useLocation } from "react-router-dom";
 import { MotionDiv, AnimatePresence, MotionNav } from "@/lib/motion";
 import { Sparkles, Menu, X, ArrowUpRight } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
-import { NAV_GROUPS } from "../seo/site";
+import { NAV_GROUPS, PRO_NAV_ITEM } from "../seo/site";
 
 /**
  * Header with a scroll progress bar.
@@ -72,7 +72,7 @@ export default function SiteHeader() {
             />
           </MotionDiv>
           <span className="flex flex-col">
-            <span className="gradient-text text-base font-bold tracking-tight sm:text-lg">ImageForge</span>
+            <span className="gradient-text text-base font-bold tracking-tight sm:text-lg">ImageAlchemy</span>
             <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
               Compression Studio
             </span>
@@ -113,6 +113,23 @@ export default function SiteHeader() {
         </nav>
 
         <div className="flex items-center gap-2">
+          {/* Pro sits next to the primary CTA rather than inside a dropdown: a
+              paid feature nobody can find is a paid feature nobody buys, and
+              burying it three clicks deep in a "Reference" menu would do
+              exactly that. Styled as an outline so it supports the primary
+              "Open the tool" action instead of competing with it. */}
+          <NavLink
+            to={PRO_NAV_ITEM.path}
+            className={({ isActive }) =>
+              "hidden items-center gap-1.5 rounded-2xl border border-primary/25 px-3.5 py-2.5 text-sm font-semibold transition-colors sm:inline-flex " +
+              (isActive
+                ? "bg-primary/10 text-primary"
+                : "text-primary hover:bg-primary/[0.07]")
+            }
+          >
+            <Sparkles className="h-3.5 w-3.5" />
+            {PRO_NAV_ITEM.label}
+          </NavLink>
           <Link
             to="/"
             className="hidden items-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-md transition-all hover:scale-[1.02] sm:inline-flex"
@@ -144,6 +161,17 @@ export default function SiteHeader() {
             aria-label="Mobile"
           >
             <div className="mx-auto max-w-6xl px-5 py-4">
+              <NavLink
+                to={PRO_NAV_ITEM.path}
+                onClick={() => setOpen(false)}
+                className={({ isActive }) =>
+                  "mb-4 flex items-center gap-2 rounded-xl border border-primary/25 px-3 py-2.5 text-sm font-semibold transition-colors " +
+                  (isActive ? "bg-primary/10 text-primary" : "text-primary hover:bg-primary/[0.07]")
+                }
+              >
+                <Sparkles className="h-3.5 w-3.5" />
+                {PRO_NAV_ITEM.label} — Website Image Audit
+              </NavLink>
               {NAV_GROUPS.map((group) => (
                 <div key={group.label} className="mb-4">
                   <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground/50">
