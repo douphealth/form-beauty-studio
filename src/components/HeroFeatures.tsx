@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { PRO_PRICE_DISPLAY } from "@/lib/pro";
+import QualityExplorer from "@/components/QualityExplorer";
 
 /**
  * Real byte sizes for the example image.
@@ -442,6 +443,36 @@ export default function HeroFeatures() {
           </Reveal>
         ))}
       </div>
+
+      {/* Quality explorer — placed here because "what setting should I pick?"
+          is the question a first-time visitor has immediately after seeing the
+          compressor, and leaving it unanswered is the most common reason to
+          bounce to a competitor. Links out to the full guide for the reasoning. */}
+      <Reveal className="mt-16">
+        <div className="mb-6 text-center">
+          <h2 className="text-xl font-bold text-foreground sm:text-2xl">
+            Not sure what <span className="gradient-text">quality</span> to pick?
+          </h2>
+          <p className="mx-auto mt-2 max-w-xl text-sm text-muted-foreground/70">
+            It is the question every compression guide answers with a bare number. Here is the
+            tradeoff itself — drag it and watch both sides move.
+          </p>
+        </div>
+        <QualityExplorer
+          onApply={() => {
+            document.getElementById("tool")?.scrollIntoView({ behavior: "smooth", block: "start" });
+          }}
+        />
+        <p className="mt-4 text-center text-xs text-muted-foreground/70">
+          Full reasoning, per-format settings and where artifacts appear first:{" "}
+          <Link
+            to="/learn/jpeg-quality-guide"
+            className="font-medium text-primary underline decoration-dotted underline-offset-2 hover:decoration-solid"
+          >
+            the JPEG quality guide
+          </Link>
+        </p>
+      </Reveal>
 
       {/* How it works */}
       <Reveal className="mt-16">

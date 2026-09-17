@@ -3,8 +3,22 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import ContentLayout from "../components/seo/ContentLayout";
+import QualityExplorer from "../components/QualityExplorer";
+import PageWeightWaterfall from "../components/PageWeightWaterfall";
 import { getContent } from "./index";
 import { findRoute } from "../seo/routes";
+
+/**
+ * Interactive components a content module can place by name via `section.embed`.
+ *
+ * Kept as an explicit registry rather than a dynamic import so the components
+ * stay in the main bundle's graph (they are small and used on several high-value
+ * pages) and so a bad key is caught at build time by scripts/test-content.mjs.
+ */
+const EMBEDDED_COMPONENTS: Record<string, React.ComponentType> = {
+  "quality-explorer": QualityExplorer,
+  "page-weight": PageWeightWaterfall,
+};
 
 /**
  * Renders any page from the content index. One component serves all 20+ pages —
@@ -42,18 +56,28 @@ export default function ContentPage({ path }: { path: string }) {
       toc={toc}
     >
       <div className="prose-content">
-        {entry.sections.map((section) => (
-          <section key={section.id} className="mb-12 scroll-mt-24" id={section.id} aria-labelledby={"h-" + section.id}>
-            <h2 className="mb-4 text-2xl font-bold tracking-tight text-foreground" id={"h-" + section.id}>
-              {section.heading}
-            </h2>
-            {section.body.map((paragraph, i) => (
-              <p key={i} className="mb-4 text-[15px] leading-relaxed text-muted-foreground/90 sm:text-base">
-                {paragraph}
-              </p>
-            ))}
-          </section>
-        ))}
+        {entry.sections.map((section) => {
+          const Embed = section.embed ? EMBEDDED_COMPONENTS[section.embed] : undefined;
+          return (
+            <Fragment key={section.id}>
+              <section className="mb-12 scroll-mt-24" id={section.id} aria-labelledby={"h-" + section.id}>
+                <h2 className="mb-4 text-2xl font-bold tracking-tight text-foreground" id={"h-" + section.id}>
+                  {section.heading}
+                </h2>
+                {section.body.map((paragraph, i) => (
+                  <p key={i} className="mb-4 text-[15px] leading-relaxed text-muted-foreground/90 sm:text-base">
+                    {paragraph}
+                  </p>
+                ))}
+              </section>
+              {Embed && (
+                <div className="mb-12">
+                  <Embed />
+                </div>
+              )}
+            </Fragment>
+          );
+        })}
       </div>
 
       {entry.related.length > 0 && (

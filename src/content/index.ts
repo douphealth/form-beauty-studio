@@ -10,6 +10,8 @@ import { GUIDE_CONTENT as CWV_GUIDE } from "./data/guides-core-web-vitals";
 import { GUIDE_CONTENT as RESPONSIVE_GUIDE } from "./data/guides-responsive-images";
 import { GUIDE_CONTENT as TOOLS_GUIDE } from "./data/guides-best-tools";
 import { GUIDE_CONTENT as REDUCE_GUIDE } from "./data/guides-reduce-file-size";
+import { GUIDE_CONTENT as QUALITY_GUIDE } from "./data/guides-quality";
+import { GUIDE_CONTENT as PRIVACY_GUIDE } from "./data/guides-privacy";
 import { FORMAT_CONTENT as WEBP_FORMAT } from "./data/formats-webp";
 import { FORMAT_CONTENT as AVIF_FORMAT } from "./data/formats-avif";
 import { FORMAT_CONTENT as JPEG_FORMAT } from "./data/formats-jpeg";
@@ -31,6 +33,8 @@ export const CONTENT_INDEX: Record<string, ContentEntry> = {
   ...RESPONSIVE_GUIDE,
   ...TOOLS_GUIDE,
   ...REDUCE_GUIDE,
+  ...QUALITY_GUIDE,
+  ...PRIVACY_GUIDE,
   ...WEBP_FORMAT,
   ...AVIF_FORMAT,
   ...JPEG_FORMAT,

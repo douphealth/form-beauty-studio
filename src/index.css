@@ -406,6 +406,57 @@
     touch-action: pan-y;
   }
   .cmp-handle:active { cursor: grabbing; }
+
+  /* ════════════════════════════════════════════════════════════ */
+  /* Interactive explainers — quality explorer + weight waterfall   */
+  /* ════════════════════════════════════════════════════════════ */
+
+  /* Draw-on for the quality curve. `pathLength="1"` on the element normalises
+     the geometry so this dash pair works for any path shape. */
+  .qz-draw {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 0;
+    animation: qz-draw 1.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  /* Waterfall segment entrance — scales up from the baseline. */
+  .pww-seg {
+    transform-origin: bottom;
+    animation: pww-grow 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  /* ── FAQ accordion ──────────────────────────────────────────────
+     The answer panel is ALWAYS in the DOM (so its text is crawlable and
+     matches the FAQPage schema — see components/seo/FAQAccordion.tsx).
+     Collapsing is pure CSS: the 0fr -> 1fr grid-row trick animates height
+     without JS or a known pixel height. */
+  .faq-panel {
+    display: grid;
+    grid-template-rows: 1fr;
+    transition: grid-template-rows 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity: 1;
+  }
+  .faq-panel[data-state="closed"] {
+    grid-template-rows: 0fr;
+    opacity: 0;
+  }
+  .faq-panel > div { min-height: 0; }
+
+  /* Without JS the `data-state` never changes, so every answer would sit
+     collapsed-but-present. That is the correct baseline: text stays in the
+     DOM and the browser's own find-in-page and reading order still reach it.
+     With CSS off entirely, `1fr` applies to everything and all answers show. */
+}
+
+@keyframes qz-draw {
+  from { stroke-dashoffset: 1; }
+  to   { stroke-dashoffset: 0; }
+}
+
+@keyframes pww-grow {
+  from { transform: scaleY(0); }
+  to   { transform: scaleY(1); }
 }
 
 /* ═══════════════════════════════════════ */
@@ -482,6 +533,11 @@
   }
   .marquee { animation: none !important; }
   .bento-card, .reveal { opacity: 1 !important; transform: none !important; }
+  .qz-draw { animation: none !important; stroke-dashoffset: 0 !important; }
+  .pww-seg { animation: none !important; transform: none !important; }
+  /* Open/close instantly rather than sliding. The text stays in the DOM either
+     way — this only removes the motion, per the OS preference. */
+  .faq-panel { transition: none !important; }
 }
 
 /* Custom range slider */

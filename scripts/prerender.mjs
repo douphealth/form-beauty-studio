@@ -187,6 +187,59 @@ async function loadTs(srcPath) {
 const manifest = await loadTs("src/seo/routes.ts");
 const content = await loadTs("src/content/index.ts");
 const jsonLd = await loadTs("src/seo/json-ld.ts");
+
+/**
+ * Home-page FAQ — the SINGLE definition of the six answers.
+ *
+ * Consumed twice: rendered into `renderHomeStatic()` as visible <h3>/<p> pairs,
+ * and emitted as FAQPage JSON-LD in the prerender loop. Keeping one array means
+ * the visible copy and the structured data cannot drift — and drift here is not
+ * cosmetic. Google validates FAQPage against the rendered page, so a schema
+ * answer that does not appear in the body is a schema violation, exactly the
+ * class of defect the previous audit found in nodeToText()'s truncated output.
+ *
+ * Answers are written to be self-contained: an answer engine quoting one will
+ * quote it without the surrounding page, so no answer may begin with "It depends"
+ * or a pronoun whose referent is elsewhere.
+ */
+const HOME_FAQS = [
+  {
+    q: "Is ImageAlchemy really free?",
+    a: "Yes. No account, no subscription, no watermark and no file limits — batch up to 200 images at a time, as often as you like. The Pro audit is a separate one-time purchase for a different job: auditing pages you do not own.",
+  },
+  {
+    q: "Are my images uploaded anywhere?",
+    a: "No. Decoding and re-encoding happen in your browser using WebAssembly codecs — MozJPEG, libwebp, OxiPNG and the AV1 encoder. Your image data is never transmitted, so there is no server-side copy to lose or leak.",
+  },
+  {
+    q: "What is the best image format for the web in 2026?",
+    a: "AVIF compresses best — roughly 20% smaller than WebP at equivalent quality — and is now supported by all major browsers. WebP remains the safe default with universal support and faster encoding. Serving AVIF first with WebP and JPEG fallbacks via <picture> is the most robust approach.",
+  },
+  {
+    q: "Does compressing images reduce quality?",
+    a: "Not visibly, at the settings that matter. At quality 80 the difference from the source is imperceptible on a normal display while the file is typically 40–70% smaller. Visible damage only begins below roughly quality 60, and the artifacts appear first in smooth gradients, fine texture such as hair and foliage, and around text.",
+  },
+  {
+    q: "Can I compress images on my phone?",
+    a: "Yes. ImageAlchemy is fully responsive and works in mobile browsers, processing images locally on the device. Because nothing is uploaded, it also works over a slow or metered connection once the page has loaded.",
+  },
+  {
+    q: "What is the maximum file size and batch size?",
+    a: "Up to 50 MB per image and 200 images per batch. Because processing is client-side, the practical ceiling is your device's available memory rather than a server quota.",
+  },
+];
+
+/**
+ * Render HOME_FAQS into visible markup. Kept next to the array so any edit to
+ * an answer is made in one place and both consumers follow.
+ */
+function renderHomeFaqMarkup() {
+  const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  return HOME_FAQS.flatMap((f) => [
+    `<h3>${esc(f.q)}</h3>`,
+    `<p>${esc(f.a).replace(/&lt;picture&gt;/g, "<code>&lt;picture&gt;</code>")}</p>`,
+  ]).join("\n");
+}
 const htmlMod = await loadTs("src/seo/html.ts");
 const { stripHtml } = htmlMod;
 
@@ -242,6 +295,16 @@ function renderHomeStatic() {
     '<li><a href="/learn/responsive-images">Responsive images with srcset and sizes</a></li>',
     '<li><a href="/glossary">Image compression glossary</a></li>',
     '</ul>',
+    '<h2>What quality setting should you use?</h2>',
+    '<p>Use <strong>quality 80</strong> for almost everything. Between 75 and 85 the file size is still falling sharply while the visible quality cost stays imperceptible. Above 90 the file grows noticeably with no visible gain; below 60 you get banding in gradients and smearing in fine detail.</p>',
+    '<p>The setting is format-dependent, because the quality scales are not calibrated to each other: <strong>JPEG 78–85</strong>, <strong>WebP 75–82</strong>, and <strong>AVIF 60–75</strong> — AVIF at 65 is frequently visually equivalent to JPEG at 80 at a smaller size. PNG is lossless and takes no quality setting at all; if you are reaching for a PNG quality slider, WebP is almost always the better choice.</p>',
+    '<p>Resolution matters more than quality. Resizing a 4000&nbsp;px image down to the 1600&nbsp;px it is actually displayed at typically removes 80% or more of the bytes and makes the image look <em>sharper</em>. A perfectly compressed oversized image is still a slow image. On the demo photograph on this page, the 189&nbsp;KB source encodes to <strong>112&nbsp;KB at quality 80 (−41%)</strong> and <strong>70&nbsp;KB at quality 45 (−63%)</strong> — both real encodes, not estimates.</p>',
+    '<p><a href="/learn/jpeg-quality-guide">Read the full JPEG quality guide</a> for per-format recommendations and the order to apply them in.</p>',
+    '<h2>Compressing images without uploading them</h2>',
+    '<p>ImageAlchemy performs no upload at all. The codecs run locally, so your files never reach a server, are never logged, and cannot be retained — which makes the tool usable for confidential client photography, medical or legal imagery, and unreleased product shots where a cloud converter would be inappropriate.</p>',
+    '<p>You can verify this rather than trust it: load this page, then disable your network connection and compress an image. It will still work, because the processing is local. A cloud-based tool would fail. <a href="/learn/compress-images-without-uploading">How client-side compression works, and how to test any tool for it</a>.</p>',
+    '<h2>Frequently asked questions</h2>',
+    renderHomeFaqMarkup(),
     // The Pro upsell is included in the STATIC home markup on purpose.
     //
     // HeroFeatures — which carries the Pro showcase in the hydrated app — only
@@ -338,7 +401,18 @@ for (const route of manifest.ALL_ROUTES) {
       // residual tags, so the emitted answer matches the visible copy exactly —
       // which matters, because FAQPage rich results are validated against the
       // rendered page.
-      faqs: entry ? entry.faqs.map((f) => ({ question: f.question, answer: stripHtml(nodeToText(f.answer)) })) : undefined,
+      faqs: entry
+        ? entry.faqs.map((f) => ({ question: f.question, answer: stripHtml(nodeToText(f.answer)) }))
+        // The home route has no content-index entry — its body is the static
+        // markup above. It now carries a real FAQ block, and visible FAQ content
+        // must be mirrored in FAQPage schema or the markup is claiming a
+        // relationship the page does not have (and rich-result validation fails
+        // on the mismatch). HOME_FAQS is the single definition of those six
+        // answers, rendered into the static body and emitted here from the same
+        // array so the two can never disagree.
+        : route.path === "/"
+          ? HOME_FAQS.map((f) => ({ question: f.q, answer: f.a }))
+          : undefined,
       keywords: entry ? entry.keywords : undefined,
       // Hub pages list their children, so crawlers see the pages as a set
       // rather than as unrelated URLs that happen to link to each other.

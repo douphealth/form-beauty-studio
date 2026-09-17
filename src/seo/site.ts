@@ -58,7 +58,9 @@ export const NAV_GROUPS: { label: string; items: { path: string; label: string }
     items: [
       { path: "/learn", label: "All guides" },
       { path: "/learn/image-optimization-guide", label: "Image optimization" },
+      { path: "/learn/jpeg-quality-guide", label: "JPEG quality settings" },
       { path: "/learn/compress-images-for-web", label: "Compress for web" },
+      { path: "/learn/compress-images-without-uploading", label: "Compress without uploading" },
       { path: "/learn/webp-vs-avif", label: "WebP vs AVIF" },
       { path: "/learn/core-web-vitals-images", label: "Core Web Vitals" },
       { path: "/learn/best-free-image-compression-tools", label: "Best free tools" },

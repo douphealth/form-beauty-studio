@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "node scripts/test-audit.mjs && node scripts/test-licence.mjs && node scripts/build-compare-demo.mjs && tsc --noEmit -p tsconfig.app.json && vite build && node scripts/build-og.mjs && node scripts/prerender.mjs && node scripts/verify-crawl.mjs && node scripts/hydrate-test.mjs",
+    "build": "node scripts/test-content.mjs && node scripts/test-audit.mjs && node scripts/test-licence.mjs && node scripts/build-compare-demo.mjs && tsc --noEmit -p tsconfig.app.json && vite build && node scripts/build-og.mjs && node scripts/prerender.mjs && node scripts/verify-crawl.mjs && node scripts/hydrate-test.mjs",
     "build:dev": "vite build --mode development",
     "prerender": "node scripts/prerender.mjs",
     "lint": "eslint .",
@@ -13,6 +13,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:audit": "node scripts/test-audit.mjs",
+    "test:content": "node scripts/test-content.mjs",
     "test:licence": "node scripts/test-licence.mjs",
     "verify": "tsc --noEmit -p tsconfig.app.json && node scripts/hydrate-test.mjs",
     "verify:crawl": "node scripts/verify-crawl.mjs",

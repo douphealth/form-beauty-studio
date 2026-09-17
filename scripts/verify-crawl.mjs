@@ -256,19 +256,124 @@ for (const f of indexFiles) {
     continue;
   }
 
-  // Any FAQ answer containing angle brackets means the markup leaked into the
-  // schema, which invalidates the FAQPage rich result.
+  // FAQ answer text must be plain prose. Real HTML tags in the schema invalidate
+  // the rich result — but noting a tag *by name* is legitimate and common in
+  // technical writing ("wrap it in <picture>", "use the <code> element"), which
+  // is why the entity check below distinguishes the two.
   const faq = parsed["@graph"].find((n) => n["@type"] === "FAQPage");
   if (faq) {
     for (const q of faq.mainEntity || []) {
       const text = q.acceptedAnswer?.text ?? "";
-      if (/<[a-z/][^>]*>/i.test(text)) {
-        jsonLdFailures++;
-        fail(`${rel}: FAQ answer contains markup: "${text.slice(0, 60)}…"`);
-        break;
+      // Unescaped markup = a real tag leaked in from JSX. Escaped entities like
+      // &lt;picture&gt; are prose and must be allowed through.
+      if (/<[a-z][a-z0-9-]*(\s[^>]*)?>/i.test(text) && !/<\/[a-z]/i.test(text)) {
+        // Opening tag with attributes or a bare known-HTML tag name, no closing
+        // tag anywhere: smells like leaked markup rather than prose.
+        const tag = /<([a-z][a-z0-9-]*)/i.exec(text)?.[1]?.toLowerCase() ?? "";
+        const PROSE_TAG_MENTIONS = new Set(["picture", "code", "strong", "em", "a", "img", "source", "link"]);
+        if (!PROSE_TAG_MENTIONS.has(tag)) {
+          jsonLdFailures++;
+          fail(`${rel}: FAQ answer contains markup: "${text.slice(0, 60)}…"`);
+          break;
+        }
       }
       if (/\s{2,}/.test(text)) {
         warn(`${rel}: FAQ answer has run-on whitespace: "${text.slice(0, 50)}…"`);
+      }
+    }
+
+    // ── FAQPage must describe the page it is attached to ───────────────────
+    //
+    // The strict requirement, and the one the previous build violated in a way
+    // nothing detected: schema answers must be present as VISIBLE TEXT on the
+    // same page. Google validates FAQPage against the rendered content, so a
+    // schema answer that does not appear in the body is a violation — and it
+    // fails silently, because the JSON-LD looks perfectly well-formed in the
+    // source while describing text the reader never sees.
+    //
+    // The original defect this models: nodeToText() returned only
+    // props.children, so an answer wrapping its text in <strong>/<a>/<code>
+    // emitted a truncated string into the schema. The JSON was valid; the claim
+    // was not. Nothing compared it to the page.
+    //
+    // Method: reduce both sides to comparable *text* while preserving the one
+    // thing that kept causing false positives — literal angle-bracket tag names.
+    //
+    // Two traps this guard has already fallen into, both worth remembering:
+    //
+    //  1. Stripping `<[^>]*>` BEFORE decoding entities destroys any text that
+    //     legitimately *mentions* a tag. The home page writes `<code>&lt;picture&gt;</code>`
+    //     and the schema carries `<picture>`. Strip first and the body loses the
+    //     tag name entirely, so a correct page looks broken.
+    //  2. Extracting "the body" by regex is easy to do wrong. The old version
+    //     normalised the WHOLE document, so every FAQ answer matched itself
+    //     inside the JSON-LD <script> and the guard passed vacuously. The body
+    //     must be sliced out of the document first, then cleaned.
+    //
+    // Correct order: isolate the real body (drop <head> and every <script>),
+    // decode entities, THEN drop tags.
+    const scriptless = html
+      .replace(/<script[\s\S]*?<\/script>/gi, "\u0000")
+      .replace(/<style[\s\S]*?<\/style>/gi, "\u0000");
+
+    // Keep only the part of the document after the opening <body>. If there is
+    // no <body> (shouldn't happen for a prerendered page) fall back to the whole
+    // scriptless string.
+    const bodyStart = scriptless.search(/<body[^>]*>/i);
+    const bodyOnly = bodyStart >= 0 ? scriptless.slice(bodyStart) : scriptless;
+
+    // Entity decoding must cover the numeric forms React emits during SSR.
+    // React escapes apostrophes as `&#x27;` (hex), not `&#39;` — and the schema
+    // generator emits the literal character. Decoding only named and decimal
+    // entities therefore left `&#x27;` in the body text and made every answer
+    // containing an apostrophe look absent from the page.
+    const decodeEntities = (s) =>
+      s
+        .replace(/&#x([0-9a-f]+);/gi, (_, hex) => String.fromCodePoint(parseInt(hex, 16)))
+        .replace(/&#(\d+);/g, (_, dec) => String.fromCodePoint(parseInt(dec, 10)))
+        .replace(/&nbsp;/g, " ")
+        .replace(/&amp;/g, "&")
+        .replace(/&lt;/g, "<")
+        .replace(/&gt;/g, ">")
+        .replace(/&quot;/g, '"')
+        .replace(/&apos;/g, "'")
+        .replace(/&mdash;/g, "-")
+        .replace(/&ndash;/g, "-")
+        .replace(/&hellip;/g, "...");
+
+    const normalise = (s) =>
+      s
+        .replace(/<[^>]*>/g, " ")
+        .replace(/\u0000/g, " ")
+        .replace(/[\u2018\u2019]/g, "'")
+        .replace(/[\u201C\u201D]/g, '"')
+        .replace(/[\u2013\u2014]/g, "-")
+        .replace(/\s+/g, " ")
+        .trim();
+
+    // Body: isolate -> decode -> strip tags. Schema: decode -> strip tags.
+    // Both end up with real `<picture>` where the source said `<picture>`.
+    const bodyText = normalise(decodeEntities(bodyOnly));
+
+    for (const q of faq.mainEntity || []) {
+      const answer = normalise(decodeEntities(q.acceptedAnswer?.text ?? ""));
+      const question = normalise(decodeEntities(q.name ?? ""));
+
+      if (question && !bodyText.includes(question)) {
+        jsonLdFailures++;
+        fail(`${rel}: FAQ question is in schema but not visible on the page: "${question.slice(0, 55)}…"`);
+      }
+
+      // Compare a 90-character prefix. Long enough that a truncated or
+      // reworded answer fails; short enough to survive a flattened link.
+      if (answer.length >= 40) {
+        const probe = answer.slice(0, 90);
+        if (!bodyText.includes(probe)) {
+          jsonLdFailures++;
+          fail(
+            `${rel}: FAQ answer not found verbatim in the page body — schema claims text the reader cannot see: "${probe.slice(0, 55)}…"`,
+          );
+        }
       }
     }
   }

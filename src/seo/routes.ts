@@ -121,6 +121,24 @@ export const ROUTES: RouteEntry[] = [
     priority: 0.7,
     changefreq: "monthly",
   },
+  {
+    path: "/learn/jpeg-quality-guide",
+    kind: "guide",
+    title: "What JPEG Quality Should You Use? Settings That Work (2026)",
+    description:
+      "The exact quality settings to use for JPEG, WebP and AVIF — why 80 is the safe default, where artifacts appear first, and why resizing beats lowering quality.",
+    priority: 0.9,
+    changefreq: "monthly",
+  },
+  {
+    path: "/learn/compress-images-without-uploading",
+    kind: "guide",
+    title: "Compress Images Without Uploading Them — How It Works",
+    description:
+      "Compress images entirely on your device with no uploads. How client-side WebAssembly compression works, and three tests to verify a tool really processes locally.",
+    priority: 0.9,
+    changefreq: "monthly",
+  },
 
   // ── Format pages (format-level intent: "compress to webp", "convert to avif") ─
   {
