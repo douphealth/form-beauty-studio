@@ -12,11 +12,24 @@ export const GLOSSARY_CONTENT: Record<string, ContentEntry> = {
     sections: [
       { id: "definition", heading: "Definition", body: [P(<>AVIF (AV1 Image File Format) is an image format that encodes still images using the AV1 video codec. It supports lossy and lossless compression, an alpha channel for transparency, animation, 12-bit color depth and wide color gamuts, and produces the smallest files of any current web image format.</>)] },
       { id: "in-practice", heading: "In practice", body: [P(<>At matched visual quality, AVIF files are roughly <strong>50–60%</strong> the size of JPEG and <strong>80%</strong> the size of WebP. Supported in Chrome, Firefox, Safari 16.4+ and Edge — over 96% of browsers in 2026. Its encoder is slower than WebP's, which is why batch tools run it in background workers.</>)] },
+      { id: "what-it-does-well", heading: "What AVIF is unusually good at", body: [
+        P(<>Two things separate AVIF from WebP in practice, and both matter more than the headline percentage.</>),
+        P(<><strong>Gradients and low-light areas.</strong> Because AV1 was designed for video, it handles smooth tonal transitions well. A photograph with a sky gradient, a soft studio backdrop or dim interior lighting is where AVIF's advantage is most visible — those are exactly the regions where JPEG shows banding at small file sizes.</>),
+        P(<><strong>Small files at low quality.</strong> AVIF stays usable at quality settings that would visibly damage a JPEG. Where JPEG starts smearing fine detail below roughly quality 60, AVIF remains acceptable considerably lower, which is why AVIF is the format to reach for when a file budget is genuinely tight.</>),
+      ]},
+      { id: "where-it-falls-short", heading: "Where AVIF falls short", body: [
+        P(<>It is not the right answer for every image, and the trade-offs are worth knowing before you convert a whole site.</>),
+        P(<><strong>Encoding is slow.</strong> AVIF can take several times longer to encode than WebP for the same image. On a website that generates variants on demand this becomes a real cost; for a one-off batch it is a few extra seconds.</>),
+        P(<><strong>Very small images can get larger.</strong> AVIF carries more format overhead than JPEG. On tiny images — a 40×40 icon, a small favicon — the overhead can outweigh the compression gain and the AVIF ends up bigger than the original. Below roughly a few kilobytes, check the output rather than assuming.</>),
+        P(<><strong>It is not a lossless champion.</strong> For flat-colour graphics and screenshots, PNG with proper optimisation or WebP lossless is usually the better choice. AVIF's strength is lossy photographic compression.</>),
+      ]},
     ],
     faqs: [
       { question: "What does AVIF stand for?", answer: "AV1 Image File Format. It encodes still images using the AV1 video codec, which is why it achieves better compression than older image formats." },
       { question: "Is AVIF free to use?", answer: "Yes. AVIF is royalty-free and open, backed by the Alliance for Open Media. There are no licensing fees for encoding or decoding." },
       { question: "What browsers support AVIF?", answer: "Chrome, Firefox, Safari 16.4 and later, Edge, and all modern mobile browsers — over 96% of global traffic in 2026. A WebP or JPEG fallback inside a <picture> element covers the remainder." },
+      { question: "When should I not use AVIF?", answer: "Three cases: very small images (under a few kilobytes), where AVIF's format overhead can make the file larger than the JPEG it replaces; flat-colour graphics, logos and screenshots, where PNG or WebP lossless is more suitable; and any pipeline that re-encodes on demand, because AVIF encoding is slow enough to become a real cost." },
+      { question: "Is AVIF always smaller than WebP?", answer: "For photographs at matched visual quality, yes — typically around 20% smaller. The exception is very small images, where AVIF's greater format overhead can make it larger. Always compare the actual output for images under a few kilobytes." },
     ],
     related: [
       { path: "/formats/avif", label: "AVIF compressor" },
