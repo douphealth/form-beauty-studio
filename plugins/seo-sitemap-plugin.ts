@@ -188,19 +188,29 @@ export function seoSitemapPlugin(): Plugin {
         `- Handles resize presets and per-image overrides, with ZIP download of a batch.`,
         "",
         ...group("Tool", ["/"]),
-        ...group("Guides", [
-          "/learn",
-          "/learn/image-optimization-guide",
-          "/learn/compress-images-for-web",
-          "/learn/webp-vs-avif",
-          "/learn/core-web-vitals-images",
-          "/learn/reduce-image-file-size",
-          "/learn/responsive-images",
-          "/learn/best-free-image-compression-tools",
-        ]),
+        // Derived from the manifest rather than hand-listed. The hand-written
+        // version silently omitted the two newest guides while the sitemap
+        // advertised them — llms.txt is exactly the file an AI engine reads to
+        // decide what to cite, so the most recent content going missing here is
+        // the worst possible drift. Everything indexable under /learn is included.
+        ...group(
+          "Guides",
+          INDEXABLE_ROUTES.filter((r) => r.path === "/learn" || r.path.startsWith("/learn/")).map(
+            (r) => r.path,
+          ),
+        ),
         ...group("Formats", ["/formats/webp", "/formats/avif", "/formats/jpeg", "/formats/png"]),
         ...group("Tools", ["/tools/image-resizer", "/tools/image-converter"]),
-        ...group("Reference", ["/glossary", "/about", "/privacy"]),
+        // NOTE: /privacy is deliberately NOT listed. It is `noindex,follow` — a
+        // legal page, not a citable source. llms.txt is a curated map of content
+        // we WANT quoted, so advertising a page that asks not to be indexed is a
+        // contradiction. It stays in the footer, where users expect to find it.
+        ...group(
+          "Reference",
+          INDEXABLE_ROUTES.filter((r) => r.path === "/glossary" || r.path === "/about").map(
+            (r) => r.path,
+          ),
+        ),
         "## Contact",
         "",
         `- Author: ${SITE.author}`,

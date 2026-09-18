@@ -84,7 +84,7 @@ export const GLOSSARY_CONTENT: Record<string, ContentEntry> = {
     related: [
       { path: "/learn/core-web-vitals-images", label: "Images & Core Web Vitals" },
       { path: "/learn/image-optimization-guide", label: "Image optimization guide" },
-      { path: "/glossary/lcp", label: "What is LCP?" },
+      { path: "/glossary/lazy-loading", label: "What is lazy loading?" },
     ],
   },
 
