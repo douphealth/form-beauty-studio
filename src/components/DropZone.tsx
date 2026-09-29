@@ -127,7 +127,7 @@ export default function DropZone({ onFilesAdded, hasFiles, currentCount = 0 }: D
         multiple
         accept="image/*"
         className="hidden"
-        onChange={(e) => { e.target.files && handleFiles(e.target.files); e.target.value = ""; }}
+        onChange={(e) => { if (e.target.files) handleFiles(e.target.files); e.target.value = ""; }}
       />
 
       <div className="relative z-10">
