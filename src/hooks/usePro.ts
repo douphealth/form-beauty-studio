@@ -6,7 +6,6 @@ import {
   redeemCheckoutSession,
   readEntitlement,
   clearEntitlement,
-  type ProEntitlement,
   type ProStatus,
 } from "../lib/pro";
 
