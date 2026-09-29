@@ -11,7 +11,6 @@ import fs from "node:fs";
 
 const read = (p) => fs.readFileSync(new URL(`../${p}`, import.meta.url), "utf8");
 const client = read("src/lib/pro.ts");
-const hook = read("src/hooks/usePro.ts");
 const proPage = read("src/pages/Pro.tsx");
 const audit = read("src/lib/audit.ts");
 const worker = read("workers/audit-proxy/src/index.ts");
