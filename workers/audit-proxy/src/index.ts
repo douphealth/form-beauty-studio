@@ -340,7 +340,7 @@ async function redeemCheckout(request: Request, env: Env, cors: Record<string, s
 
   const response = await stripeRequest(
     env,
-    `/checkout/sessions/${encodeURIComponent(sessionId)}?expand[]=line_items.data.price`,
+    `/checkout/sessions/${encodeURIComponent(sessionId)}?expand[]=line_items`,
   );
   const session = await response.json() as {
     id?: string;
