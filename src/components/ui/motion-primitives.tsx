@@ -6,7 +6,7 @@
  * so the main thread only writes two custom properties on pointermove and
  * toggles one class when a card enters the viewport. No per-frame React state.
  */
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type ComponentType, type ReactNode, type Ref } from "react";
 
 /** Element whose background glow follows the pointer. */
 export function Spotlight({
@@ -32,7 +32,12 @@ export function Spotlight({
     return () => el.removeEventListener("pointermove", onMove);
   }, []);
 
-  const Component = Tag as any;
+  const Component = Tag as unknown as ComponentType<{
+    children?: ReactNode;
+    className?: string;
+    style?: CSSProperties;
+    ref?: Ref<HTMLElement>;
+  }>;
   return (
     <Component ref={ref} className={`spotlight ${className}`}>
       {children}
@@ -82,7 +87,12 @@ export function Reveal({
     return () => io.disconnect();
   }, []);
 
-  const Component = Tag as any;
+  const Component = Tag as unknown as ComponentType<{
+    children?: ReactNode;
+    className?: string;
+    style?: CSSProperties;
+    ref?: Ref<HTMLElement>;
+  }>;
   return (
     <Component
       ref={ref}
