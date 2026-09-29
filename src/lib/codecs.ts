@@ -36,7 +36,7 @@ async function encodePng(imageData: ImageData): Promise<ArrayBuffer> {
   
   try {
     const { optimise } = await import('@jsquash/oxipng');
-    return optimise(pngBuffer as any, { level: 2 });
+    return optimise(pngBuffer as Parameters<typeof optimise>[0], { level: 2 });
   } catch {
     // Fall back to unoptimized PNG if oxipng fails
     return pngBuffer;
@@ -105,7 +105,7 @@ export function resizeImageData(
   imageData: ImageData,
   maxDimension: number
 ): ImageData {
-  let { width, height } = imageData;
+  const { width, height } = imageData;
 
   if (width <= maxDimension && height <= maxDimension) {
     return imageData;
