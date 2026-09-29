@@ -53,13 +53,14 @@ export interface Env {
    * Set to "*" only for local development.
    */
   ALLOWED_ORIGINS: string;
-  /**
-   * Simple shared secret required in the `x-audit-token` header. Not real
-   * authentication — a browser app cannot keep a secret — but it stops the
-   * Worker being used as a general-purpose open proxy by anyone who finds it,
-   * which is the actual threat model for a public endpoint like this.
-   */
-  AUDIT_TOKEN?: string;
+  /** Stripe secret key. Set only with Wrangler secrets. */
+  STRIPE_SECRET_KEY?: string;
+  /** Exact Stripe Price ID that grants ImageAlchemy Pro. */
+  STRIPE_PRICE_ID?: string;
+  /** HMAC secret for signed lifetime entitlement tokens. */
+  ENTITLEMENT_SECRET?: string;
+  /** Optional old ACHM signing secret for migrating existing customers. */
+  LEGACY_LICENCE_SECRET?: string;
   /** Optional KV namespace for per-IP rate limiting. Absent = memory only. */
   RATE_LIMIT?: KVNamespace;
   /** Max response body we will read from a target page, in bytes. */
