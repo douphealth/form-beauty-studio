@@ -298,7 +298,7 @@ function allowedOrigin(env: Env, origin: string | null): boolean {
 }
 
 async function createCheckout(request: Request, env: Env, cors: Record<string, string>): Promise<Response> {
-  if (!env.STRIPE_PRICE_ID?.startsWith("price_")) {
+  if (!env.STRIPE_SECRET_KEY?.startsWith("sk_") || !env.STRIPE_PRICE_ID?.startsWith("price_")) {
     return json({ ok: false, error: "Checkout is not configured." }, 503, cors);
   }
   const origin = request.headers.get("origin");
@@ -336,7 +336,9 @@ async function redeemCheckout(request: Request, env: Env, cors: Record<string, s
   }
   const sessionId = typeof body.sessionId === "string" ? body.sessionId.trim() : "";
   if (!sessionId.startsWith("cs_")) return json({ ok: false, error: "invalid checkout session" }, 400, cors);
-  if (!env.STRIPE_PRICE_ID?.startsWith("price_")) return json({ ok: false, error: "Stripe is not configured." }, 503, cors);
+  if (!env.STRIPE_SECRET_KEY?.startsWith("sk_") || !env.STRIPE_PRICE_ID?.startsWith("price_")) {
+    return json({ ok: false, error: "Stripe is not configured." }, 503, cors);
+  }
 
   const response = await stripeRequest(
     env,
