@@ -192,7 +192,7 @@ function corsHeaders(env: Env, origin: string | null): Record<string, string> {
   return {
     "Access-Control-Allow-Origin": allowOrigin,
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, x-audit-token",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization",
     "Access-Control-Max-Age": "86400",
     Vary: "Origin",
   };
@@ -203,6 +203,230 @@ function json(body: unknown, status: number, headers: Record<string, string>): R
     status,
     headers: { ...headers, "Content-Type": "application/json", "Cache-Control": "no-store" },
   });
+}
+
+
+const PRODUCT_ID = "pro_lifetime";
+const STRIPE_API = "https://api.stripe.com/v1";
+
+function base64UrlEncode(input: Uint8Array | string): string {
+  const bytes = typeof input === "string" ? new TextEncoder().encode(input) : input;
+  let binary = "";
+  for (const b of bytes) binary += String.fromCharCode(b);
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+}
+
+function base64UrlDecode(input: string): string {
+  const padded = input.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((input.length + 3) % 4);
+  return atob(padded);
+}
+
+async function hmacSha256(secret: string, message: string): Promise<string> {
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const sig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(message));
+  return base64UrlEncode(new Uint8Array(sig));
+}
+
+function timingSafeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+
+interface EntitlementPayload {
+  v: 1;
+  productId: string;
+  issuedAt: string;
+  stripeSessionId?: string;
+  legacy?: boolean;
+}
+
+async function issueEntitlement(env: Env, payload: EntitlementPayload): Promise<string> {
+  if (!env.ENTITLEMENT_SECRET || env.ENTITLEMENT_SECRET.length < 32) {
+    throw new Error("entitlement service is not configured");
+  }
+  const body = base64UrlEncode(JSON.stringify(payload));
+  const sig = await hmacSha256(env.ENTITLEMENT_SECRET, body);
+  return `${body}.${sig}`;
+}
+
+async function verifyEntitlement(env: Env, token: string): Promise<EntitlementPayload | null> {
+  if (!env.ENTITLEMENT_SECRET || !token) return null;
+  const dot = token.indexOf(".");
+  if (dot < 1) return null;
+  const body = token.slice(0, dot);
+  const supplied = token.slice(dot + 1);
+  const expected = await hmacSha256(env.ENTITLEMENT_SECRET, body);
+  if (!timingSafeEqual(supplied, expected)) return null;
+  try {
+    const parsed = JSON.parse(base64UrlDecode(body)) as EntitlementPayload;
+    if (parsed.v !== 1 || parsed.productId !== PRODUCT_ID || !parsed.issuedAt) return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+function bearerToken(request: Request): string {
+  const value = request.headers.get("authorization") ?? "";
+  return value.toLowerCase().startsWith("bearer ") ? value.slice(7).trim() : "";
+}
+
+async function stripeRequest(env: Env, path: string, init: RequestInit = {}): Promise<Response> {
+  if (!env.STRIPE_SECRET_KEY?.startsWith("sk_")) {
+    throw new Error("Stripe is not configured");
+  }
+  const headers = new Headers(init.headers);
+  headers.set("Authorization", `Bearer ${env.STRIPE_SECRET_KEY}`);
+  return fetch(`${STRIPE_API}${path}`, { ...init, headers });
+}
+
+function allowedOrigin(env: Env, origin: string | null): boolean {
+  if (!origin) return true;
+  const allowed = (env.ALLOWED_ORIGINS || "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  return allowed.includes("*") || allowed.includes(origin);
+}
+
+async function createCheckout(request: Request, env: Env, cors: Record<string, string>): Promise<Response> {
+  if (!env.STRIPE_PRICE_ID?.startsWith("price_")) {
+    return json({ ok: false, error: "Checkout is not configured." }, 503, cors);
+  }
+  const origin = request.headers.get("origin");
+  if (!origin || !allowedOrigin(env, origin)) {
+    return json({ ok: false, error: "origin not allowed" }, 403, cors);
+  }
+
+  const form = new URLSearchParams();
+  form.set("mode", "payment");
+  form.set("line_items[0][price]", env.STRIPE_PRICE_ID);
+  form.set("line_items[0][quantity]", "1");
+  form.set("success_url", `${origin}/pro?session_id={CHECKOUT_SESSION_ID}`);
+  form.set("cancel_url", `${origin}/pro?checkout=cancelled`);
+  form.set("metadata[product_id]", PRODUCT_ID);
+  form.set("payment_intent_data[metadata][product_id]", PRODUCT_ID);
+
+  const response = await stripeRequest(env, "/checkout/sessions", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: form.toString(),
+  });
+  const body = await response.json() as { id?: string; url?: string; error?: { message?: string } };
+  if (!response.ok || !body.url) {
+    return json({ ok: false, error: body.error?.message ?? "Stripe could not create checkout." }, 502, cors);
+  }
+  return json({ ok: true, sessionId: body.id, url: body.url }, 200, cors);
+}
+
+async function redeemCheckout(request: Request, env: Env, cors: Record<string, string>): Promise<Response> {
+  let body: { sessionId?: unknown; productId?: unknown };
+  try {
+    body = await request.json();
+  } catch {
+    return json({ ok: false, error: "invalid JSON body" }, 400, cors);
+  }
+  const sessionId = typeof body.sessionId === "string" ? body.sessionId.trim() : "";
+  if (!sessionId.startsWith("cs_")) return json({ ok: false, error: "invalid checkout session" }, 400, cors);
+  if (!env.STRIPE_PRICE_ID?.startsWith("price_")) return json({ ok: false, error: "Stripe is not configured." }, 503, cors);
+
+  const response = await stripeRequest(
+    env,
+    `/checkout/sessions/${encodeURIComponent(sessionId)}?expand[]=line_items.data.price`,
+  );
+  const session = await response.json() as {
+    id?: string;
+    mode?: string;
+    payment_status?: string;
+    metadata?: Record<string, string>;
+    line_items?: { data?: Array<{ price?: { id?: string } }> };
+    error?: { message?: string };
+  };
+  if (!response.ok) return json({ ok: false, error: session.error?.message ?? "Stripe verification failed." }, 502, cors);
+
+  const priceMatches = Boolean(session.line_items?.data?.some((item) => item.price?.id === env.STRIPE_PRICE_ID));
+  if (
+    session.mode !== "payment" ||
+    session.payment_status !== "paid" ||
+    session.metadata?.product_id !== PRODUCT_ID ||
+    !priceMatches
+  ) {
+    return json({ ok: false, error: "This checkout session does not contain a completed ImageAlchemy Pro payment." }, 403, cors);
+  }
+
+  const token = await issueEntitlement(env, {
+    v: 1,
+    productId: PRODUCT_ID,
+    issuedAt: new Date().toISOString(),
+    stripeSessionId: session.id ?? sessionId,
+  });
+  return json({ ok: true, token, productId: PRODUCT_ID, source: "stripe-checkout" }, 200, cors);
+}
+
+const B32 = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
+function normaliseLegacyKey(input: string): string {
+  return input.toUpperCase().replace(/[^0-9A-Z]/g, "").replace(/O/g, "0").replace(/[IL]/g, "1").replace(/U/g, "V");
+}
+function base32Encode(bytes: Uint8Array): string {
+  let out = "";
+  let bits = 0;
+  let value = 0;
+  for (const byte of bytes) {
+    value = (value << 8) | byte;
+    bits += 8;
+    while (bits >= 5) {
+      out += B32[(value >>> (bits - 5)) & 31];
+      bits -= 5;
+    }
+  }
+  if (bits > 0) out += B32[(value << (5 - bits)) & 31];
+  return out;
+}
+async function verifyLegacyLicence(env: Env, rawKey: string): Promise<boolean> {
+  if (!env.LEGACY_LICENCE_SECRET) return false;
+  const normalised = normaliseLegacyKey(rawKey);
+  if (!normalised.startsWith("ACHM")) return false;
+  const body = normalised.slice(4);
+  if (body.length !== 14) return false;
+  const payload = body.slice(0, 10);
+  const supplied = body.slice(10);
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(env.LEGACY_LICENCE_SECRET),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const sig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(payload));
+  return timingSafeEqual(supplied, base32Encode(new Uint8Array(sig)).slice(0, 4));
+}
+
+async function exchangeLegacy(request: Request, env: Env, cors: Record<string, string>): Promise<Response> {
+  let body: { key?: unknown };
+  try {
+    body = await request.json();
+  } catch {
+    return json({ ok: false, error: "invalid JSON body" }, 400, cors);
+  }
+  const key = typeof body.key === "string" ? body.key : "";
+  if (!(await verifyLegacyLicence(env, key))) {
+    return json({ ok: false, error: "That legacy licence key could not be verified." }, 403, cors);
+  }
+  const token = await issueEntitlement(env, {
+    v: 1,
+    productId: PRODUCT_ID,
+    issuedAt: new Date().toISOString(),
+    legacy: true,
+  });
+  return json({ ok: true, token, productId: PRODUCT_ID, source: "legacy-licence" }, 200, cors);
 }
 
 /** Per-IP token bucket. KV when bound, in-memory otherwise. */
@@ -345,9 +569,30 @@ export default {
       return new Response(null, { status: 204, headers: cors });
     }
 
-    // ── Auth + rate limit ──────────────────────────────────────────────────
-    if (env.AUDIT_TOKEN && request.headers.get("x-audit-token") !== env.AUDIT_TOKEN) {
-      return json({ ok: false, error: "unauthorized" }, 401, cors);
+    // ── Checkout + entitlement API ─────────────────────────────────────────
+    if (url.pathname === "/api/checkout" && request.method === "POST") {
+      return createCheckout(request, env, cors);
+    }
+    if (url.pathname === "/api/entitlement/redeem" && request.method === "POST") {
+      return redeemCheckout(request, env, cors);
+    }
+    if (url.pathname === "/api/entitlement/legacy" && request.method === "POST") {
+      return exchangeLegacy(request, env, cors);
+    }
+    if (url.pathname === "/api/entitlement/status" && request.method === "GET") {
+      const payload = await verifyEntitlement(env, bearerToken(request));
+      if (!payload) return json({ ok: false, error: "invalid entitlement" }, 401, cors);
+      return json({ ok: true, productId: payload.productId, issuedAt: payload.issuedAt }, 200, cors);
+    }
+
+    if (url.pathname !== "/" && url.pathname !== "") {
+      return json({ ok: false, error: "not found" }, 404, cors);
+    }
+
+    // ── Pro entitlement + rate limit ───────────────────────────────────────
+    const entitlement = await verifyEntitlement(env, bearerToken(request));
+    if (!entitlement) {
+      return json({ ok: false, error: "A valid ImageAlchemy Pro entitlement is required." }, 401, cors);
     }
 
     const ip = request.headers.get("cf-connecting-ip") ?? "unknown";
