@@ -31,8 +31,7 @@ Create a one-time Stripe Product/Price for ImageAlchemy Pro and copy its
 created server-side so the amount/product being purchased is controlled by the
 Worker.
 
-The displayed browser price (`VITE_PRO_PRICE_DISPLAY`) is cosmetic. Access is
-granted only for the server-side `STRIPE_PRICE_ID`.
+The displayed browser price (`VITE_PRO_PRICE_DISPLAY`) is cosmetic. Access is granted only for the server-pinned `STRIPE_PRICE_ID`. Production is currently pinned to `price_1UMXQIByiix0wtyTdZimWNzL` ($19 USD one-time).
 
 ## Worker secrets
 
@@ -42,7 +41,6 @@ From `workers/audit-proxy`:
 npx wrangler login
 
 npx wrangler secret put STRIPE_SECRET_KEY
-npx wrangler secret put STRIPE_PRICE_ID
 npx wrangler secret put ENTITLEMENT_SECRET
 ```
 
