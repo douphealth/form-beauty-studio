@@ -1,93 +1,34 @@
 /**
- * Pro entitlement layer.
+ * ImageAlchemy Pro entitlement client.
  *
- * ─────────────────────────────────────────────────────────────────────────────
- * THREAT MODEL — read this before changing anything here.
- * ─────────────────────────────────────────────────────────────────────────────
- * ImageAlchemy is a 100% client-side application. There is no server that could
- * hold a secret, which means **anything the browser can check, a determined
- * user can bypass.** No amount of obfuscation changes that.
+ * Security boundary:
+ * - The browser never receives a Stripe secret, signing secret, or licence secret.
+ * - Checkout Sessions are created by the Cloudflare Worker.
+ * - A checkout return is NOT trusted. The Worker retrieves the Checkout Session
+ *   from Stripe, requires payment_status=paid, and verifies the exact Stripe
+ *   Price ID before issuing a signed entitlement token.
+ * - Premium audit requests carry that token as a Bearer credential. The Worker
+ *   verifies the HMAC before it fetches any page.
  *
- * So this module does NOT pretend to be DRM. It is a *fair-dealing gate*: it
- * makes paying the easy, obvious path and makes circumventing it deliberate
- * work. That is the honest ceiling of a client-side product, and it is the same
- * ceiling every offline-capable paid app lives with.
- *
- * What it DOES do properly:
- *   - Verifies a signed licence key can be checked offline (HMAC over a
- *     canonical payload). A randomly-typed key is rejected, so a key cannot be
- *     forged by guessing — only by someone who extracts the shared secret from
- *     the bundle, which is a deliberate act.
- *   - Persists the entitlement so a paying customer is not asked twice.
- *   - Degrades to a clear, non-hostile state if verification fails.
- *
- * What it explicitly does NOT do:
- *   - Claim to be unbreakable.
- *   - Phone home on every load (that would be surveillance, and a privacy
- *     regression against the rest of the product).
- *
- * ─────────────────────────────────────────────────────────────────────────────
- * SETUP — what the owner must supply
- * ─────────────────────────────────────────────────────────────────────────────
- * See `docs/STRIPE-SETUP.md`. In short:
- *   1. Create a Stripe Payment Link (one-time price) and put the URL in
- *      `PRO_CONFIG.checkoutUrl` below, or in the VITE_ env vars.
- *   2. Generate a licence-secret and issue keys with `scripts/make-licence.mjs`.
- *   3. Optionally deploy the Worker in `workers/` for key issuance + validation.
+ * The free compressor remains entirely client-side and needs no entitlement.
  */
 
-/**
- * Publish-time configuration.
- *
- * Read from Vite env vars where available so the values can be set at build
- * time without editing source (and so a fork can configure its own).
- * `import.meta.env` is inlined by Vite; the cast keeps TypeScript happy without
- * adding a global declaration for every key.
- */
 const env = (import.meta as unknown as { env?: Record<string, string | undefined> }).env ?? {};
 
+function cleanBase(value: string | undefined): string {
+  return (value ?? "").trim().replace(/\/$/, "");
+}
+
 export const PRO_CONFIG = {
-  /** Product id shown to Stripe. */
   productId: env.VITE_PRO_PRODUCT_ID ?? "pro_lifetime",
-  /** Stripe Payment Link for the one-time Pro purchase. */
-  checkoutUrl: env.VITE_STRIPE_CHECKOUT_URL ?? "",
-  /** Where the buyer is sent after a successful payment. */
-  successPath: "/pro/success",
-  /**
-   * Optional licence validator endpoint (the Worker in `workers/licence-api`).
-   * When empty, the client verifies keys offline using the embedded secret.
-   */
-  validateUrl: env.VITE_PRO_VALIDATE_URL ?? "",
-  /**
-   * Shared secret for OFFLINE key verification.
-   *
-   * This is deliberately NOT empty in the default build: a build with no secret
-   * could not verify anything, and the site would ship a gate that accepts any
-   * input. Set a real value at build time via VITE_PRO_LICENCE_SECRET and treat
-   * it as public — see the threat model above.
-   */
-  licenceSecret: env.VITE_PRO_LICENCE_SECRET ?? "imagealchemy-dev-secret-change-me",
-  /**
-   * Base URL of the audit proxy Worker (`workers/audit-proxy`).
-   *
-   * Required for the Website Image Audit to work at all: a browser cannot read
-   * a third-party page's body (same-origin policy), so this is the one
-   * serverless piece in an otherwise entirely client-side product. See
-   * `docs/STRIPE-SETUP.md` for deployment, and `workers/audit-proxy/README.md`
-   * for why it only fetches.
-   */
-  auditProxyUrl: env.VITE_AUDIT_PROXY_URL ?? "",
-  /** Shared token sent to the proxy as `x-audit-token`. Public by definition. */
-  auditToken: env.VITE_AUDIT_TOKEN ?? "",
+  apiUrl: cleanBase(env.VITE_PRO_API_URL ?? env.VITE_AUDIT_PROXY_URL),
+  auditProxyUrl: cleanBase(env.VITE_AUDIT_PROXY_URL ?? env.VITE_PRO_API_URL),
+  successPath: "/pro",
 } as const;
 
-/** True when the audit can actually run — used to hide the feature when unconfigured. */
-export const AUDIT_CONFIGURED = Boolean(PRO_CONFIG.auditProxyUrl);
-
-/** Price shown to users, in the currency they are charged. Display only. */
+export const AUDIT_CONFIGURED = Boolean(PRO_CONFIG.auditProxyUrl && PRO_CONFIG.apiUrl);
 export const PRO_PRICE_DISPLAY = env.VITE_PRO_PRICE_DISPLAY ?? "$19";
 
-/** What the one-time purchase buys. Rendered on the paywall and the Pro page. */
 export const PRO_BENEFITS: { title: string; body: string }[] = [
   {
     title: "Full-site image audit",
@@ -103,7 +44,7 @@ export const PRO_BENEFITS: { title: string; body: string }[] = [
   },
   {
     title: "One-time payment, no subscription",
-    body: "Pay once. The licence works offline, in this browser, forever. No account, no expiry, no card on file.",
+    body: "Pay once. Stripe verifies the purchase and Pro unlocks automatically in this browser. No recurring billing.",
   },
   {
     title: "Markdown report you can paste anywhere",
@@ -111,54 +52,214 @@ export const PRO_BENEFITS: { title: string; body: string }[] = [
   },
 ];
 
-/** localStorage key for the stored entitlement. */
-const STORAGE_KEY = "imagealchemy:pro";
+const STORAGE_KEY = "imagealchemy:pro:v2";
 
 export interface ProEntitlement {
-  /** The licence key the customer holds. */
-  key: string;
-  /** ISO timestamp of activation. */
+  token: string;
   activatedAt: string;
-  /** How the entitlement was obtained. */
-  source: "licence-key" | "checkout-return";
-  /** Verified locally at activation time. */
-  verified: boolean;
+  source: "stripe-checkout" | "legacy-licence";
+  productId: string;
 }
 
 export interface ProStatus {
   isPro: boolean;
   entitlement: ProEntitlement | null;
-  /** True while a verification is in flight. */
   checking: boolean;
 }
 
-// ── Base32 (Crockford) — no ambiguous characters, human-transcribable ────────
-//
-// Crockford's alphabet omits I, L, O and U so a key read off a receipt cannot
-// be mistyped as a different valid character.
-const B32 = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
+interface ApiErrorBody {
+  error?: string;
+  message?: string;
+}
 
-function base32Encode(bytes: Uint8Array): string {
-  let out = "";
-  let bits = 0;
-  let value = 0;
-  for (const byte of bytes) {
-    value = (value << 8) | byte;
-    bits += 8;
-    while (bits >= 5) {
-      out += B32[(value >>> (bits - 5)) & 31];
-      bits -= 5;
-    }
+interface EntitlementResponse {
+  ok?: boolean;
+  token?: string;
+  productId?: string;
+  source?: ProEntitlement["source"];
+  error?: string;
+}
+
+function apiUrl(path: string): string {
+  if (!PRO_CONFIG.apiUrl) return "";
+  return `${PRO_CONFIG.apiUrl}${path.startsWith("/") ? path : `/${path}`}`;
+}
+
+async function readApiError(response: Response, fallback: string): Promise<string> {
+  try {
+    const body = (await response.json()) as ApiErrorBody;
+    return body.error || body.message || fallback;
+  } catch {
+    return fallback;
   }
-  if (bits > 0) out += B32[(value << (5 - bits)) & 31];
-  return out;
+}
+
+function bearer(token: string): Record<string, string> {
+  return { Authorization: `Bearer ${token}` };
+}
+
+export function readEntitlement(): ProEntitlement | null {
+  try {
+    if (typeof localStorage === "undefined") return null;
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as ProEntitlement;
+    if (
+      !parsed ||
+      typeof parsed.token !== "string" ||
+      parsed.token.length < 32 ||
+      typeof parsed.activatedAt !== "string" ||
+      (parsed.source !== "stripe-checkout" && parsed.source !== "legacy-licence")
+    ) {
+      return null;
+    }
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+export function writeEntitlement(entitlement: ProEntitlement): void {
+  try {
+    if (typeof localStorage === "undefined") return;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(entitlement));
+  } catch {
+    // Storage can be unavailable in strict/private browser modes. The user can
+    // redeem their Stripe session or legacy key again without being charged.
+  }
+}
+
+export function clearEntitlement(): void {
+  try {
+    if (typeof localStorage === "undefined") return;
+    localStorage.removeItem(STORAGE_KEY);
+  } catch {
+    /* non-fatal */
+  }
 }
 
 /**
- * Normalise user input: strip formatting, uppercase, and map the characters
- * Crockford's alphabet excludes onto the digits they are mistaken for. A user
- * reading "O" from a receipt almost certainly meant zero.
+ * Verify the stored token at the enforcement boundary.
+ * A hand-edited localStorage record cannot unlock the audit Worker.
  */
+export async function checkEntitlement(): Promise<ProStatus> {
+  const entitlement = readEntitlement();
+  if (!entitlement) return { isPro: false, entitlement: null, checking: false };
+  const endpoint = apiUrl("/api/entitlement/status");
+  if (!endpoint) return { isPro: false, entitlement: null, checking: false };
+
+  try {
+    const response = await fetch(endpoint, {
+      method: "GET",
+      headers: { Accept: "application/json", ...bearer(entitlement.token) },
+      cache: "no-store",
+    });
+    if (!response.ok) {
+      if (response.status === 401 || response.status === 403) clearEntitlement();
+      return { isPro: false, entitlement: response.status >= 500 ? entitlement : null, checking: false };
+    }
+    const body = (await response.json()) as { ok?: boolean; productId?: string };
+    if (!body.ok || (body.productId && body.productId !== PRO_CONFIG.productId)) {
+      clearEntitlement();
+      return { isPro: false, entitlement: null, checking: false };
+    }
+    return { isPro: true, entitlement, checking: false };
+  } catch {
+    // The paid feature itself needs the Worker, so an offline browser cannot run
+    // an audit anyway. Keep the token for recovery but don't claim Pro is usable.
+    return { isPro: false, entitlement, checking: false };
+  }
+}
+
+/** Ask the Worker to create a real Stripe Checkout Session. */
+export async function createCheckoutSession(): Promise<{ url: string } | { error: string }> {
+  const endpoint = apiUrl("/api/checkout");
+  if (!endpoint) return { error: "Checkout is not configured on this deployment." };
+
+  try {
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({ productId: PRO_CONFIG.productId }),
+    });
+    if (!response.ok) {
+      return { error: await readApiError(response, "Could not start checkout. Please try again.") };
+    }
+    const body = (await response.json()) as { url?: string };
+    if (!body.url || !body.url.startsWith("https://")) {
+      return { error: "Checkout returned an invalid payment URL." };
+    }
+    return { url: body.url };
+  } catch {
+    return { error: "Could not reach checkout. Check your connection and try again." };
+  }
+}
+
+async function storeIssuedEntitlement(
+  response: Response,
+  source: ProEntitlement["source"],
+): Promise<string | null> {
+  if (!response.ok) return readApiError(response, "Pro could not be activated.");
+  const body = (await response.json()) as EntitlementResponse;
+  if (!body.ok || !body.token || body.token.length < 32) {
+    return body.error || "The entitlement response was incomplete.";
+  }
+  const entitlement: ProEntitlement = {
+    token: body.token,
+    activatedAt: new Date().toISOString(),
+    source: body.source ?? source,
+    productId: body.productId ?? PRO_CONFIG.productId,
+  };
+  writeEntitlement(entitlement);
+  return null;
+}
+
+/**
+ * Exchange a Stripe Checkout Session ID for a signed Pro entitlement.
+ * The Worker independently verifies the session with Stripe and checks the
+ * exact configured Price ID before it returns a token.
+ */
+export async function redeemCheckoutSession(sessionId: string): Promise<string | null> {
+  const endpoint = apiUrl("/api/entitlement/redeem");
+  if (!endpoint) return "The Pro activation service is not configured.";
+  const clean = sessionId.trim();
+  if (!clean.startsWith("cs_") || clean.length < 12) return "That checkout session ID is invalid.";
+
+  try {
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({ sessionId: clean, productId: PRO_CONFIG.productId }),
+    });
+    return await storeIssuedEntitlement(response, "stripe-checkout");
+  } catch {
+    return "Could not verify the payment with Stripe. Check your connection and try again.";
+  }
+}
+
+/**
+ * Backward-compatible migration path for old ACHM licence keys.
+ * Verification happens only on the Worker; no signing secret is shipped to the browser.
+ */
+export async function exchangeLegacyLicence(rawKey: string): Promise<string | null> {
+  const endpoint = apiUrl("/api/entitlement/legacy");
+  if (!endpoint) return "The Pro activation service is not configured.";
+  const key = rawKey.trim();
+  if (key.length < 8) return "That licence key looks too short.";
+
+  try {
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({ key, productId: PRO_CONFIG.productId }),
+    });
+    return await storeIssuedEntitlement(response, "legacy-licence");
+  } catch {
+    return "Could not verify that licence key. Check your connection and try again.";
+  }
+}
+
+/** Human-friendly normalisation retained for legacy-key input only. */
 export function normaliseLicenceKey(input: string): string {
   return input
     .toUpperCase()
@@ -168,168 +269,6 @@ export function normaliseLicenceKey(input: string): string {
     .replace(/U/g, "V");
 }
 
-/** Format a normalised key into readable groups of five. */
 export function formatLicenceKey(normalised: string): string {
   return normalised.replace(/(.{5})/g, "$1-").replace(/-$/, "");
-}
-
-// ── Licence key format ──────────────────────────────────────────────────────
-//
-//   ACHM-<payload>-<checksum>
-//
-// `payload` is 10 base32 characters encoding the issue date and a 3-char tier.
-// `checksum` is the first 4 base32 characters of HMAC-SHA256(secret, payload).
-//
-// This makes a key:
-//   - self-describing enough to validate offline,
-//   - resistant to casual guessing (2^20 checksum space, not "any string"),
-//   - transcribable by a human without ambiguity.
-//
-// ── WHY THE PREFIX IS "ACHM" AND NOT SOMETHING READABLE ─────────────────────
-//
-// The prefix was originally "IALC". That was a design error, caught by
-// scripts/test-licence.mjs: normaliseLicenceKey() rewrites I→1 and L→1, because
-// Crockford's alphabet excludes I and L precisely so a human cannot confuse
-// them with 1. Applying that normalisation to a literal prefix containing both
-// letters turned "IALC" into "1A1C", and the prefix check then rejected every
-// key the generator issued — including valid ones. A prefix that its own
-// normaliser destroys is unusable.
-//
-// "ACHM" uses only characters inside the Crockford alphabet (A, C, H, M), so it
-// survives normalisation untouched. It is also short enough to stay readable
-// while being distinctive enough not to be mistaken for the payload.
-const KEY_PREFIX = "ACHM";
-
-async function hmac(payload: string): Promise<string> {
-  const enc = new TextEncoder();
-  const cryptoKey = await crypto.subtle.importKey(
-    "raw",
-    enc.encode(PRO_CONFIG.licenceSecret),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign"],
-  );
-  const sig = await crypto.subtle.sign("HMAC", cryptoKey, enc.encode(payload));
-  return base32Encode(new Uint8Array(sig)).slice(0, 4);
-}
-
-export interface LicenceCheck {
-  valid: boolean;
-  reason?: string;
-  issuedOn?: string;
-  tier?: string;
-}
-
-/**
- * Verify a licence key offline.
- *
- * Returns a structured result rather than a boolean so the UI can explain the
- * specific problem ("that key has a typo", "that key is for a different
- * product") instead of a blanket "invalid".
- */
-export async function verifyLicenceKey(rawKey: string): Promise<LicenceCheck> {
-  const normalised = normaliseLicenceKey(rawKey);
-  if (normalised.length < 14) {
-    return { valid: false, reason: "That key looks too short. Check for missing characters." };
-  }
-  if (!normalised.startsWith(KEY_PREFIX)) {
-    return { valid: false, reason: `Keys start with ${KEY_PREFIX}. Check you pasted the right one.` };
-  }
-
-  const body = normalised.slice(KEY_PREFIX.length);
-  const payload = body.slice(0, 10);
-  const provided = body.slice(10, 14);
-  if (payload.length !== 10 || provided.length !== 4) {
-    return { valid: false, reason: "That key is not the expected length." };
-  }
-
-  let expected: string;
-  try {
-    expected = await hmac(payload);
-  } catch {
-    return { valid: false, reason: "This browser cannot verify keys (Web Crypto unavailable)." };
-  }
-
-  if (expected !== provided) {
-    return { valid: false, reason: "This key could not be verified. Check it was copied in full." };
-  }
-
-  // Decode the issue date. Payload layout: 7 chars of epoch-day (base32) + 3 chars tier.
-  const dayPart = payload.slice(0, 7);
-  const tierPart = payload.slice(7);
-  let epochDay = 0;
-  for (const ch of dayPart) {
-    const idx = B32.indexOf(ch);
-    if (idx === -1) return { valid: false, reason: "That key contains an unexpected character." };
-    epochDay = epochDay * 32 + idx;
-  }
-  const issuedOn = new Date(epochDay * 86400000).toISOString().slice(0, 10);
-
-  return { valid: true, issuedOn, tier: tierPart };
-}
-
-// ── Persistence ─────────────────────────────────────────────────────────────
-
-export function readEntitlement(): ProEntitlement | null {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as ProEntitlement;
-    // Defensive: a hand-edited or truncated value must not crash the app.
-    if (!parsed || typeof parsed.key !== "string" || !parsed.key) return null;
-    return parsed;
-  } catch {
-    return null;
-  }
-}
-
-export function writeEntitlement(entitlement: ProEntitlement): void {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(entitlement));
-  } catch {
-    // Storage can be full or blocked (private mode). Non-fatal: the user simply
-    // has to re-enter the key next session.
-  }
-}
-
-export function clearEntitlement(): void {
-  try {
-    localStorage.removeItem(STORAGE_KEY);
-  } catch {
-    /* ignore */
-  }
-}
-
-/**
- * Does this stored entitlement currently grant Pro?
- *
- * Re-verifies the signature on every read rather than trusting the stored
- * `verified` flag, so hand-editing localStorage to set `verified: true` does
- * not work. It is still bypassable by anyone willing to patch the bundle —
- * see the threat model — but it removes the trivial attack.
- */
-export async function checkEntitlement(): Promise<ProStatus> {
-  const entitlement = readEntitlement();
-  if (!entitlement) return { isPro: false, entitlement: null, checking: false };
-
-  const result = await verifyLicenceKey(entitlement.key);
-  if (!result.valid) {
-    clearEntitlement();
-    return { isPro: false, entitlement: null, checking: false };
-  }
-  return { isPro: true, entitlement, checking: false };
-}
-
-/** Build the Stripe checkout URL, carrying the return path. */
-export function buildCheckoutUrl(): string {
-  const base = PRO_CONFIG.checkoutUrl;
-  if (!base) return "";
-  const url = new URL(base);
-  // Where Stripe sends the buyer afterwards. The success page completes
-  // activation from the session id Stripe appends.
-  url.searchParams.set(
-    "success_url",
-    `${window.location.origin}${PRO_CONFIG.successPath}?session_id={CHECKOUT_SESSION_ID}`,
-  );
-  return url.toString();
 }

@@ -744,6 +744,8 @@ export interface AuditOptions {
   onProgress?: (p: AuditProgress) => void;
   /** Cap on how many images we measure, so a 400-image page cannot hang the run. */
   maxImages?: number;
+  /** Signed Pro entitlement issued by the Worker after verified Stripe payment. */
+  entitlementToken: string;
   /** Abort signal, wired to a Cancel button. */
   signal?: AbortSignal;
 }
@@ -797,7 +799,10 @@ export async function runAudit(rawUrl: string, opts: AuditOptions): Promise<Audi
   try {
     const res = await fetch(`${proxy}?url=${encodeURIComponent(target)}`, {
       signal: opts.signal,
-      headers: { Accept: "application/json" },
+      headers: {
+        Accept: "application/json",
+        Authorization: `Bearer ${opts.entitlementToken}`,
+      },
     });
     if (!res.ok) {
       return emptyResult(
@@ -847,7 +852,10 @@ export async function runAudit(rawUrl: string, opts: AuditOptions): Promise<Audi
     const res = await fetch(proxy, {
       method: "POST",
       signal: opts.signal,
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${opts.entitlementToken}`,
+      },
       body: JSON.stringify({ urls: images.map((i) => i.url) }),
     });
     if (res.ok) {

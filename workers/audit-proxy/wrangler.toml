@@ -18,15 +18,18 @@ ALLOWED_ORIGINS = "https://imagealchemy.app,https://www.imagealchemy.app"
 MAX_HTML_BYTES = "4194304"
 
 # ── Secrets ──────────────────────────────────────────────────────────────────
-# Do NOT put secrets in this file — it is committed. Set them with:
+# Never commit these values. Configure them with Wrangler:
 #
-#   npx wrangler secret put AUDIT_TOKEN
+#   npx wrangler secret put STRIPE_SECRET_KEY
+#   npx wrangler secret put STRIPE_PRICE_ID
+#   npx wrangler secret put ENTITLEMENT_SECRET
 #
-# Then bake the same value into the app build as VITE_AUDIT_TOKEN. This raises
-# the bar from "anyone who finds the URL can use it" to "anyone who reads the
-# bundle can use it" — which is a real but modest improvement, and the honest
-# ceiling for a purely client-side app. The rate limiter is the control that
-# actually matters.
+# Optional only if customers already hold old ACHM licence keys:
+#   npx wrangler secret put LEGACY_LICENCE_SECRET
+#
+# STRIPE_PRICE_ID is intentionally server-side even though a Price ID is not a
+# secret: keeping it here makes the Worker the source of truth for which exact
+# one-time product unlocks Pro. The browser's display price cannot grant access.
 
 # ── Optional rate limiting ───────────────────────────────────────────────────
 # In-memory counters reset whenever the Worker instance recycles, which under

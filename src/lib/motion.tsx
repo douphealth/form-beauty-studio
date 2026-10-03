@@ -34,8 +34,10 @@ const MOTION_PROPS = new Set([
   "static", "presenceAffectsLayout", "lazy",
 ]);
 
-function ServerMotion(tag: MotionTag): ComponentType<any> {
-  const Component = ({ children, ...rest }: any) => {
+type MotionWrapperProps = Record<string, unknown> & { children?: ReactNode };
+
+function ServerMotion(tag: MotionTag): ComponentType<MotionWrapperProps> {
+  const Component = ({ children, ...rest }: MotionWrapperProps) => {
     const cleaned: Record<string, unknown> = {};
     for (const key in rest) {
       if (!MOTION_PROPS.has(key)) cleaned[key] = rest[key];
@@ -45,9 +47,9 @@ function ServerMotion(tag: MotionTag): ComponentType<any> {
   return Component;
 }
 
-function makeMotion(tag: MotionTag): ComponentType<any> {
+function makeMotion(tag: MotionTag): ComponentType<MotionWrapperProps> {
   if (isServer) return ServerMotion(tag);
-  return motion[tag] as unknown as ComponentType<any>;
+  return motion[tag] as unknown as ComponentType<MotionWrapperProps>;
 }
 
 export const MotionDiv = makeMotion("div");

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import {
@@ -25,18 +25,15 @@ const SEVERITY_STYLES: Record<AuditSeverity, { ring: string; bg: string; text: s
 };
 
 export default function Pro() {
-  const { isPro, checking, activate } = usePro();
-  const [params] = useSearchParams();
+  const { isPro, checking, entitlement, activate, redeemCheckout, startCheckout } = usePro();
+  const [params, setParams] = useSearchParams();
 
-  // A returning buyer arrives with ?session_id=… from Stripe. We cannot verify
-  // the session server-side without a backend, so the success page asks for the
-  // licence key that was emailed with the receipt. That is honest about what we
-  // can and cannot confirm, and it means the entitlement is a real signed key
-  // rather than a URL parameter anyone could fabricate.
   const sessionId = params.get("session_id");
   const [keyInput, setKeyInput] = useState("");
   const [keyError, setKeyError] = useState<string | null>(null);
   const [activating, setActivating] = useState(false);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
+  const [redeeming, setRedeeming] = useState(Boolean(sessionId));
 
   const handleActivate = useCallback(async () => {
     setActivating(true);
@@ -46,7 +43,41 @@ export default function Pro() {
     setActivating(false);
   }, [activate, keyInput]);
 
-  if (checking) {
+  const handleCheckout = useCallback(async () => {
+    setCheckoutError(null);
+    setActivating(true);
+    const err = await startCheckout();
+    if (err) {
+      setCheckoutError(err);
+      setActivating(false);
+    }
+  }, [startCheckout]);
+
+  useEffect(() => {
+    if (!sessionId || isPro) {
+      setRedeeming(false);
+      return;
+    }
+    let cancelled = false;
+    setRedeeming(true);
+    setCheckoutError(null);
+    redeemCheckout(sessionId).then((err) => {
+      if (cancelled) return;
+      setRedeeming(false);
+      if (err) {
+        setCheckoutError(err);
+        return;
+      }
+      const next = new URLSearchParams(params);
+      next.delete("session_id");
+      setParams(next, { replace: true });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [sessionId, isPro, redeemCheckout, params, setParams]);
+
+  if (checking || redeeming) {
     return (
       <Shell title="Website Image Audit — ImageAlchemy Pro">
         <div className="flex min-h-[50vh] items-center justify-center">
@@ -64,8 +95,10 @@ export default function Pro() {
           keyInput={keyInput}
           setKeyInput={setKeyInput}
           keyError={keyError}
+          checkoutError={checkoutError}
           activating={activating}
           onActivate={handleActivate}
+          onCheckout={handleCheckout}
         />
       </Shell>
     );
@@ -73,7 +106,7 @@ export default function Pro() {
 
   return (
     <Shell title="Website Image Audit — ImageAlchemy Pro">
-      <AuditWorkspace />
+      <AuditWorkspace entitlementToken={entitlement?.token ?? ""} />
     </Shell>
   );
 }
@@ -113,29 +146,17 @@ function Shell({ title, children }: { title: string; children: React.ReactNode }
 // ─────────────────────────────────────────────────────────────────────────────
 
 function Paywall({
-  justPaid, keyInput, setKeyInput, keyError, activating, onActivate,
+  justPaid, keyInput, setKeyInput, keyError, checkoutError, activating, onActivate, onCheckout,
 }: {
   justPaid: boolean;
   keyInput: string;
   setKeyInput: (v: string) => void;
   keyError: string | null;
+  checkoutError: string | null;
   activating: boolean;
   onActivate: () => void;
+  onCheckout: () => void;
 }) {
-  const checkoutUrl = useMemo(() => {
-    try {
-      const base = PRO_CONFIG.checkoutUrl;
-      if (!base) return "";
-      const u = new URL(base);
-      u.searchParams.set(
-        "success_url",
-        `${window.location.origin}${PRO_CONFIG.successPath}?session_id={CHECKOUT_SESSION_ID}`,
-      );
-      return u.toString();
-    } catch {
-      return "";
-    }
-  }, []);
 
   return (
     <div className="mx-auto max-w-3xl">
@@ -169,10 +190,10 @@ function Paywall({
           <div className="flex items-start gap-3">
             <Mail className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600 dark:text-emerald-400" />
             <div>
-              <p className="font-semibold text-foreground">Payment received — one last step.</p>
+              <p className="font-semibold text-foreground">Verifying your payment with Stripe…</p>
               <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                Your licence key is in the receipt Stripe emailed you. Paste it below to unlock
-                Pro on this device. It works offline and never expires.
+                ImageAlchemy unlocks Pro only after the server confirms this checkout session is paid
+                and contains the configured Pro price.
               </p>
             </div>
           </div>
@@ -234,31 +255,37 @@ function Paywall({
             </p>
           </div>
 
-          {checkoutUrl ? (
-            <a
-              href={checkoutUrl}
-              className="group inline-flex shrink-0 items-center justify-center gap-2 rounded-2xl px-7 py-4 text-base font-semibold text-primary-foreground shadow-lg transition-transform hover:scale-[1.02]"
+          {PRO_CONFIG.apiUrl ? (
+            <button
+              type="button"
+              onClick={onCheckout}
+              disabled={activating}
+              className="group inline-flex shrink-0 items-center justify-center gap-2 rounded-2xl px-7 py-4 text-base font-semibold text-primary-foreground shadow-lg transition-transform hover:scale-[1.02] disabled:cursor-wait disabled:opacity-60"
               style={{ background: "var(--gradient-primary)" }}
             >
-              <CircleDollarSign className="h-5 w-5" />
-              Get Pro
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-            </a>
+              {activating ? <Loader2 className="h-5 w-5 animate-spin" /> : <CircleDollarSign className="h-5 w-5" />}
+              {activating ? "Opening secure checkout…" : "Get Pro"}
+              {!activating && <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />}
+            </button>
           ) : (
-            // Not an error state for the visitor — they simply cannot buy yet.
-            // Better to say so plainly than to render a dead button.
             <div className="rounded-xl border border-border/60 bg-muted/40 px-5 py-4 text-sm text-muted-foreground">
               Checkout is not configured on this deployment yet.
             </div>
           )}
         </div>
 
+        {checkoutError && (
+          <p role="alert" className="mt-5 text-sm text-red-600 dark:text-red-400">
+            {checkoutError}
+          </p>
+        )}
+
         <div className="my-7 h-px bg-border/50" />
 
         <details className="group" open={justPaid}>
           <summary className="flex cursor-pointer list-none items-center gap-2 text-sm font-semibold text-foreground">
             <KeyRound className="h-4 w-4 text-primary" />
-            Already bought Pro? Enter your licence key
+            Bought Pro before the secure checkout upgrade? Enter your legacy licence key
             <ArrowRight className="h-3.5 w-3.5 transition-transform group-open:rotate-90" />
           </summary>
           <div className="mt-4 flex flex-col gap-3 sm:flex-row">
@@ -308,7 +335,7 @@ function Paywall({
 // The audit workspace
 // ─────────────────────────────────────────────────────────────────────────────
 
-function AuditWorkspace() {
+function AuditWorkspace({ entitlementToken }: { entitlementToken: string }) {
   const [target, setTarget] = useState("");
   const [progress, setProgress] = useState<AuditProgress | null>(null);
   const [result, setResult] = useState<AuditResult | null>(null);
@@ -336,6 +363,7 @@ function AuditWorkspace() {
     try {
       const r = await runAudit(normalised, {
         proxyBase: PRO_CONFIG.auditProxyUrl,
+        entitlementToken,
         onProgress: setProgress,
         signal: controller.signal,
       });
@@ -347,7 +375,7 @@ function AuditWorkspace() {
     } finally {
       setProgress(null);
     }
-  }, [target]);
+  }, [target, entitlementToken]);
 
   if (!AUDIT_CONFIGURED) {
     return (
