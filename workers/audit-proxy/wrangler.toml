@@ -16,20 +16,20 @@ head_sampling_rate = 1
 # and make sure VITE_AUDIT_PROXY_URL in the app's .env matches this Worker.
 ALLOWED_ORIGINS = "https://imagealchemy.app,https://www.imagealchemy.app"
 MAX_HTML_BYTES = "4194304"
+STRIPE_PRICE_ID = "price_1UMXQIByiix0wtyTdZimWNzL"
 
 # ── Secrets ──────────────────────────────────────────────────────────────────
 # Never commit these values. Configure them with Wrangler:
 #
 #   npx wrangler secret put STRIPE_SECRET_KEY
-#   npx wrangler secret put STRIPE_PRICE_ID
 #   npx wrangler secret put ENTITLEMENT_SECRET
 #
 # Optional only if customers already hold old ACHM licence keys:
 #   npx wrangler secret put LEGACY_LICENCE_SECRET
 #
-# STRIPE_PRICE_ID is intentionally server-side even though a Price ID is not a
-# secret: keeping it here makes the Worker the source of truth for which exact
-# one-time product unlocks Pro. The browser's display price cannot grant access.
+# STRIPE_PRICE_ID is a public Stripe identifier and is pinned above so the
+# Worker can fail closed against the exact ImageAlchemy Pro product. Only
+# STRIPE_SECRET_KEY and ENTITLEMENT_SECRET are secrets.
 
 # ── Optional rate limiting ───────────────────────────────────────────────────
 # In-memory counters reset whenever the Worker instance recycles, which under
