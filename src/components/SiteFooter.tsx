@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Sparkles, Heart } from "lucide-react";
+import { Heart } from "lucide-react";
 import { NAV_GROUPS } from "../seo/site";
 import { SITE } from "../seo/site";
 
@@ -12,13 +12,15 @@ export default function SiteFooter() {
           {/* Brand */}
           <div className="lg:col-span-2">
             <Link to="/" className="flex items-center gap-3">
-              <span
-                className="flex h-10 w-10 items-center justify-center rounded-2xl text-primary-foreground shadow-lg"
-                style={{ background: "var(--gradient-primary)" }}
+              <img
+                src="/brand-mark.svg"
+                alt=""
+                width="40"
+                height="40"
+                className="h-10 w-10 rounded-2xl drop-shadow-[0_10px_24px_hsl(var(--primary)/0.22)]"
+                decoding="async"
                 aria-hidden="true"
-              >
-                <Sparkles className="h-5 w-5" strokeWidth={2} />
-              </span>
+              />
               <span className="flex flex-col">
                 <span className="gradient-text text-base font-bold tracking-tight sm:text-lg">ImageAlchemy</span>
                 <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">

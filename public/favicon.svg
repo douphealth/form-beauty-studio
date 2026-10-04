@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">ImageAlchemy logo</title>
+  <desc id="desc">A luminous violet-to-cyan image prism with an alchemy sparkle.</desc>
+  <defs>
+    <linearGradient id="bg" x1="74" y1="54" x2="446" y2="460" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#4C1D95"/>
+      <stop offset="0.46" stop-color="#7C3AED"/>
+      <stop offset="1" stop-color="#06B6D4"/>
+    </linearGradient>
+    <linearGradient id="shine" x1="120" y1="82" x2="362" y2="418" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.30"/>
+      <stop offset="0.52" stop-color="#FFFFFF" stop-opacity="0.04"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect x="32" y="32" width="448" height="448" rx="116" fill="url(#bg)"/>
+  <path d="M65 204C96 102 183 53 290 58c72 4 132 36 172 91-18 86-81 131-169 145C191 310 111 278 65 204Z" fill="url(#shine)"/>
+  <rect x="112" y="128" width="288" height="256" rx="72" fill="#130B29" fill-opacity="0.24" stroke="#FFF" stroke-opacity="0.95" stroke-width="24"/>
+  <circle cx="199" cy="211" r="29" fill="#FFF"/>
+  <path d="M142 337 222 258l52 51 45-43 51 71H142Z" fill="#FFF"/>
+  <g transform="translate(344 82)">
+    <path d="M54 0c6 32 22 48 54 54-32 6-48 22-54 54C48 76 32 60 0 54 32 48 48 32 54 0Z" fill="#FFF"/>
+    <circle cx="54" cy="54" r="8" fill="#E0F2FE"/>
+  </g>
+  <path d="M115 155c22-34 57-56 101-66" fill="none" stroke="#FFF" stroke-opacity="0.30" stroke-width="12" stroke-linecap="round"/>
+</svg>

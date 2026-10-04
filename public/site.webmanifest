@@ -7,8 +7,18 @@
   "display": "standalone",
   "background_color": "#0b0a14",
   "theme_color": "#7c3aed",
-  "categories": ["productivity", "utilities", "graphics"],
+  "categories": [
+    "productivity",
+    "utilities",
+    "graphics"
+  ],
   "icons": [
+    {
+      "src": "/brand-mark.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
     {
       "src": "/favicon.ico",
       "sizes": "any",

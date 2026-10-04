@@ -58,16 +58,22 @@ export default function SiteHeader() {
       <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3.5 sm:px-8">
         <Link to="/" className="group flex items-center gap-3">
           <MotionDiv
-            whileHover={{ rotate: 8, scale: 1.05 }}
-            transition={{ type: "spring", stiffness: 400 }}
-            className="relative flex h-10 w-10 items-center justify-center rounded-2xl text-primary-foreground shadow-lg"
-            style={{ background: "var(--gradient-primary)" }}
+            whileHover={{ rotate: 4, scale: 1.06 }}
+            transition={{ type: "spring", stiffness: 420, damping: 22 }}
+            className="relative h-10 w-10 shrink-0"
             aria-hidden="true"
           >
-            <Sparkles className="h-5 w-5" strokeWidth={2} />
+            <img
+              src="/brand-mark.svg"
+              alt=""
+              width="40"
+              height="40"
+              className="h-10 w-10 rounded-2xl drop-shadow-[0_10px_24px_hsl(var(--primary)/0.28)]"
+              decoding="async"
+            />
             <span
               className="absolute inset-0 rounded-2xl"
-              style={{ animation: "pulse-ring 3s ease-out infinite", boxShadow: "0 0 0 2px hsl(var(--primary) / 0.35)" }}
+              style={{ animation: "pulse-ring 3s ease-out infinite", boxShadow: "0 0 0 2px hsl(var(--primary) / 0.24)" }}
               aria-hidden="true"
             />
           </MotionDiv>
