@@ -1,0 +1,53 @@
+name: Production parity
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-after-ci:
+    if: >-
+      github.event_name == 'workflow_run' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_branch == 'main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Verify production serves current main
+        env:
+          EXPECTED_SHA: ${{ github.event.workflow_run.head_sha }}
+          PRODUCTION_URL: https://imagealchemy.app
+          PRODUCTION_ATTEMPTS: "12"
+          PRODUCTION_INTERVAL_MS: "10000"
+        run: node scripts/check-production.mjs
+
+  verify-manual:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Resolve current main SHA
+        id: main
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+      - name: Verify production serves current main
+        env:
+          EXPECTED_SHA: ${{ steps.main.outputs.sha }}
+          PRODUCTION_URL: https://imagealchemy.app
+          PRODUCTION_ATTEMPTS: "1"
+          PRODUCTION_INTERVAL_MS: "1000"
+        run: node scripts/check-production.mjs
