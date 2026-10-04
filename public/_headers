@@ -11,3 +11,9 @@
 
 /og-image.png
   Cache-Control: public, max-age=86400
+
+/favicon*
+  Cache-Control: no-cache, no-store, must-revalidate
+
+/apple-touch-icon*
+  Cache-Control: no-cache, no-store, must-revalidate

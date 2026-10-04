@@ -480,10 +480,16 @@ assert(
   `prerendered ${ok} routes but the manifest declares ${expected}`,
 );
 
-for (const { route, primaryPath } of written) {
+for (const { route, primaryPath, doc } of written) {
   assert(
     fs.existsSync(primaryPath),
     `no directory index written for ${route.path} (expected ${path.relative(root, primaryPath)})`,
+  );
+  assert(
+    doc.includes('/favicon-v4.svg') &&
+      doc.includes('/favicon-v4.ico') &&
+      doc.includes('/apple-touch-icon-v4.png'),
+    `${route.path} is missing the current v4 favicon set in <head>`,
   );
 }
 
@@ -602,6 +608,13 @@ fs.writeFileSync(
     "# HTML must revalidate or users get a stale shell after a deploy.",
     "/*.html",
     "  Cache-Control: public, max-age=0, must-revalidate",
+    "",
+    "# Favicons are deliberately revalidated; browsers cache icons aggressively.",
+    "/favicon*",
+    "  Cache-Control: no-cache, no-store, must-revalidate",
+    "",
+    "/apple-touch-icon*",
+    "  Cache-Control: no-cache, no-store, must-revalidate",
     "",
   ].join("\n"),
 );

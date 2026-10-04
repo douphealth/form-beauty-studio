@@ -199,7 +199,10 @@ ${articleDates}
     <meta name="twitter:description" content="${escapedDesc}" />
     <meta name="twitter:image" content="${image}" />
     ${SITE.twitterHandle ? `<meta name="twitter:site" content="${SITE.twitterHandle}" />` : ""}
-    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" href="/favicon-v4.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-v4.ico" sizes="16x16 32x32 48x48 64x64" type="image/x-icon" />
+    <link rel="shortcut icon" href="/favicon-v4.ico" type="image/x-icon" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-v4.png" />
     <link rel="manifest" href="/site.webmanifest" />
     <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
     <!--
