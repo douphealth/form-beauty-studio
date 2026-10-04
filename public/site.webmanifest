@@ -14,15 +14,21 @@
   ],
   "icons": [
     {
-      "src": "/brand-mark.svg",
+      "src": "/favicon-v3.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any maskable"
     },
     {
-      "src": "/favicon.ico",
-      "sizes": "any",
+      "src": "/favicon-v3.ico",
+      "sizes": "16x16 32x32 48x48 64x64",
       "type": "image/x-icon"
+    },
+    {
+      "src": "/apple-touch-icon-v3.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
     }
   ]
-}
+}\n
