@@ -66,6 +66,9 @@ export default function ImagePreviewModal({ image, onClose }: ImagePreviewModalP
           exit={{ scale: 0.95, opacity: 0, y: 10 }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
           className="glass-card relative max-h-[90vh] w-full max-w-4xl overflow-hidden"
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Preview of ${image.file.name}`}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}

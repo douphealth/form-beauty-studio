@@ -329,7 +329,17 @@ export default function Index() {
     const completed = imagesRef.current.filter((i) => i.status === "done" && i.compressedBlob);
     if (completed.length === 0) return;
     const zip = new JSZip();
-    completed.forEach((img) => zip.file(img.outputFilename, img.compressedBlob!));
+    // Unique names: src.png + src.jpg both become src.webp and would overwrite.
+    const used = new Set<string>();
+    completed.forEach((img) => {
+      let name = img.outputFilename;
+      const dot = name.lastIndexOf(".");
+      const base = dot > 0 ? name.slice(0, dot) : name;
+      const ext = dot > 0 ? name.slice(dot) : "";
+      for (let n = 2; used.has(name.toLowerCase()); n++) name = `${base}-${n}${ext}`;
+      used.add(name.toLowerCase());
+      zip.file(name, img.compressedBlob!);
+    });
     const blob = await zip.generateAsync({ type: "blob" });
     downloadBlob(blob, `imagealchemy-${Date.now()}.zip`);
     toast.success("ZIP downloaded!");
