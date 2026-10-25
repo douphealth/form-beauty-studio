@@ -52,6 +52,7 @@ export const GUIDE_CONTENT: Record<string, ContentEntry> = {
         heading: "Which should you use?",
         body: [
           P(<>For most people: <strong>ImageAlchemy for batches and format conversion</strong>, <strong>Squoosh for one image with fine control</strong>, and <strong>sharp or libvips in your build pipeline</strong>. That combination covers ad-hoc work and production automation without spending anything.</>),
+          P(<>If privacy is what tips the choice, that claim is structural rather than a policy promise — see <a href="/about">About ImageAlchemy</a> for who built the tool and why there is no server in the image path at all.</>),
         ],
       },
     ],

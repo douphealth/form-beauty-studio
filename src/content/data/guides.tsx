@@ -53,6 +53,7 @@ export const GUIDE_CONTENT: Record<string, ContentEntry> = {
         body: [
           P(<>After format, quality and dimensions are set, a lossless re-optimization pass (OxiPNG for PNG, MozJPEG's trellis and progressive settings for JPEG) removes redundant data and EXIF metadata your visitors don't need. This is what ImageAlchemy does in its final pass.</>),
           P(<>Metadata alone — camera model, GPS coordinates, editing history — can account for several percent of file size. Stripping it is also a privacy win for your users.</>),
+          P(<>That final pass is what <a href="/about">ImageAlchemy — a private, browser-based compressor</a> does for every batch, with no upload, account or tracking in between.</>),
         ],
       },
       {

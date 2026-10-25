@@ -114,6 +114,7 @@ export const GUIDE_CONTENT: Record<string, ContentEntry> = {
         body: [
           P(<>Drop your images onto the ImageAlchemy tool at the top of this page — or use <strong>Auto-Pick</strong>, which encodes each image in several formats and keeps the smallest result. Choose a format and quality (75–85 is the range that works for almost everything), process the batch, and download individually or as a single ZIP.</>),
           P(<>If you want to confirm the claim rather than take our word for it, load the page, disable your network connection, and compress something. If it works — and it will — nothing was uploaded.</>),
+          P(<>For who built the tool and why privacy is a structural choice rather than a policy promise, see <a href="/about">About ImageAlchemy</a>.</>),
         ],
       },
     ],
