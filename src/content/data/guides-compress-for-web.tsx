@@ -15,6 +15,7 @@ export const GUIDE_CONTENT: Record<string, ContentEntry> = {
         heading: "The 30-second version",
         body: [
           P(<>Open <a href="https://imagealchemy.app/">ImageAlchemy</a>, drop your images in, pick the <strong>Web</strong> preset, and download. That alone handles steps 1–4 below for most people and typically saves <strong>50–70%</strong> of file size.</>),
+        P(<>This 30-second version is a shortcut; the full sequence is in <a href="/learn/image-optimization-guide">the complete image optimization guide</a>.</>),
         ],
       },
       {
@@ -22,6 +23,7 @@ export const GUIDE_CONTENT: Record<string, ContentEntry> = {
         heading: "Step 1 — Pick the format",
         body: [
           P(<>Photographs → <strong>WebP</strong> (or AVIF for the smallest files). Graphics with flat colors or hard transparency → <strong>PNG</strong>, then losslessly optimized. Maximum compatibility (email, old CMSs) → <strong>JPEG</strong>. Never ship a BMP, TIFF or raw PSD to a browser.</>),
+        P(<>Photographs → WebP is the default here; <a href="/glossary/webp">What Is WebP?</a> explains why it replaced JPEG, PNG and GIF for web use.</>),
         ],
       },
       {
@@ -43,6 +45,7 @@ export const GUIDE_CONTENT: Record<string, ContentEntry> = {
         heading: "Step 4 — Run a lossless pass and strip metadata",
         body: [
           P(<>A lossless optimizer re-encodes the file with better entropy coding and drops EXIF data (camera model, GPS, software). Quality stays identical; the file shrinks a few percent more. ImageAlchemy applies this automatically with OxiPNG and MozJPEG's progressive + trellis settings.</>),
+        P(<>That “quality stays identical” claim is the definition of <a href="/glossary/lossless-compression">lossless compression</a> — nothing is discarded, only represented more efficiently.</>),
         ],
       },
       {

@@ -24,6 +24,7 @@ export const GUIDE_CONTENT: Record<string, ContentEntry> = {
         body: [
           P(<>LCP measures when the largest visible element renders. On most pages that's a hero image or banner. Targets: <strong>under 2.5 seconds</strong> for at least 75% of page loads.</>),
           P(<><strong>Fixes, in order of impact:</strong> compress and convert to AVIF/WebP (biggest single win); resize to display dimensions; set <code>fetchpriority="high"</code> on the LCP image; preload it; avoid lazy-loading it; serve it from a CDN with long cache headers.</>),
+        P(<>That “avoid lazy-loading it” rule is the core of <a href="/glossary/lazy-loading">lazy loading</a>: defer only images below the fold, never the hero.</>),
         ],
       },
       {
@@ -49,6 +50,7 @@ export const GUIDE_CONTENT: Record<string, ContentEntry> = {
         body: [
           P(<>Measure with PageSpeed Insights or Search Console (field data) and Chrome DevTools' Performance panel (lab data). Fix LCP first — it has the largest effect on both scores and perceived speed. Then CLS (cheap and quick: add dimensions), then INP.</>),
           P(<>Run your images through ImageAlchemy before anything else. Getting format and dimensions right fixes more Core Web Vitals problems than any code change.</>),
+        P(<>Format and dimensions are only two steps; the full pipeline is in <a href="/learn/image-optimization-guide">the complete image optimization guide</a>.</>),
         ],
       },
     ],

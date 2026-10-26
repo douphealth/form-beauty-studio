@@ -20,6 +20,7 @@ export const GUIDE_CONTENT: Record<string, ContentEntry> = {
         body: [
           P(<>The average web page now ships <strong>over 900 KB of images</strong> — more than HTML, CSS and JavaScript combined. On mobile networks that is the single largest cause of slow pages, high bounce rates and lost revenue. Google has confirmed page speed is a ranking factor, and Core Web Vitals metrics (LCP, INP, CLS) are directly affected by how you handle images.</>),
           P(<>The good news: images are also the easiest thing to fix. A well-optimized image pipeline typically cuts page weight by <strong>40–70%</strong> with zero visible quality loss, because most images are exported with settings designed for print or editing, not for screens.</>),
+        P(<>Those three metrics are defined, with their targets, in <a href="/glossary/core-web-vitals">Core Web Vitals</a>.</>),
         ],
       },
       {
@@ -61,6 +62,8 @@ export const GUIDE_CONTENT: Record<string, ContentEntry> = {
         heading: "Step 5 — Deliver correctly",
         body: [
           P(<>Optimized files still need correct delivery: cache them long-term, lazy-load everything below the fold with <code>loading="lazy"</code>, set explicit <code>width</code> and <code>height</code> to prevent layout shift, and serve AVIF/WebP with a JPEG/PNG fallback using the <code>&lt;picture&gt;</code> element.</>),
+        P(<>For the full sequence in order — format, quality, resizing, compression and delivery — browse the <a href="/learn">image optimization guides</a>.</>),
+        P(<>Lazy-loading below the fold is explained in full in the <a href="/glossary/lazy-loading">lazy loading</a> definition, including the hero-image exception.</>),
         ],
       },
     ],

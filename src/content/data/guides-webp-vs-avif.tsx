@@ -15,6 +15,7 @@ export const GUIDE_CONTENT: Record<string, ContentEntry> = {
         heading: "The short answer",
         body: [
           P(<>Pick <strong>AVIF</strong> if your build pipeline supports it — it's roughly <strong>20% smaller</strong> than WebP at equivalent quality and is now supported by all major browsers. Pick <strong>WebP</strong> as the reliable default: universal support, faster encoding, smaller decoder, and every image tool handles it. In practice, serving both via <code>&lt;picture&gt;</code> with a JPEG fallback remains the most robust approach.</>),
+        P(<>WebP itself is defined, with its lossy and lossless modes, in <a href="/glossary/webp">What Is WebP?</a>.</>),
         ],
       },
       {
@@ -45,6 +46,7 @@ export const GUIDE_CONTENT: Record<string, ContentEntry> = {
           P(<>
             <strong>Transparency:</strong> both support alpha channels. <strong>Animation:</strong> both support animated sequences, though AVIF's is more efficient. <strong>Lossless mode:</strong> both support true lossless compression. <strong>Color depth:</strong> AVIF supports up to 12-bit and wide gamut; WebP is 8-bit. <strong>Progressive rendering:</strong> neither decodes progressively like JPEG — keep that in mind for very large images.
           </>),
+        P(<>For plain-English definitions of the terms in this comparison, see the <a href="/glossary">image compression glossary</a>.</>),
         ],
       },
       {
@@ -53,6 +55,7 @@ export const GUIDE_CONTENT: Record<string, ContentEntry> = {
         body: [
           P(<>For most sites in 2026: serve <strong>AVIF first, WebP second, JPEG fallback</strong> using <code>&lt;picture&gt;</code>. If you maintain only one format, WebP is the pragmatic choice. If page weight is critical (mobile-first, e-commerce, image-heavy galleries), AVIF pays for itself.</>),
           P(<>Whatever you choose, format choice matters less than the basics: right dimensions, sensible quality, and correct delivery. A well-compressed JPEG beats an oversized AVIF every time.</>),
+        P(<>This comparison is one of the <a href="/learn">image optimization guides</a>; the hub collects the format, quality and delivery guides in one place.</>),
         ],
       },
     ],

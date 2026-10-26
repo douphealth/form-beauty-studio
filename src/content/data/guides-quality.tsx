@@ -72,6 +72,7 @@ export const GUIDE_CONTENT: Record<string, ContentEntry> = {
           P(<><strong>3. Text and hard edges.</strong> Screenshots, charts, diagrams, UI captures. JPEG is structurally the wrong format for these — ringing around glyphs is unavoidable at low quality. Use PNG or WebP-lossless instead.</>),
           P(<><strong>4. Saturated colour.</strong> Highly saturated reds and oranges suffer first because chroma is subsampled. Banding on a sunset is usually chroma, not luma.</>),
           P(<>The practical consequence: <strong>compression tolerance is per-image, not per-site.</strong> A quality-80 blanket rule applied to a sky-heavy hero shot and a textured product photo will feel conservative on one and risky on the other.</>),
+        P(<>That sunset banding is <a href="/glossary/chroma-subsampling">chroma subsampling</a> at work: colour data is stored at lower resolution than brightness, so saturated colour suffers first.</>),
         ],
       },
       {
@@ -84,6 +85,8 @@ export const GUIDE_CONTENT: Record<string, ContentEntry> = {
           P(<><strong>AVIF — 60 to 75.</strong> This surprises people. AVIF's quality scale is not calibrated to JPEG's — AVIF at 65 is frequently visually equivalent to JPEG at 80, at a smaller size. Encoding is slower, which is the real cost. If you set AVIF to 80 you are usually leaving significant savings on the table.</>),
           P(<><strong>PNG — lossless, no quality setting.</strong> Use the maximum optimisation effort (OxiPNG and similar tools re-encode losslessly for typically 10–30% off a naive PNG export). If you are reaching for a PNG quality slider, you probably want WebP instead.</>),
           P(<><strong>Screenshots, UI and diagrams — do not use lossy JPEG.</strong> Use PNG, or WebP in lossless mode. Text is the worst case for DCT-based compression and the artifacts are maximally visible.</>),
+        P(<>Terms used here — chroma subsampling, entropy coding, lossless and lossy — are defined in plain English in the <a href="/glossary">image compression glossary</a>.</>),
+        P(<>The JPEG range here assumes MozJPEG; see <a href="/glossary/mozjpeg">What Is MozJPEG?</a> for why its encoder beats stock libjpeg by 10–15%.</>),
         ],
       },
       {

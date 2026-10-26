@@ -15,6 +15,7 @@ export const GUIDE_CONTENT: Record<string, ContentEntry> = {
         heading: "What actually matters in a compression tool",
         body: [
           P(<>Four things: <strong>privacy</strong> (does it upload your files?), <strong>quality per byte</strong> (how small at what visual quality), <strong>batch capability</strong> (can it handle 200 images at once?) and <strong>format support</strong> (AVIF, WebP, JPEG, PNG — and conversion between them).</>),
+        P(<>Each of these four criteria uses terms defined in the <a href="/glossary">image compression glossary</a>.</>),
         ],
       },
       {
@@ -45,6 +46,8 @@ export const GUIDE_CONTENT: Record<string, ContentEntry> = {
         heading: "How they compare",
         body: [
           P(<><strong>Privacy:</strong> ImageAlchemy and Squoosh process locally; the rest upload. <strong>Batch:</strong> ImageAlchemy (200), TinyPNG (limited on free tier), Squoosh (one at a time). <strong>Formats:</strong> all handle JPEG/PNG; ImageAlchemy, Squoosh and modern CLIs add AVIF and WebP. <strong>Price:</strong> all have a genuinely free tier.</>),
+        P(<>The format and quality choices above are covered step by step in the <a href="/learn">image optimization guides</a>.</>),
+        P(<>For the full format, quality and delivery sequence behind these comparisons, see <a href="/learn/image-optimization-guide">the complete image optimization guide</a>.</>),
         ],
       },
       {
