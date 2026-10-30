@@ -102,7 +102,8 @@ function collectHtml(dir, acc = []) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     const full = path.join(dir, entry.name);
     if (entry.isDirectory()) collectHtml(full, acc);
-    else if (entry.name.endsWith(".html")) acc.push(full);
+    // Skip search-engine ownership verification files (e.g. google*.html) — they are not pages.
+    else if (entry.name.endsWith(".html") && !/^google[0-9a-f]+\.html$/.test(entry.name)) acc.push(full);
   }
   return acc;
 }
