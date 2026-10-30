@@ -1,3 +1,5 @@
-ImageAlchemy production target
-release: stripe-pro-secure-v1
-updated: 2026-10-03
+ImageAlchemy production build
+release: production
+sha: b196ab4ba1b8da248f575fe72fdd9642e33b3224
+branch: edit/edt-9e0581b7-7028-4d72-b2d0-9024fc49cd80
+built: 2026-10-30T07:44:16.690Z
