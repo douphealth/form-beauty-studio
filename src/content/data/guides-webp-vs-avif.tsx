@@ -23,6 +23,7 @@ export const GUIDE_CONTENT: Record<string, ContentEntry> = {
         heading: "Compression efficiency",
         body: [
           P(<>AVIF wins clearly. Based on the same source image at matched visual quality, typical results are: JPEG 100% (baseline), <strong>WebP ~70–75%</strong> of JPEG size, <strong>AVIF ~50–60%</strong>. For a 1 MB JPEG, that's roughly 720 KB WebP and 550 KB AVIF. Across a site with hundreds of images, the difference compounds.</>),
+          P(<>The <a href="/formats/avif">AVIF format page</a> collects its browser support, quality settings and conversion steps in one place.</>),
         ],
       },
       {
@@ -55,7 +56,9 @@ export const GUIDE_CONTENT: Record<string, ContentEntry> = {
         body: [
           P(<>For most sites in 2026: serve <strong>AVIF first, WebP second, JPEG fallback</strong> using <code>&lt;picture&gt;</code>. If you maintain only one format, WebP is the pragmatic choice. If page weight is critical (mobile-first, e-commerce, image-heavy galleries), AVIF pays for itself.</>),
           P(<>Whatever you choose, format choice matters less than the basics: right dimensions, sensible quality, and correct delivery. A well-compressed JPEG beats an oversized AVIF every time.</>),
+          P(<>For the step-by-step process that turns those basics into a workflow, see <a href="/learn/compress-images-for-web">how to compress images for the web</a>.</>),
         P(<>This comparison is one of the <a href="/learn">image optimization guides</a>; the hub collects the format, quality and delivery guides in one place.</>),
+          P(<>If you want to try both formats on your own files, the <a href="/tools/image-converter">image converter</a> encodes AVIF, WebP, JPEG and PNG in the browser, with nothing uploaded.</>),
         ],
       },
     ],

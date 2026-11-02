@@ -30,6 +30,7 @@ export const GUIDE_CONTENT: Record<string, ContentEntry> = {
           P(<>Format choice dominates everything else. As a rule of thumb for 2026:</>),
           P(<>Use <strong>AVIF</strong> when you can — it produces the smallest files and is now supported by every major browser. Use <strong>WebP</strong> as the safe default: excellent compression, universal support, and it handles photographs, transparency and animation in one format. Use <strong>JPEG</strong> only for maximum compatibility (email, legacy CMS) and <strong>PNG</strong> only when you need pixel-perfect lossless quality or hard transparency.</>),
           P(<>A common mistake is treating "PNG" as the quality choice. PNG is lossless, but for photographs it is enormous — often 5–10× the size of an equivalent WebP at quality 80, with no visible difference on screen.</>),
+          P(<>AVIF's support and settings are covered on the <a href="/formats/avif">AVIF format page</a>.</>),
         ],
       },
       {
@@ -63,6 +64,8 @@ export const GUIDE_CONTENT: Record<string, ContentEntry> = {
         body: [
           P(<>Optimized files still need correct delivery: cache them long-term, lazy-load everything below the fold with <code>loading="lazy"</code>, set explicit <code>width</code> and <code>height</code> to prevent layout shift, and serve AVIF/WebP with a JPEG/PNG fallback using the <code>&lt;picture&gt;</code> element.</>),
         P(<>For the full sequence in order — format, quality, resizing, compression and delivery — browse the <a href="/learn">image optimization guides</a>.</>),
+          P(<>To run the conversion itself, use the <a href="/tools/image-converter">image converter</a> — drop files in, pick AVIF, WebP, JPEG or PNG output, and download as a ZIP, all in the browser.</>),
+          P(<>The five-step version of this sequence, with the numbers behind each step, is <a href="/learn/compress-images-for-web">how to compress images for the web</a>.</>),
         P(<>Lazy-loading below the fold is explained in full in the <a href="/glossary/lazy-loading">lazy loading</a> definition, including the hero-image exception.</>),
         ],
       },
