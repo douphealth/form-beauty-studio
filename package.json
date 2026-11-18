@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "node scripts/write-build-meta.mjs && node scripts/test-content.mjs && node scripts/test-links.mjs && node scripts/test-audit.mjs && node scripts/test-licence.mjs && node scripts/build-compare-demo.mjs && tsc --noEmit -p tsconfig.app.json && vite build && node scripts/build-og.mjs && node scripts/prerender.mjs && node scripts/verify-crawl.mjs && node scripts/hydrate-test.mjs",
+    "build": "node scripts/write-build-meta.mjs && node scripts/test-content.mjs && node scripts/test-links.mjs && node scripts/test-audit.mjs && node scripts/test-licence.mjs && node scripts/build-compare-demo.mjs && tsc --noEmit -p tsconfig.app.json && vite build && node scripts/build-og.mjs && node scripts/prerender.mjs && node scripts/verify-crawl.mjs && node scripts/test-published-links.mjs && node scripts/hydrate-test.mjs",
     "build:dev": "node scripts/write-build-meta.mjs && vite build --mode development",
     "prerender": "node scripts/prerender.mjs",
     "lint": "eslint .",

@@ -23,7 +23,7 @@ function ImageCard({ image, onRemove, onPreview, index, selected, onToggleSelect
   const isCancelled = image.status === 'cancelled';
   const hasOverride = !!image.override;
 
-  const staggerDelay = Math.min(index * 0.04, 0.6);
+  const staggerDelay = Math.min(Math.min(index, 5) * 0.025, 0.6);
 
   return (
     <MotionDiv
@@ -56,6 +56,7 @@ function ImageCard({ image, onRemove, onPreview, index, selected, onToggleSelect
           }
         }}
       >
+        <button type="button" className="absolute inset-0 z-[1] focus-visible:ring-2 focus-visible:ring-inset" aria-label={`Preview ${image.file.name}`} />
         <img
           src={image.previewUrl}
           alt={`Preview of uploaded image, ${formatBytes(image.originalSize)}`}
@@ -65,7 +66,7 @@ function ImageCard({ image, onRemove, onPreview, index, selected, onToggleSelect
           draggable={false}
         />
 
-        <div className="absolute inset-0 bg-gradient-to-t from-card/90 via-card/20 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+        <div className="absolute inset-0 bg-gradient-to-t from-card/90 via-card/20 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100 focus-visible:opacity-100" />
 
         {/* Selection checkbox */}
         <button
@@ -73,7 +74,7 @@ function ImageCard({ image, onRemove, onPreview, index, selected, onToggleSelect
           className={`absolute left-2.5 bottom-2.5 z-10 flex h-6 w-6 items-center justify-center rounded-md border-2 backdrop-blur-md transition-all ${
             selected
               ? "border-primary bg-primary text-primary-foreground"
-              : "border-border/60 bg-card/50 text-transparent opacity-0 group-hover:opacity-100 hover:border-primary"
+              : "border-border/60 bg-card/50 text-transparent opacity-0 group-hover:opacity-100 focus-visible:opacity-100 hover:border-primary"
           }`}
           aria-label={selected ? "Deselect image" : "Select image"}
         >
@@ -104,7 +105,7 @@ function ImageCard({ image, onRemove, onPreview, index, selected, onToggleSelect
               transition={{ type: "spring", stiffness: 500 }}
               className="inline-flex items-center gap-1 rounded-lg bg-success px-3 py-1.5 text-[11px] font-bold text-success-foreground shadow-lg"
             >
-              <Check className="h-3 w-3" strokeWidth={3} /> −{ratio}%
+              <Check className="h-3 w-3" strokeWidth={3} /> {ratio >= 0 ? "−" : "+"}{Math.abs(ratio)}%
             </MotionSpan>
           )}
           {isError && (
@@ -133,7 +134,7 @@ function ImageCard({ image, onRemove, onPreview, index, selected, onToggleSelect
         <button
           onClick={(e) => { e.stopPropagation(); onRemove(image.id); }}
           aria-label={`Remove ${image.file.name} from queue`}
-          className="absolute right-2.5 top-2.5 z-10 flex h-7 w-7 items-center justify-center rounded-lg bg-card/50 backdrop-blur-xl text-muted-foreground opacity-0 transition-all duration-300 hover:bg-destructive hover:text-destructive-foreground group-hover:opacity-100"
+          className="absolute right-2.5 top-2.5 z-10 flex h-7 w-7 items-center justify-center rounded-lg bg-card/50 backdrop-blur-xl text-muted-foreground opacity-0 transition-all duration-300 hover:bg-destructive hover:text-destructive-foreground group-hover:opacity-100 focus-visible:opacity-100"
         >
           <X className="h-3.5 w-3.5" strokeWidth={2.5} />
         </button>
@@ -143,7 +144,7 @@ function ImageCard({ image, onRemove, onPreview, index, selected, onToggleSelect
           <button
             onClick={(e) => { e.stopPropagation(); downloadBlob(image.compressedBlob!, image.outputFilename); }}
             aria-label={`Download compressed ${image.outputFilename}`}
-            className="absolute inset-x-3 bottom-3 z-10 flex items-center justify-center gap-1.5 rounded-xl py-2.5 text-xs font-bold text-primary-foreground opacity-0 transition-all duration-300 group-hover:opacity-100"
+            className="absolute inset-x-3 bottom-3 z-10 flex items-center justify-center gap-1.5 rounded-xl py-2.5 text-xs font-bold text-primary-foreground opacity-0 transition-all duration-300 group-hover:opacity-100 focus-visible:opacity-100"
             style={{ background: 'var(--gradient-primary)' }}
           >
             <Download className="h-3.5 w-3.5" strokeWidth={2.5} /> Download

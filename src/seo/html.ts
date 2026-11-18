@@ -139,13 +139,7 @@ export function renderHtmlDocument(input: SeoInput): string {
 
   const jsonLdTags = jsonLd.map(jsonLdScript).join("\n    ");
 
-  // Fonts: preconnect early, load the stylesheet non-blockingly.
-  const fontLinks = `
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" media="print" onload="this.media='all'" />`;
-
+  const fontLinks = '<link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/space-grotesk.woff2" />';
   const cssTags = stylesheets
     .map((href) => `    <link rel="stylesheet" crossorigin href="${href}">`)
     .join("\n");
@@ -220,6 +214,7 @@ ${jsTags}
 ${headExtra}
   </head>
   <body>
+    <script>try { document.documentElement.classList.toggle("dark", (localStorage.getItem("theme") || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")) === "dark"); } catch {}</script>
     <div id="root">${body}</div>
   </body>
 </html>`;

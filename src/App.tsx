@@ -1,9 +1,6 @@
-import { lazy, Suspense } from "react";
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { lazy, Suspense, useEffect } from "react";
+import { Toaster } from "@/components/ui/sonner";
+import { BrowserRouter, Navigate, Routes, Route, useLocation } from "react-router-dom";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { ALL_ROUTES } from "@/seo/routes";
 
@@ -12,41 +9,32 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const Pro = lazy(() => import("./pages/Pro"));
 const ContentPage = lazy(() => import("./content/ContentPage"));
 
-const queryClient = new QueryClient();
-
-const Loading = () => (
-  <div className="flex min-h-screen items-center justify-center bg-background">
-    <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary/20 border-t-primary" />
-  </div>
-);
+function SiteRoutes() {
+  const { pathname, search, hash } = useLocation();
+  useEffect(() => {
+    if (!hash) { window.scrollTo(0, 0); return; }
+    let id;
+    try { id = decodeURIComponent(hash.slice(1)); } catch { return; }
+    document.getElementById(id)?.scrollIntoView();
+  }, [pathname, hash]);
+  const alias = pathname === "/index.html" ? "/" : pathname.replace(/(?:\/index)?\.html$/, "");
+  if (alias !== pathname && ALL_ROUTES.some(route => route.path === alias)) {
+    return <Navigate replace to={alias + search + hash} />;
+  }
+  return <Routes>
+    <Route path="/" element={<Index />} />
+    {ALL_ROUTES.filter(route => route.standalone).map(route => (
+      <Route key={route.path} path={route.path} element={<Pro />} />
+    ))}
+    {ALL_ROUTES.filter(route => route.path !== "/" && !route.standalone).map(route => (
+      <Route key={route.path} path={route.path} element={<ContentPage path={route.path} />} />
+    ))}
+    <Route path="*" element={<NotFound />} />
+  </Routes>;
+}
 
 export default function App() {
-  return (
-    <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Suspense fallback={<Loading />}>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                {ALL_ROUTES.filter((r) => r.path !== "/" && r.standalone).map((route) => (
-                  <Route key={route.path} path={route.path} element={<Pro />} />
-                ))}
-                {ALL_ROUTES.filter((r) => r.path !== "/" && !r.standalone).map((route) => (
-                  <Route
-                    key={route.path}
-                    path={route.path}
-                    element={<ContentPage path={route.path} />}
-                  />
-                ))}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </Suspense>
-          </BrowserRouter>
-        </TooltipProvider>
-      </QueryClientProvider>
-    </ErrorBoundary>
-  );
+  return <ErrorBoundary><Toaster /><BrowserRouter>
+    <Suspense fallback={<div className="p-8" role="status">Opening ImageAlchemy…</div>}><SiteRoutes /></Suspense>
+  </BrowserRouter></ErrorBoundary>;
 }

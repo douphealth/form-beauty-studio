@@ -64,7 +64,7 @@ function CompressionSettings({
             className="overflow-hidden"
           >
             <div className="glass-card p-6 sm:p-8">
-              <div className="grid gap-8 sm:grid-cols-3">
+              <div className="grid gap-8 md:grid-cols-2">
                 {/* Format */}
                 <div className="space-y-3">
                   <label className="flex items-center justify-between gap-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground/70">
@@ -86,10 +86,12 @@ function CompressionSettings({
                       </button>
                     )}
                   </label>
-                  <div className={`flex gap-2 transition-opacity ${autoPick ? "opacity-40 pointer-events-none" : ""}`}>
+                  <div className={`grid grid-cols-2 gap-2 transition-opacity ${autoPick ? "opacity-40 pointer-events-none" : ""}`}>
                     {FORMAT_OPTIONS.map((opt) => (
                       <MotionButton
                         key={opt.value}
+                        aria-pressed={format === opt.value && !autoPick}
+                        disabled={autoPick}
                         onClick={() => onFormatChange(opt.value)}
                         whileHover={{ y: -1 }}
                         whileTap={{ scale: 0.97 }}

@@ -21,6 +21,7 @@ export interface ImageFile {
   override?: Partial<CompressionOptions> & { auto?: boolean };
   /** Format actually used (set after compress, useful when auto-pick) */
   chosenFormat?: OutputFormat;
+  encodingKey?: string;
 }
 
 const MIME_MAP: Record<OutputFormat, string> = {
@@ -189,10 +190,10 @@ function compressImageCanvas(file: File, options: CompressionOptions): Promise<B
         canvas.toBlob(
           (blob) => {
             URL.revokeObjectURL(objectUrl);
-            if (blob) {
+            if (blob?.type === mime) {
               resolve(blob);
             } else {
-              reject(new Error('Failed to compress image'));
+              reject(new Error('This browser could not export '+options.format.toUpperCase()+'. Try another format.'));
             }
           },
           mime,

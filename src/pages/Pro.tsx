@@ -134,7 +134,7 @@ function Shell({ title, children }: { title: string; children: React.ReactNode }
 
       <div className="relative z-10">
         <SiteHeader />
-        <main className="mx-auto max-w-5xl px-5 py-12 sm:px-8 sm:py-16">{children}</main>
+        <main id="main-content" className="mx-auto max-w-5xl px-5 py-12 sm:px-8 sm:py-16">{children}</main>
         <SiteFooter />
       </div>
     </>

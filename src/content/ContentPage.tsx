@@ -65,9 +65,9 @@ export default function ContentPage({ path }: { path: string }) {
                   {section.heading}
                 </h2>
                 {section.body.map((paragraph, i) => (
-                  <p key={i} className="mb-4 text-[15px] leading-relaxed text-muted-foreground/90 sm:text-base">
+                  <div key={i} className="mb-4">
                     {paragraph}
-                  </p>
+                  </div>
                 ))}
               </section>
               {Embed && (

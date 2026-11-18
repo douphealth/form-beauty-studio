@@ -17,8 +17,8 @@ export const SITE = {
   /** Short pitch used in nav footers + schema descriptions */
   shortDescription:
     "Free, private, browser-based image compression studio. Batch compress to WebP, AVIF, JPEG and PNG with no uploads.",
-  themeColor: "#7c3aed",
-  themeColorDark: "#0b0a14",
+  themeColor: "#f9f8f5",
+  themeColorDark: "#18171d",
   author: "Alexios Papaioannou",
   /**
    * Source repository.
@@ -69,6 +69,7 @@ export const NAV_GROUPS: { label: string; items: { path: string; label: string }
   {
     label: "Formats",
     items: [
+      { path: "/formats", label: "Format guide" },
       { path: "/formats/webp", label: "WebP" },
       { path: "/formats/avif", label: "AVIF" },
       { path: "/formats/jpeg", label: "JPEG" },
@@ -78,6 +79,7 @@ export const NAV_GROUPS: { label: string; items: { path: string; label: string }
   {
     label: "Tools",
     items: [
+      { path: "/tools", label: "All tools" },
       { path: "/tools/image-resizer", label: "Image resizer" },
       { path: "/tools/image-converter", label: "Image converter" },
     ],

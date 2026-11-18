@@ -16,6 +16,17 @@ import { HelmetProvider } from "react-helmet-async";
 import { renderToString } from "react-dom/server";
 import ContentPage from "./content/ContentPage";
 
+import SiteHeader from "./components/SiteHeader";
+import SiteFooter from "./components/SiteFooter";
+import StudioIntro from "./components/StudioIntro";
+import StudioResources from "./components/StudioResources";
+export { HOME_FAQS } from "./content/studio-faq";
+
+export function renderHomeStatic() {
+  return renderToString(<StaticRouter location="/"><SiteHeader /><main id="main-content" className="studio-container">
+    <StudioIntro hasFiles={false} onFilesAdded={() => {}}/><StudioResources />
+  </main><SiteFooter /></StaticRouter>);
+}
 export { ContentPage };
 
 /** Render a content route to an HTML string, with the helmet head alongside. */

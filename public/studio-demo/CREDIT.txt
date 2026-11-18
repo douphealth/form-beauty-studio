@@ -1,0 +1,9 @@
+Midnight Sun — National Park Service photograph
+Denali National Park and Preserve, Alaska, June 20, 2013
+Photographer credit supplied by the archive: NPS Photo
+Rights listed by NPGallery: Public domain:Full Granting Rights
+Source: https://npgallery.nps.gov/AssetDetail/6d3cdb48-e87f-4d6a-9206-ad22a53500b0
+
+The sample is a 1080 × 675 crop of the photograph, encoded as a progressive
+JPEG at quality 92. Each WebP was encoded from that JPEG with libwebp via
+Pillow (method 6). The number in the filename is the encoder quality setting.

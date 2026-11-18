@@ -38,7 +38,7 @@ import { INDEXABLE_ROUTES, ALL_ROUTES, DEFAULT_CONTENT_DATE } from "../src/seo/r
 import { SITE } from "../src/seo/site";
 
 /** Rules the site actually ships. Used to verify they collide with nothing. */
-const DISALLOW_RULES = ["/assets/"];
+const DISALLOW_RULES: string[] = [];
 
 /**
  * Search-oriented AI agents whose answers can cite the site. Allowed
@@ -102,7 +102,7 @@ export function seoSitemapPlugin(): Plugin {
           return [
             "  <url>",
             "    <loc>" + loc + "</loc>",
-            "    <lastmod>" + today + "</lastmod>",
+            "    <lastmod>" + (r.updated ?? today) + "</lastmod>",
             "    <changefreq>" + freq + "</changefreq>",
             "    <priority>" + pri + "</priority>",
             "  </url>",
@@ -140,7 +140,6 @@ export function seoSitemapPlugin(): Plugin {
         "# ── Default ──────────────────────────────────────────────────────────",
         "User-agent: *",
         "Allow: /",
-        "# Build output only: hashed, fingerprinted, immutable, never a landing page.",
         ...DISALLOW_RULES.map((r) => "Disallow: " + r),
         "",
         "# ── AI search & answer engines (allowed) ─────────────────────────────",

@@ -45,13 +45,9 @@ export default function ContentLayout(props: ContentLayoutProps) {
         keywords={keywords}
         noindex={noindex}
       />
-      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
-        <div className="glow-orb absolute -left-48 -top-48 h-[700px] w-[700px] rounded-full bg-primary" />
-        <div className="glow-orb absolute -bottom-48 -right-48 h-[600px] w-[600px] rounded-full bg-accent" style={{ animationDelay: "-8s" }} />
-      </div>
       <div className="relative z-10">
         <SiteHeader />
-        <main className="mx-auto max-w-6xl px-5 py-10 sm:px-8 sm:py-16">
+        <main id="main-content" className="reader">
           <div className="flex gap-10">
             <article className="min-w-0 flex-1">
               <Breadcrumbs items={crumbs} />
@@ -59,15 +55,16 @@ export default function ContentLayout(props: ContentLayoutProps) {
                 {h1 ?? title}
               </h1>
               {lede && (
-                <p className="mt-5 text-lg leading-relaxed text-muted-foreground/80 sm:text-xl">
+                <p className="reader-lede mt-5">
                   {lede}
                 </p>
               )}
+              {toc && toc.length > 0 && <details className="mobile-toc"><summary>On this page</summary><ul>{toc.map(item => <li key={item.id}><a href={path + "#" + item.id}>{item.text}</a></li>)}</ul></details>}
               <div className="mt-10">{children}</div>
               <div className="mt-16">{cta ?? <ToolCta />}</div>
             </article>
             {toc && toc.length > 0 && (
-              <aside className="hidden w-64 shrink-0 lg:block">
+              <aside className="reader-toc">
                 <TableOfContents items={toc} />
               </aside>
             )}

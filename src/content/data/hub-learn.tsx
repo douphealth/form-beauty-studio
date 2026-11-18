@@ -4,6 +4,8 @@ import type { ContentEntry } from "../types";
 const P = (children: ReactNode) => <p>{children}</p>;
 
 const GUIDE_CARDS = [
+  { path: "/learn/jpeg-quality-guide", title: "Choose an image quality setting", desc: "Compare JPEG and WebP quality settings." },
+  { path: "/learn/compress-images-without-uploading", title: "Compress images without uploading", desc: "How local compression works." },
   { path: "/learn/image-optimization-guide", title: "Image optimization: the complete guide", desc: "Every decision that matters — format, quality, dimensions, compression and delivery — with concrete numbers." },
   { path: "/learn/compress-images-for-web", title: "Compress images for the web without losing quality", desc: "A five-step process that cuts image weight by half or more while keeping photos looking exactly as they should." },
   { path: "/learn/webp-vs-avif", title: "WebP vs AVIF: which format wins?", desc: "Compression, browser support, encoding speed and features compared, with clear recommendations." },
