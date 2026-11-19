@@ -115,7 +115,7 @@ export function verdictAtQuality(q: number): Verdict {
       tone: "ideal",
       headline: "The sweet spot",
       detail:
-        "Where almost every production image should sit. The size curve is still falling fast while the quality cost stays imperceptible on a normal display.",
+        "A practical starting range for this photo. Inspect faces, fine edges and small lettering at the size you plan to display.",
     };
   }
   return {
@@ -165,7 +165,7 @@ export interface QualityExplorerProps {
 export default function QualityExplorer({
   onApply,
   heading = "What quality should you actually use?",
-  subheading = "Drag the slider. The curve is real \u2014 anchored to two measured encodes of the photo below.",
+  subheading = "Compare estimated sizes against two measured WebP exports of the rhea photograph.",
 }: QualityExplorerProps) {
   const [quality, setQuality] = useState(80);
 
@@ -360,7 +360,7 @@ export default function QualityExplorer({
             {error < 1 ? "≈0" : error.toFixed(0)}
           </div>
           <div className="mt-0.5 flex items-center justify-center gap-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-muted-foreground/50">
-            <AlertTriangle className="h-2.5 w-2.5" /> Artifacts
+            <AlertTriangle className="h-2.5 w-2.5" /> Modeled artifact risk
           </div>
         </div>
       </div>

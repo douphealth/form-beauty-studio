@@ -3,6 +3,7 @@
  * with pause/cancel support, per-image overrides, and auto-pick format.
  */
 
+import { fitFileSize } from './fit-file-size';
 import type { ImageFile, CompressionOptions, OutputFormat } from './image-utils';
 import { compressImage, compressImageAuto, generateOutputFilename } from './image-utils';
 
@@ -24,6 +25,7 @@ export interface PoolControls {
   autoPick?: boolean;
   /** Only process pending/error items (used for retry-failed) */
   onlyRetry?: boolean;
+  targetBytes?: number;
 }
 
 async function waitWhilePaused(isPaused?: () => boolean, signal?: AbortSignal) {
@@ -49,26 +51,15 @@ export async function compressPool(
     while (activeIndex < results.length) {
       if (signal?.aborted) return;
       await waitWhilePaused(isPaused, signal);
-      if (signal?.aborted) return;
+      if (signal?.aborted || activeIndex >= results.length) return;
 
       const i = activeIndex++;
       const img = results[i];
 
-      // Skip already-done items unless we're forcing reprocess
-      if (img.status === 'done') {
-        completed++;
-        onProgress({ index: i, image: img, completed });
-        continue;
-      }
       if (onlyRetry && img.status !== 'error' && img.status !== 'cancelled' && img.status !== 'pending') {
         completed++;
         onProgress({ index: i, image: img, completed });
         continue;
-      }
-
-      // Revoke previous compressed URL if retrying
-      if (img.compressedUrl) {
-        URL.revokeObjectURL(img.compressedUrl);
       }
 
       // Resolve effective options (per-image override beats global)
@@ -76,10 +67,16 @@ export async function compressPool(
       const effective: CompressionOptions = {
         format: img.override?.format ?? globalOptions.format,
         quality: img.override?.quality ?? globalOptions.quality,
-        maxDimension: img.override?.maxDimension ?? globalOptions.maxDimension,
+        maxDimension: img.override?.maxDimension !== undefined ? img.override.maxDimension : globalOptions.maxDimension,
       };
 
-      results[i] = { ...img, status: 'processing', error: undefined };
+      const encodingKey = JSON.stringify([useAuto ? "auto" : effective.format, effective.quality, effective.maxDimension, controls.targetBytes ?? 0]);
+      if (img.status === "done" && img.encodingKey === encodingKey) {
+        onProgress({ index: i, image: img, completed: ++completed });
+        continue;
+      }
+      if (img.compressedUrl) URL.revokeObjectURL(img.compressedUrl);
+      results[i] = { ...img, status: "processing", error: undefined, compressedSize: null, compressedBlob: null, compressedUrl: null };
       onProgress({ index: i, image: results[i], completed });
 
       try {
@@ -97,6 +94,18 @@ export async function compressPool(
           chosenFormat = effective.format;
         }
 
+        if (signal?.aborted) throw new Error("Cancelled");
+        let outputQuality = Math.round(effective.quality * 100);
+        if (controls.targetBytes && chosenFormat !== 'png' && blob.size > controls.targetBytes) {
+          const fit = await fitFileSize(blob, outputQuality, controls.targetBytes, async (q) => {
+            await waitWhilePaused(isPaused, signal);
+            if (signal?.aborted) throw new Error("Cancelled");
+            return compressImage(img.file, { ...effective, format: chosenFormat, quality: q / 100 });
+          });
+          blob = fit.blob;
+          outputQuality = fit.quality;
+        }
+        if (signal?.aborted) throw new Error("Cancelled");
         const outputFilename = generateOutputFilename(img.file.name, chosenFormat);
         const compressedUrl = URL.createObjectURL(blob);
 
@@ -108,6 +117,9 @@ export async function compressPool(
           compressedUrl,
           outputFilename,
           chosenFormat,
+          encodingKey,
+          outputQuality: chosenFormat === "png" ? undefined : outputQuality,
+          targetBytes: controls.targetBytes,
         };
       } catch (err) {
         if (signal?.aborted) {

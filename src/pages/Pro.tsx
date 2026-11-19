@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
+import Seo from "@/components/seo/Seo";
 import {
   ArrowRight, Check, AlertTriangle, Info, XCircle, Loader2, ShieldCheck,
   Gauge, Image as ImageIcon, Layers, Clock, Download, Copy, Sparkles, Zap,
@@ -115,17 +115,7 @@ export default function Pro() {
 function Shell({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <>
-      <Helmet>
-        <title>{title}</title>
-        <meta
-          name="description"
-          content="Audit any web page's images: every file measured, every wasted byte quantified, with a prioritised fix list. One-time purchase, no subscription."
-        />
-        {/* The Pro page is a purchase surface, not editorial content. Indexing it
-            would put a paywall in search results for informational queries, which
-            is a poor experience and dilutes the tool pages that should rank. */}
-        <meta name="robots" content="noindex,follow" />
-      </Helmet>
+      <Seo path="/pro" title={title} noindex />
 
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
         <div className="glow-orb absolute -left-48 -top-48 h-[700px] w-[700px] rounded-full bg-primary" />
@@ -134,7 +124,7 @@ function Shell({ title, children }: { title: string; children: React.ReactNode }
 
       <div className="relative z-10">
         <SiteHeader />
-        <main className="mx-auto max-w-5xl px-5 py-12 sm:px-8 sm:py-16">{children}</main>
+        <main id="main-content" className="mx-auto max-w-5xl px-5 py-12 sm:px-8 sm:py-16">{children}</main>
         <SiteFooter />
       </div>
     </>

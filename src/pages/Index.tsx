@@ -1,19 +1,20 @@
-import { useState, useCallback, useMemo, useEffect, useRef } from "react";
+import { lazy, Suspense, useState, useCallback, useMemo, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Helmet } from "react-helmet-async";
+import Seo from "@/components/seo/Seo";
+import { HOME_FAQS } from "@/content/studio-faq";
 import { Sparkles, Lock, Globe, Keyboard, CheckCircle2, Wand2 } from "lucide-react";
-import JSZip from "jszip";
+import { useLocation } from "react-router-dom";
 import { toast } from "sonner";
-import DropZone from "@/components/DropZone";
+import StudioIntro from "@/components/StudioIntro";
 import ImageCard from "@/components/ImageCard";
-import ImagePreviewModal from "@/components/ImagePreviewModal";
+const ImagePreviewModal = lazy(() => import("@/components/ImagePreviewModal"));
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import CompressionSettings from "@/components/CompressionSettings";
 import StatsBar from "@/components/StatsBar";
 import ActionButtons from "@/components/ActionButtons";
 import ProgressBar from "@/components/ProgressBar";
-import HeroFeatures from "@/components/HeroFeatures";
+import StudioResources from "@/components/StudioResources";
 import PresetBar from "@/components/PresetBar";
 import SelectionToolbar from "@/components/SelectionToolbar";
 import { compressPool } from "@/lib/compress-pool";
@@ -21,7 +22,7 @@ import { PRESETS, getPreset, type PresetId } from "@/lib/presets";
 import { HOME } from "@/seo/routes";
 import {
   type ImageFile, type OutputFormat, type CompressionOptions,
-  formatBytes, getCompressionRatio, downloadBlob,
+  formatBytes, getCompressionRatio, downloadBlob, downloadUrl,
 } from "@/lib/image-utils";
 
 const AUTO_COMPRESS_KEY = "imagealchemy:auto-compress";
@@ -43,6 +44,11 @@ export default function Index() {
   const [autoCompress, setAutoCompress] = useState<boolean>(() => {
     return localStorage.getItem(AUTO_COMPRESS_KEY) === "true";
   });
+  const [zipFile, setZipFile] = useState<{ href: string; name: string } | null>(null);
+  const packing = useRef(false);
+  useEffect(() => { setZipFile(null); }, [images]);
+  useEffect(() => () => { if (zipFile) URL.revokeObjectURL(zipFile.href); }, [zipFile]);
+  const [targetBytes, setTargetBytes] = useState(0);
   const [processing, setProcessing] = useState(false);
   const [paused, setPaused] = useState(false);
   const [progress, setProgress] = useState({ current: 0, total: 0 });
@@ -52,6 +58,7 @@ export default function Index() {
 
   const abortRef = useRef<AbortController | null>(null);
   const pausedRef = useRef(false);
+  const activeRun = useRef(false);
   const imagesRef = useRef(images);
   imagesRef.current = images;
 
@@ -62,6 +69,7 @@ export default function Index() {
   // Cleanup all object URLs on unmount
   useEffect(() => {
     return () => {
+      abortRef.current?.abort();
       imagesRef.current.forEach((img) => {
         URL.revokeObjectURL(img.previewUrl);
         if (img.compressedUrl) URL.revokeObjectURL(img.compressedUrl);
@@ -105,8 +113,27 @@ export default function Index() {
     markCustom();
   }, [markCustom]);
 
+  const { search } = useLocation();
+  const [setupNotice, setSetupNotice] = useState("");
+  const announceSettings = (message: string) => {
+    setSetupNotice(message);
+    document.querySelector<HTMLButtonElement>("#tool .primary-action")?.focus();
+  };
+  useEffect(() => {
+    const value = new URLSearchParams(search).get("preset");
+    if (!value) return;
+    const preset = PRESETS.find(p => p.id === value);
+    if (preset) { applyPreset(preset.id); setSetupNotice(preset.label + " preset selected."); }
+    else if (value === "webp" || value === "avif" || value === "jpeg" || value === "png") {
+      handleFormatChange(value); const rawQuality = new URLSearchParams(search).get("quality");
+      const q = rawQuality && /^([1-9][0-9]?|100)$/.test(rawQuality) ? Number(rawQuality) : null;
+      if (q && value !== "png") handleQualityChange(q);
+      setSetupNotice(value.toUpperCase() + (q && value !== "png" ? " quality " + q : "") + " selected.");
+    }
+  }, [search, applyPreset, handleFormatChange, handleQualityChange]);
+
   // Throttled progress update
-  const pendingUpdatesRef = useRef<Map<number, ImageFile>>(new Map());
+  const pendingUpdatesRef = useRef<Map<string, ImageFile>>(new Map());
   const rafRef = useRef<number | null>(null);
 
   const flushUpdates = useCallback(() => {
@@ -116,9 +143,7 @@ export default function Index() {
     updates.clear();
     rafRef.current = null;
     setImages((prev) => {
-      const next = [...prev];
-      batch.forEach((img, idx) => { next[idx] = img; });
-      return next;
+      return prev.map(img => batch.get(img.id) ?? img);
     });
   }, []);
 
@@ -126,7 +151,8 @@ export default function Index() {
     targetImages: ImageFile[],
     opts: { onlyRetry?: boolean } = {}
   ) => {
-    if (targetImages.length === 0) return;
+    if (targetImages.length === 0 || activeRun.current) return;
+    activeRun.current = true;
 
     abortRef.current?.abort();
     const controller = new AbortController();
@@ -147,10 +173,7 @@ export default function Index() {
       options,
       (update) => {
         // Find the index in current state by id
-        const currentIdx = imagesRef.current.findIndex((i) => i.id === update.image.id);
-        if (currentIdx >= 0) {
-          pendingUpdatesRef.current.set(currentIdx, update.image);
-        }
+        pendingUpdatesRef.current.set(update.image.id, update.image);
         setProgress({ current: update.completed, total: targetImages.length });
         if (!rafRef.current) {
           rafRef.current = requestAnimationFrame(flushUpdates);
@@ -161,6 +184,7 @@ export default function Index() {
         isPaused: () => pausedRef.current,
         autoPick,
         onlyRetry: opts.onlyRetry,
+        targetBytes,
       },
     );
 
@@ -176,6 +200,7 @@ export default function Index() {
       return prev.map((img) => map.get(img.id) ?? img);
     });
 
+    activeRun.current = false;
     setProcessing(false);
     setPaused(false);
 
@@ -192,7 +217,7 @@ export default function Index() {
     if (failedCount > 0) {
       toast.error(`${failedCount} failed — use Retry Failed to try again`);
     }
-  }, [format, quality, maxDimension, autoPick, flushUpdates]);
+  }, [format, quality, maxDimension, autoPick, targetBytes, flushUpdates]);
 
   const processAll = useCallback(() => {
     return runCompression(imagesRef.current);
@@ -214,8 +239,7 @@ export default function Index() {
     setImages((prev) => [...prev, ...newFiles]);
     toast.success(`${newFiles.length} image${newFiles.length > 1 ? "s" : ""} added`);
     if (autoCompress) {
-      // Defer to let state settle
-      setTimeout(() => runCompression(newFiles), 50);
+      void runCompression(newFiles);
     }
   }, [autoCompress, runCompression]);
 
@@ -326,23 +350,35 @@ export default function Index() {
   }, [selected]);
 
   const downloadZip = useCallback(async () => {
-    const completed = imagesRef.current.filter((i) => i.status === "done" && i.compressedBlob);
-    if (completed.length === 0) return;
-    const zip = new JSZip();
-    // Unique names: src.png + src.jpg both become src.webp and would overwrite.
-    const used = new Set<string>();
-    completed.forEach((img) => {
-      let name = img.outputFilename;
-      const dot = name.lastIndexOf(".");
-      const base = dot > 0 ? name.slice(0, dot) : name;
-      const ext = dot > 0 ? name.slice(dot) : "";
-      for (let n = 2; used.has(name.toLowerCase()); n++) name = `${base}-${n}${ext}`;
-      used.add(name.toLowerCase());
-      zip.file(name, img.compressedBlob!);
-    });
-    const blob = await zip.generateAsync({ type: "blob" });
-    downloadBlob(blob, `imagealchemy-${Date.now()}.zip`);
-    toast.success("ZIP downloaded!");
+    const snapshot = imagesRef.current;
+    const completed = snapshot.filter((i) => i.status === "done" && i.compressedBlob);
+    if (!completed.length || packing.current) return;
+    packing.current = true;
+    try {
+      const { default: JSZip } = await import("jszip");
+      const zip = new JSZip();
+      // Unique names: src.png + src.jpg both become src.webp and would overwrite.
+      const used = new Set<string>();
+      completed.forEach((img) => {
+        let name = img.outputFilename;
+        const dot = name.lastIndexOf(".");
+        const base = dot > 0 ? name.slice(0, dot) : name;
+        const ext = dot > 0 ? name.slice(dot) : "";
+        for (let n = 2; used.has(name.toLowerCase()); n++) name = `${base}-${n}${ext}`;
+        used.add(name.toLowerCase());
+        zip.file(name, img.compressedBlob!);
+      });
+      const blob = await zip.generateAsync({ type: "blob" });
+      if (snapshot !== imagesRef.current) return;
+      const file = { href: URL.createObjectURL(blob), name: `imagealchemy-${Date.now()}.zip` };
+      setZipFile(file);
+      downloadUrl(file.href, file.name);
+      toast.success("ZIP ready");
+    } catch {
+      toast.error("Could not prepare the ZIP. Try again or download individual files.");
+    } finally {
+      packing.current = false;
+    }
   }, []);
 
   const downloadAllIndividually = useCallback(() => {
@@ -386,7 +422,7 @@ export default function Index() {
     const totalOriginal = images.reduce((s, i) => s + i.originalSize, 0);
     const completed = images.filter((i) => i.status === "done" && i.compressedSize != null);
     const totalCompressed = completed.reduce((s, i) => s + (i.compressedSize || 0), 0);
-    const savedPct = completed.length > 0 ? getCompressionRatio(totalOriginal, totalCompressed) : 0;
+    const savedPct = completed.length > 0 ? getCompressionRatio(completed.reduce((sum, img) => sum + img.originalSize, 0), totalCompressed) : 0;
     const failedCount = images.filter((i) => i.status === "error" || i.status === "cancelled").length;
     return {
       count: images.length,
@@ -402,32 +438,15 @@ export default function Index() {
 
   return (
     <div className="min-h-screen bg-background transition-colors duration-700">
-      <Helmet>
-        <title>{HOME.title}</title>
-        <meta name="description" content={HOME.description} />
-        <link rel="canonical" href="https://imagealchemy.app/" />
-        <meta property="og:title" content={HOME.title} />
-        <meta property="og:description" content={HOME.description} />
-        <meta property="og:url" content="https://imagealchemy.app/" />
-      </Helmet>
-      {/* H1 for SEO — visible to crawlers and assistive tech, styled as the
-          page's primary heading without dominating the hero. */}
-      <h1 className="sr-only">
-        ImageAlchemy — free, private image compression for WebP, AVIF, JPEG and PNG
-      </h1>
-      {/* Ambient orbs */}
-      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
-        <div className="glow-orb absolute -left-48 -top-48 h-[700px] w-[700px] rounded-full bg-primary" />
-        <div className="glow-orb absolute -bottom-48 -right-48 h-[600px] w-[600px] rounded-full bg-accent" style={{ animationDelay: '-8s' }} />
-        <div className="glow-orb absolute left-1/3 top-1/2 h-[400px] w-[400px] rounded-full bg-success" style={{ animationDelay: '-14s' }} />
-      </div>
-
-      <div className="relative z-10">
+      <Seo path="/" title={HOME.title} description={HOME.description} faqs={HOME_FAQS} />
+      <div>
         <SiteHeader />
-
-        {/* Main */}
-        <main className="mx-auto max-w-6xl px-5 py-10 sm:px-8 sm:py-16">
-          <DropZone onFilesAdded={handleFilesAdded} hasFiles={images.length > 0} currentCount={images.length} />
+        <main id="main-content" className="studio-container">
+          <StudioIntro onApplyQuality={q => {
+            handleFormatChange("webp"); handleQualityChange(q);
+            announceSettings("WebP quality " + q + " selected. Choose an image to begin.");
+          }} onFilesAdded={handleFilesAdded} hasFiles={images.length > 0} currentCount={images.length} disabled={processing} />
+          {!images.length && setupNotice && <p role="status" className="setup-notice">{setupNotice}</p>}
 
           <AnimatePresence mode="wait">
             {images.length > 0 && (
@@ -437,6 +456,8 @@ export default function Index() {
                 exit={{ opacity: 0, y: -12 }}
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
               >
+                <fieldset disabled={processing} className="min-w-0">
+                <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={autoCompress} onChange={e => setAutoCompress(e.target.checked)} />Compress future additions automatically</label>
                 <h2 className="sr-only">Compression presets</h2>
                 <PresetBar activeId={presetId} onSelect={applyPreset} />
 
@@ -445,6 +466,8 @@ export default function Index() {
                   format={format}
                   quality={quality}
                   maxDimension={maxDimension}
+                  targetBytes={targetBytes}
+                  onTargetChange={setTargetBytes}
                   onFormatChange={handleFormatChange}
                   onQualityChange={handleQualityChange}
                   onMaxDimensionChange={handleMaxDimensionChange}
@@ -454,6 +477,7 @@ export default function Index() {
                   onAutoPickChange={(v) => { setAutoPick(v); markCustom(); }}
                 />
 
+                </fieldset>
                 <h2 className="sr-only">Batch statistics</h2>
                 <StatsBar
                   count={stats.count}
@@ -484,8 +508,9 @@ export default function Index() {
                   processing={processing}
                 />
 
+                {zipFile && <p className="zip-ready" role="status">Archive ready. <a href={zipFile.href} download={zipFile.name}>Save ZIP</a></p>}
                 {/* Image Grid */}
-                <div className="mt-12">
+                <fieldset disabled={processing} className="mt-12 min-w-0">
                   <div className="mb-5 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <h2 className="text-sm font-bold text-foreground">Image Queue</h2>
@@ -533,22 +558,25 @@ export default function Index() {
                       ))}
                     </AnimatePresence>
                   </div>
-                </div>
+                </fieldset>
               </motion.div>
             )}
           </AnimatePresence>
 
-          {/* Empty State */}
-          <AnimatePresence>
-            {images.length === 0 && <HeroFeatures />}
-          </AnimatePresence>
+          {!images.length && <StudioResources onFormat={f => {
+            handleFormatChange(f);
+            announceSettings(f.toUpperCase() + " selected. Choose an image to begin.");
+          }} onQuality={q => {
+            handleFormatChange("webp"); handleQualityChange(q);
+            announceSettings("WebP quality " + q + " selected. Choose an image to begin.");
+          }} />}
         </main>
 
         <SiteFooter />
       </div>
 
       {previewImage && (
-        <ImagePreviewModal image={previewImage} onClose={() => setPreviewImage(null)} />
+        <Suspense fallback={null}><ImagePreviewModal image={previewImage} onClose={() => setPreviewImage(null)} /></Suspense>
       )}
     </div>
   );

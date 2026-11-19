@@ -1,206 +1,126 @@
-import { useCallback, useRef, useState } from "react";
-import { MotionDiv, MotionSpan, AnimatePresence } from "@/lib/motion";
-import { Upload, Image as ImageIcon, ArrowDown, Lock, Zap, Layers } from "lucide-react";
-import { toast } from "sonner";
-import { createImageFile, validateFile, MAX_FILE_COUNT, type ImageFile } from "@/lib/image-utils";
+import { useRef, useState } from "react";
+import { Images, Upload } from "lucide-react";
 
-interface DropZoneProps {
+import {
+  createImageFile,
+  validateFile,
+  MAX_FILE_COUNT,
+  type ImageFile,
+} from "@/lib/image-utils";
+
+function report(kind: "warning" | "error", message: string) {
+  void import("sonner").then(({ toast }) => toast[kind](message));
+}
+
+interface Props {
   onFilesAdded: (files: ImageFile[]) => void;
   hasFiles: boolean;
   currentCount?: number;
+  disabled?: boolean;
 }
 
-const FORMATS = ["AVIF", "WebP", "JPG", "PNG", "GIF", "BMP", "TIFF"];
-
-export default function DropZone({ onFilesAdded, hasFiles, currentCount = 0 }: DropZoneProps) {
+export default function DropZone({
+  onFilesAdded,
+  hasFiles,
+  currentCount = 0,
+  disabled = false,
+}: Props) {
   const [dragging, setDragging] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const dragCounter = useRef(0);
-
-  const handleFiles = useCallback(
-    (fileList: FileList | File[]) => {
-      const rawFiles = Array.from(fileList);
-      const remaining = MAX_FILE_COUNT - currentCount;
-
-      if (remaining <= 0) {
-        toast.error(`Max ${MAX_FILE_COUNT} images allowed.`);
-        return;
+  const [loadingSample, setLoadingSample] = useState(false);
+  const input = useRef<HTMLInputElement>(null);
+  const add = (files: File[]) => {
+    if (disabled) return;
+    const valid: ImageFile[] = [];
+    for (const file of files) {
+      if (currentCount + valid.length >= MAX_FILE_COUNT) {
+        report("warning", "A batch holds up to 200 images.");
+        break;
       }
-
-      const capped = rawFiles.slice(0, remaining);
-      if (capped.length < rawFiles.length) {
-        toast.warning(`Only ${capped.length} of ${rawFiles.length} files added (limit: ${MAX_FILE_COUNT}).`);
-      }
-
-      const valid: ImageFile[] = [];
-      for (const file of capped) {
-        const error = validateFile(file);
-        if (error) {
-          toast.error(`${file.name}: ${error}`);
-        } else {
-          valid.push(createImageFile(file));
-        }
-      }
-      if (valid.length > 0) onFilesAdded(valid);
-    },
-    [onFilesAdded, currentCount]
-  );
-
-  const onDragEnter = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    dragCounter.current++;
-    setDragging(true);
-  }, []);
-
-  const onDragLeave = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    dragCounter.current--;
-    if (dragCounter.current <= 0) {
-      dragCounter.current = 0;
-      setDragging(false);
+      const error = validateFile(file);
+      if (error) report("error", file.name + ": " + error);
+      else valid.push(createImageFile(file));
     }
-  }, []);
-
-  const onDrop = useCallback(
-    (e: React.DragEvent) => {
-      e.preventDefault();
-      dragCounter.current = 0;
-      setDragging(false);
-      handleFiles(e.dataTransfer.files);
-    },
-    [handleFiles]
-  );
-
-  const features = [
-    { icon: Zap, text: "Instant" },
-    { icon: Lock, text: "Private" },
-    { icon: Layers, text: "Batch" },
-  ];
+    if (valid.length) onFilesAdded(valid);
+  };
+  async function sample() {
+    setLoadingSample(true);
+    try {
+      const response = await fetch("/studio-demo/alaska-range.jpg");
+      if (!response.ok) throw new Error();
+      const blob = await response.blob();
+      if (blob.type !== "image/jpeg") throw new Error();
+      add([new File([blob], "alaska-range.jpg", { type: blob.type })]);
+    } catch {
+      report(
+        "error",
+        "The sample could not load. Try again or choose an image.",
+      );
+    } finally {
+      setLoadingSample(false);
+    }
+  }
 
   return (
-    <MotionDiv
-      onDragOver={(e) => e.preventDefault()}
-      onDragEnter={onDragEnter}
-      onDragLeave={onDragLeave}
-      onDrop={onDrop}
-      onClick={() => inputRef.current?.click()}
-      whileHover={{ scale: 1.003 }}
-      whileTap={{ scale: 0.998 }}
-      className={`
-        aurora-ring relative w-full cursor-pointer overflow-hidden rounded-[2rem]
-        border border-border/50 transition-colors duration-500 group
-        ${hasFiles ? "py-10 px-8 md:py-12" : "py-16 px-8 md:py-24"}
-        text-center
-        ${dragging
-          ? "border-primary/60 bg-primary/[0.04]"
-          : hasFiles
-            ? "border-success/25 bg-success/[0.02] hover:border-success/40"
-            : "hover:border-primary/25"
-        }
-      `}
+    <div
+      id="tool"
+      className={"studio-drop" + (dragging ? " dragging" : "")}
+      onDragOver={(e) => {
+        e.preventDefault();
+        if (!disabled) setDragging(true);
+      }}
+      onDragLeave={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget as Node))
+          setDragging(false);
+      }}
+      onDrop={(e) => {
+        e.preventDefault();
+        setDragging(false);
+        add(Array.from(e.dataTransfer.files));
+      }}
     >
-      {/* Layered depth: fading dot grid + mesh, both pointer-events-none */}
-      <div className="pointer-events-none absolute inset-0 grid-fade opacity-70" aria-hidden="true" />
-      <div className="pointer-events-none absolute inset-0 mesh-bg opacity-60" aria-hidden="true" />
-
-      {/* Animated glow on drag */}
-      <AnimatePresence>
-        {dragging && (
-          <MotionDiv
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8 }}
-            transition={{ duration: 0.5 }}
-            className="pointer-events-none absolute inset-0"
-          >
-            <div
-              className="absolute left-1/2 top-1/2 h-[400px] w-[400px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/[0.08]"
-              style={{ filter: "blur(80px)" }}
-            />
-          </MotionDiv>
-        )}
-      </AnimatePresence>
-
       <input
-        ref={inputRef}
+        id="studio-files"
         type="file"
         multiple
         accept="image/*"
-        className="hidden"
-        onChange={(e) => { if (e.target.files) handleFiles(e.target.files); e.target.value = ""; }}
+        ref={input}
+        hidden
+        onChange={(e) => {
+          add(Array.from(e.target.files ?? []));
+          e.target.value = "";
+        }}
       />
-
-      <div className="relative z-10">
-        {/* Icon */}
-        <MotionDiv
-          animate={dragging ? { scale: 1.15, y: -8 } : { scale: 1, y: 0 }}
-          transition={{ type: "spring", stiffness: 300, damping: 25 }}
-          className={`
-            mx-auto mb-8 flex h-20 w-20 items-center justify-center rounded-3xl
-            transition-colors duration-500
-            ${hasFiles ? "bg-success/10 text-success" : "bg-primary/[0.07] text-primary"}
-          `}
+      <div className="drop-actions">
+        <button
+          className="primary-action"
+          type="button"
+          onClick={() => input.current?.click()}
+          disabled={disabled}
         >
-          <AnimatePresence mode="wait">
-            {hasFiles ? (
-              <MotionDiv key="img" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}>
-                <ImageIcon className="h-9 w-9" strokeWidth={1.5} />
-              </MotionDiv>
-            ) : dragging ? (
-              <MotionDiv key="arrow" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}>
-                <ArrowDown className="h-9 w-9 animate-bounce-subtle" strokeWidth={1.5} />
-              </MotionDiv>
-            ) : (
-              <MotionDiv key="upload" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}>
-                <Upload className="h-9 w-9" strokeWidth={1.5} />
-              </MotionDiv>
-            )}
-          </AnimatePresence>
-        </MotionDiv>
-
-        {/* Headline */}
-        <h2 className="mb-3 text-2xl font-bold tracking-tight text-foreground sm:text-3xl md:text-4xl">
-          {hasFiles ? "Add More Images" : "Drop Your Images Here"}
-        </h2>
-        <p className="mx-auto mb-8 max-w-md text-sm leading-relaxed text-muted-foreground sm:text-base">
-          {hasFiles
-            ? "Drag more files or click to browse"
-            : "Drag & drop or click to select — everything runs locally"}
-        </p>
-
-        {/* Format badges */}
-        <div className="flex flex-wrap items-center justify-center gap-2">
-          {FORMATS.map((fmt, i) => (
-            <MotionSpan
-              key={fmt}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05, duration: 0.3 }}
-              className="rounded-full border border-border/50 bg-card/40 backdrop-blur-sm px-3.5 py-1.5 text-[11px] font-semibold text-muted-foreground transition-colors duration-300 group-hover:border-primary/15 group-hover:text-foreground/80"
-            >
-              {fmt}
-            </MotionSpan>
-          ))}
-        </div>
-
-        {/* Feature pills */}
+          <Upload size={19} />
+          {hasFiles ? "Add more images" : "Choose images"}
+        </button>
         {!hasFiles && (
-          <div className="mt-10 flex items-center justify-center gap-6">
-            {features.map((f, i) => (
-              <MotionDiv
-                key={f.text}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 + i * 0.1, duration: 0.4 }}
-                className="flex items-center gap-2 text-xs font-medium text-muted-foreground/60"
-              >
-                <f.icon className="h-3.5 w-3.5 text-primary/50" strokeWidth={1.5} />
-                {f.text}
-              </MotionDiv>
-            ))}
-          </div>
+          <button
+            type="button"
+            className="sample-button"
+            onClick={sample}
+            disabled={loadingSample || disabled}
+          >
+            <Images size={17} />
+            {loadingSample ? "Loading…" : "Try a sample"}
+          </button>
         )}
       </div>
-    </MotionDiv>
+      <p>
+        {dragging
+          ? "Drop files to add them to your batch."
+          : "Or drop files here · Up to 200 images · 50 MB each"}
+      </p>
+      <noscript>
+        Enable JavaScript to process images locally. The guides below are
+        available to read.
+      </noscript>
+    </div>
   );
 }

@@ -1,0 +1,440 @@
+{
+  "baseline": "098b0a385a87d101f08754737ecb8a3484a762ea",
+  "articleNav": [
+    "/",
+    "/?preset=auto",
+    "/about",
+    "/formats/avif",
+    "/formats/jpeg",
+    "/formats/png",
+    "/formats/webp",
+    "/glossary",
+    "/learn",
+    "/learn/best-free-image-compression-tools",
+    "/learn/compress-images-for-web",
+    "/learn/compress-images-without-uploading",
+    "/learn/core-web-vitals-images",
+    "/learn/image-optimization-guide",
+    "/learn/jpeg-quality-guide",
+    "/learn/webp-vs-avif",
+    "/privacy",
+    "/pro",
+    "/tools/image-converter",
+    "/tools/image-resizer"
+  ],
+  "routes": {
+    "/": {
+      "usesArticleNav": false,
+      "links": [
+        "#root",
+        "/formats/avif",
+        "/formats/jpeg",
+        "/formats/png",
+        "/formats/webp",
+        "/glossary",
+        "/learn/compress-images-for-web",
+        "/learn/compress-images-without-uploading",
+        "/learn/core-web-vitals-images",
+        "/learn/image-optimization-guide",
+        "/learn/jpeg-quality-guide",
+        "/learn/reduce-image-file-size",
+        "/learn/responsive-images",
+        "/learn/webp-vs-avif",
+        "/pro",
+        "/tools/image-converter",
+        "/tools/image-resizer"
+      ]
+    },
+    "/about": {
+      "usesArticleNav": true,
+      "links": [
+        "/about#how-it-works",
+        "/about#how-to-judge-it",
+        "/about#what-makes-it-different",
+        "/about#what-we-built",
+        "/about#who-behind-it",
+        "/about#why-privacy"
+      ]
+    },
+    "/formats": {
+      "usesArticleNav": false,
+      "links": [
+        "#root",
+        "/formats/avif",
+        "/formats/jpeg",
+        "/formats/png",
+        "/formats/webp",
+        "/glossary",
+        "/learn/compress-images-for-web",
+        "/learn/compress-images-without-uploading",
+        "/learn/core-web-vitals-images",
+        "/learn/image-optimization-guide",
+        "/learn/jpeg-quality-guide",
+        "/learn/reduce-image-file-size",
+        "/learn/responsive-images",
+        "/learn/webp-vs-avif",
+        "/pro",
+        "/tools/image-converter",
+        "/tools/image-resizer"
+      ]
+    },
+    "/formats/avif": {
+      "usesArticleNav": true,
+      "links": [
+        "/formats",
+        "/formats/avif#browser-support",
+        "/formats/avif#encoding-speed",
+        "/formats/avif#how-much-smaller",
+        "/formats/avif#how-to-convert",
+        "/formats/avif#quality-scale",
+        "/formats/avif#what-is-avif",
+        "/glossary/avif"
+      ]
+    },
+    "/formats/jpeg": {
+      "usesArticleNav": true,
+      "links": [
+        "/formats",
+        "/formats/jpeg#how-much-can-you-save",
+        "/formats/jpeg#how-to-compress",
+        "/formats/jpeg#mozjpeg-explained",
+        "/formats/jpeg#progressive-jpeg",
+        "/formats/jpeg#quality-recommendations",
+        "/formats/jpeg#when-to-use-jpeg",
+        "/glossary/chroma-subsampling",
+        "/glossary/entropy-coding",
+        "/glossary/mozjpeg",
+        "/learn/reduce-image-file-size"
+      ]
+    },
+    "/formats/png": {
+      "usesArticleNav": true,
+      "links": [
+        "/formats",
+        "/formats/png#how-png-compression-works",
+        "/formats/png#how-to-compress",
+        "/formats/png#oxipng",
+        "/formats/png#png-vs-webp",
+        "/formats/png#when-to-use-png",
+        "/glossary/entropy-coding",
+        "/glossary/lossless-compression",
+        "/learn/reduce-image-file-size"
+      ]
+    },
+    "/formats/webp": {
+      "usesArticleNav": true,
+      "links": [
+        "/formats",
+        "/formats/webp#browser-support",
+        "/formats/webp#how-to-convert",
+        "/formats/webp#quality-settings",
+        "/formats/webp#webp-vs-jpeg",
+        "/formats/webp#webp-vs-png",
+        "/formats/webp#what-is-webp",
+        "/glossary/avif",
+        "/glossary/chroma-subsampling"
+      ]
+    },
+    "/glossary": {
+      "usesArticleNav": true,
+      "links": [
+        "/glossary#all-terms",
+        "/glossary#how-to-use",
+        "/glossary/avif",
+        "/glossary/chroma-subsampling",
+        "/glossary/core-web-vitals",
+        "/glossary/entropy-coding",
+        "/glossary/lazy-loading",
+        "/glossary/lossless-compression",
+        "/glossary/mozjpeg",
+        "/glossary/webp"
+      ]
+    },
+    "/glossary/avif": {
+      "usesArticleNav": true,
+      "links": [
+        "/glossary/avif#definition",
+        "/glossary/avif#in-practice",
+        "/glossary/avif#what-it-does-well",
+        "/glossary/avif#where-it-falls-short",
+        "/glossary/webp"
+      ]
+    },
+    "/glossary/chroma-subsampling": {
+      "usesArticleNav": true,
+      "links": [
+        "/glossary/chroma-subsampling#definition",
+        "/glossary/chroma-subsampling#in-practice",
+        "/glossary/chroma-subsampling#when-it-bites",
+        "/glossary/chroma-subsampling#why-the-eye",
+        "/glossary/mozjpeg"
+      ]
+    },
+    "/glossary/core-web-vitals": {
+      "usesArticleNav": true,
+      "links": [
+        "/glossary/core-web-vitals#definition",
+        "/glossary/core-web-vitals#images-and-each-metric",
+        "/glossary/core-web-vitals#targets",
+        "/glossary/core-web-vitals#why-field-data",
+        "/glossary/lazy-loading"
+      ]
+    },
+    "/glossary/entropy-coding": {
+      "usesArticleNav": true,
+      "links": [
+        "/glossary/entropy-coding#definition",
+        "/glossary/entropy-coding#in-practice",
+        "/glossary/entropy-coding#the-idea",
+        "/glossary/entropy-coding#why-it-matters",
+        "/glossary/lossless-compression"
+      ]
+    },
+    "/glossary/lazy-loading": {
+      "usesArticleNav": true,
+      "links": [
+        "/glossary/core-web-vitals",
+        "/glossary/lazy-loading#definition",
+        "/glossary/lazy-loading#how-to-check",
+        "/glossary/lazy-loading#in-practice",
+        "/glossary/lazy-loading#the-exception-that-hurts",
+        "/glossary/lazy-loading#what-it-does-not-fix"
+      ]
+    },
+    "/glossary/lossless-compression": {
+      "usesArticleNav": true,
+      "links": [
+        "/glossary/lossless-compression#definition",
+        "/glossary/lossless-compression#how-it-works",
+        "/glossary/lossless-compression#how-much-to-expect",
+        "/glossary/lossless-compression#vs-lossy",
+        "/learn/reduce-image-file-size"
+      ]
+    },
+    "/glossary/mozjpeg": {
+      "usesArticleNav": true,
+      "links": [
+        "/glossary/chroma-subsampling",
+        "/glossary/mozjpeg#definition",
+        "/glossary/mozjpeg#in-practice",
+        "/glossary/mozjpeg#progressive-vs-baseline",
+        "/glossary/mozjpeg#why-encoder-matters",
+        "/learn/reduce-image-file-size"
+      ]
+    },
+    "/glossary/webp": {
+      "usesArticleNav": true,
+      "links": [
+        "/glossary/avif",
+        "/glossary/webp#definition",
+        "/glossary/webp#in-practice",
+        "/glossary/webp#lossy-vs-lossless",
+        "/glossary/webp#why-it-won"
+      ]
+    },
+    "/learn": {
+      "usesArticleNav": true,
+      "links": [
+        "/learn#all-guides",
+        "/learn#start-here",
+        "/learn/reduce-image-file-size",
+        "/learn/responsive-images"
+      ]
+    },
+    "/learn/best-free-image-compression-tools": {
+      "usesArticleNav": true,
+      "links": [
+        "/learn/best-free-image-compression-tools#browser-based-tools",
+        "/learn/best-free-image-compression-tools#desktop-and-cli",
+        "/learn/best-free-image-compression-tools#online-compressors",
+        "/learn/best-free-image-compression-tools#summary-table",
+        "/learn/best-free-image-compression-tools#what-matters",
+        "/learn/best-free-image-compression-tools#which-should-you-use",
+        "/learn/reduce-image-file-size"
+      ]
+    },
+    "/learn/compress-images-for-web": {
+      "usesArticleNav": true,
+      "links": [
+        "/glossary/lossless-compression",
+        "/glossary/webp",
+        "/learn/compress-images-for-web#step-1-pick-the-format",
+        "/learn/compress-images-for-web#step-2-resize",
+        "/learn/compress-images-for-web#step-3-set-quality",
+        "/learn/compress-images-for-web#step-4-lossless-pass",
+        "/learn/compress-images-for-web#step-5-verify",
+        "/learn/compress-images-for-web#the-30-second-version",
+        "/learn/reduce-image-file-size",
+        "https://imagealchemy.app/"
+      ]
+    },
+    "/learn/compress-images-without-uploading": {
+      "usesArticleNav": true,
+      "links": [
+        "/learn/compress-images-without-uploading#do-it",
+        "/learn/compress-images-without-uploading#how-client-side-works",
+        "/learn/compress-images-without-uploading#how-to-verify",
+        "/learn/compress-images-without-uploading#trade-offs",
+        "/learn/compress-images-without-uploading#who-this-is-for",
+        "/learn/compress-images-without-uploading#why-it-matters-for-speed",
+        "/learn/compress-images-without-uploading#why-uploading-is-a-problem"
+      ]
+    },
+    "/learn/core-web-vitals-images": {
+      "usesArticleNav": true,
+      "links": [
+        "/glossary/core-web-vitals",
+        "/glossary/lazy-loading",
+        "/learn/core-web-vitals-images#cls-cumulative-layout-shift",
+        "/learn/core-web-vitals-images#inp-interaction-to-next-paint",
+        "/learn/core-web-vitals-images#lcp-largest-contentful-paint",
+        "/learn/core-web-vitals-images#measuring-and-fixing",
+        "/learn/core-web-vitals-images#what-are-core-web-vitals",
+        "/learn/responsive-images"
+      ]
+    },
+    "/learn/image-optimization-guide": {
+      "usesArticleNav": true,
+      "links": [
+        "/glossary/core-web-vitals",
+        "/glossary/lazy-loading",
+        "/learn/image-optimization-guide#choose-the-right-format",
+        "/learn/image-optimization-guide#compress-and-strip",
+        "/learn/image-optimization-guide#deliver-correctly",
+        "/learn/image-optimization-guide#resize-for-the-viewport",
+        "/learn/image-optimization-guide#set-the-right-quality",
+        "/learn/image-optimization-guide#why-image-optimization-matters",
+        "/learn/responsive-images"
+      ]
+    },
+    "/learn/jpeg-quality-guide": {
+      "usesArticleNav": true,
+      "links": [
+        "/glossary/chroma-subsampling",
+        "/glossary/mozjpeg",
+        "/learn/jpeg-quality-guide#per-image-overrides",
+        "/learn/jpeg-quality-guide#recommended-settings",
+        "/learn/jpeg-quality-guide#resolution-beats-quality",
+        "/learn/jpeg-quality-guide#test-it-on-your-own-image",
+        "/learn/jpeg-quality-guide#the-rule",
+        "/learn/jpeg-quality-guide#the-summary",
+        "/learn/jpeg-quality-guide#where-error-shows",
+        "/learn/jpeg-quality-guide#why-the-curve-bends",
+        "/learn/reduce-image-file-size"
+      ]
+    },
+    "/learn/reduce-image-file-size": {
+      "usesArticleNav": true,
+      "links": [
+        "/glossary/avif",
+        "/glossary/entropy-coding",
+        "/glossary/lossless-compression",
+        "/glossary/mozjpeg",
+        "/learn/reduce-image-file-size#1-convert-to-a-modern-format",
+        "/learn/reduce-image-file-size#2-resize-to-display-dimensions",
+        "/learn/reduce-image-file-size#3-lower-quality-to-80",
+        "/learn/reduce-image-file-size#4-strip-metadata",
+        "/learn/reduce-image-file-size#5-lossless-re-optimization",
+        "/learn/reduce-image-file-size#6-use-the-right-color-space",
+        "/learn/reduce-image-file-size#7-avoid-png-for-photographs",
+        "/learn/reduce-image-file-size#8-reduce-color-depth",
+        "/learn/reduce-image-file-size#9-crop-and-compose-tighter"
+      ]
+    },
+    "/learn/responsive-images": {
+      "usesArticleNav": true,
+      "links": [
+        "/learn/reduce-image-file-size",
+        "/learn/responsive-images#common-mistakes",
+        "/learn/responsive-images#picture-element",
+        "/learn/responsive-images#sizes-attribute",
+        "/learn/responsive-images#srcset-widths",
+        "/learn/responsive-images#the-problem"
+      ]
+    },
+    "/learn/webp-vs-avif": {
+      "usesArticleNav": true,
+      "links": [
+        "/glossary/webp",
+        "/learn/reduce-image-file-size",
+        "/learn/webp-vs-avif#browser-support",
+        "/learn/webp-vs-avif#compression-efficiency",
+        "/learn/webp-vs-avif#encoding-speed",
+        "/learn/webp-vs-avif#features-compared",
+        "/learn/webp-vs-avif#the-short-answer",
+        "/learn/webp-vs-avif#which-should-you-use"
+      ]
+    },
+    "/privacy": {
+      "usesArticleNav": true,
+      "links": [
+        "/privacy#analytics",
+        "/privacy#changes",
+        "/privacy#hosting",
+        "/privacy#images",
+        "/privacy#local-storage",
+        "/privacy#pro-audit",
+        "/privacy#the-short-version",
+        "/privacy#your-controls"
+      ]
+    },
+    "/pro": {
+      "usesArticleNav": false,
+      "links": [
+        "/",
+        "/formats/avif",
+        "/formats/webp",
+        "/glossary",
+        "/learn",
+        "/learn/core-web-vitals-images",
+        "/tools/image-resizer"
+      ]
+    },
+    "/tools": {
+      "usesArticleNav": false,
+      "links": [
+        "#root",
+        "/formats/avif",
+        "/formats/jpeg",
+        "/formats/png",
+        "/formats/webp",
+        "/glossary",
+        "/learn/compress-images-for-web",
+        "/learn/compress-images-without-uploading",
+        "/learn/core-web-vitals-images",
+        "/learn/image-optimization-guide",
+        "/learn/jpeg-quality-guide",
+        "/learn/reduce-image-file-size",
+        "/learn/responsive-images",
+        "/learn/webp-vs-avif",
+        "/pro",
+        "/tools/image-converter",
+        "/tools/image-resizer"
+      ]
+    },
+    "/tools/image-converter": {
+      "usesArticleNav": true,
+      "links": [
+        "/glossary/core-web-vitals",
+        "/tools",
+        "/tools/image-converter#auto-pick",
+        "/tools/image-converter#how-to-convert",
+        "/tools/image-converter#quality-and-transparency",
+        "/tools/image-converter#supported-conversions",
+        "/tools/image-converter#why-convert"
+      ]
+    },
+    "/tools/image-resizer": {
+      "usesArticleNav": true,
+      "links": [
+        "/learn/responsive-images",
+        "/tools",
+        "/tools/image-resizer#choose-the-right-dimensions",
+        "/tools/image-resizer#how-to-resize",
+        "/tools/image-resizer#privacy",
+        "/tools/image-resizer#resize-vs-compress",
+        "/tools/image-resizer#why-resize-matters"
+      ]
+    }
+  }
+}

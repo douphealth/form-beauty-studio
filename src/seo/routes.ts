@@ -21,6 +21,7 @@ export interface RouteEntry {
   description: string;
   /** sitemap priority */
   priority?: number;
+  updated?: string;
   /** sitemap changefreq */
   changefreq?: "always" | "hourly" | "daily" | "weekly" | "monthly" | "yearly" | "never";
   /** Exclude from sitemap + robots (privacy, 404, legal drafts) */
@@ -39,18 +40,34 @@ export interface RouteEntry {
 
 export const HOME: RouteEntry = {
   path: "/",
+    updated: "2026-11-19",
   kind: "tool",
   title: "ImageAlchemy — Free Private Image Compressor (WebP, AVIF, JPEG, PNG)",
   description:
-    "Compress and convert images to WebP, AVIF, JPEG and PNG in your browser. Free, private, unlimited batch compression — no uploads, no accounts, no tracking.",
+    "Compress and convert images to WebP, AVIF, JPEG and PNG in your browser. Batch up to 200 files locally, inspect quality and download individually or as a ZIP.",
   priority: 1.0,
   changefreq: "weekly",
 };
 
 export const ROUTES: RouteEntry[] = [
+  {
+    path: "/formats",
+    updated: "2026-11-19",
+    kind: "format",
+    title: "Image Format Guide: WebP, AVIF, JPEG and PNG — ImageAlchemy",
+    description: "Choose the right image format for web photos, screenshots, graphics and email attachments.",
+  },
+  {
+    path: "/tools",
+    updated: "2026-11-19",
+    kind: "tool",
+    title: "Image Tools for Resizing, Conversion and Compression — ImageAlchemy",
+    description: "Find the right ImageAlchemy tool for resizing files, converting formats, batch compression or inspecting a webpage.",
+  },
   // ── Learn hub + guides (informational intent) ────────────────────────────
   {
     path: "/learn",
+    updated: "2026-11-19",
     kind: "guide",
     title: "Image Optimization & Compression Guides — ImageAlchemy",
     description:
@@ -253,6 +270,7 @@ export interface GlossaryEntry {
   description: string;
   term: string;
   priority?: number;
+  updated?: string;
 }
 
 export const GLOSSARY: GlossaryEntry[] = [

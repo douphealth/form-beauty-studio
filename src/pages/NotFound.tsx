@@ -1,6 +1,6 @@
 import { useLocation } from "react-router-dom";
 import { useEffect } from "react";
-import { Helmet } from "react-helmet-async";
+import Seo from "@/components/seo/Seo";
 
 const NotFound = () => {
   const location = useLocation();
@@ -11,15 +11,7 @@ const NotFound = () => {
 
   return (
     <>
-      <Helmet>
-        <title>Page Not Found — ImageAlchemy</title>
-        <meta name="description" content="The page you're looking for doesn't exist. Head back to ImageAlchemy to compress, convert, and optimize images privately in your browser." />
-        <meta name="robots" content="noindex,follow" />
-        <link rel="canonical" href="https://imagealchemy.app/404" />
-        <meta property="og:title" content="Page Not Found — ImageAlchemy" />
-        <meta property="og:description" content="The page you're looking for doesn't exist." />
-        <meta property="og:url" content="https://imagealchemy.app/404" />
-      </Helmet>
+      <Seo path="/404" title="Page not found — ImageAlchemy" description="Find the free image compressor or browse the image optimization guides." noindex />
       <main className="flex min-h-screen items-center justify-center bg-background">
         <div className="text-center">
           <h1 className="mb-4 text-4xl font-bold text-foreground">404 — Page not found</h1>

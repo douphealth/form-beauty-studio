@@ -1,73 +1,46 @@
-# Welcome to your Lovable project
+# ImageAlchemy
 
-## Project info
+ImageAlchemy is a private image compression studio for WebP, AVIF, JPEG and PNG. Users can resize a batch, apply per-image settings, compare outputs and download individual files or a ZIP. The free compressor processes images in the browser. The optional Pro website audit uses a separate service.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+[Open ImageAlchemy](https://imagealchemy.app/) · [Image optimization guides](https://imagealchemy.app/learn) · [Format guide](https://imagealchemy.app/formats)
 
-## How can I edit this code?
+## Development
 
-There are several ways of editing your application.
+Use Node.js 22.12 or later and npm. From the repository root run:
 
-**Use Lovable**
+    npm ci --legacy-peer-deps
+    npm run dev
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+Run the release checks and inspect the static build locally:
 
-Changes made via Lovable will be committed automatically to this repo.
+    npm test
+    npm run lint
+    npm run build
+    npm run preview
 
-**Use your preferred IDE**
+The production build renders each route to its own HTML file, preserves the historical HTML aliases, writes the sitemap and Markdown alternates, and checks link, metadata, structured-data, licence and audit consistency. The deployable frontend is in `dist/`.
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## Source map
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+| Area | Location |
+| --- | --- |
+| Studio, queue, export and comparison | `src/pages/Index.tsx`, `src/components/`, `src/lib/` |
+| Public routes, canonical URLs and schema | `src/seo/` |
+| Guides, tools, formats and glossary | `src/content/` |
+| Prerendering and release checks | `scripts/`, `plugins/` |
+| Optional audit service | `workers/audit-proxy/` |
+| Photo and font licences | `public/studio-demo/`, `public/fonts/`, `public/compare/meta.json` |
 
-Follow these steps:
+## Production
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+The existing imagealchemy.app domain is published through the [Image Alchemy Pro project](https://lovable.dev/projects/049f5486-5bb1-4ae8-a598-0be47c0403e5), connected to [form-beauty-studio](https://github.com/douphealth/form-beauty-studio). The related [image-alchemy-pro repository](https://github.com/douphealth/image-alchemy-pro) shares the studio source. Publish from the connected project and compare the live `/deploy-version.json` with the intended release. Keep the existing production environment settings for the optional audit and checkout. A frontend release does not require a Worker deployment.
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+To roll back a frontend release, restore the preceding published version in the same project or revert the release commit and republish. Recheck the homepage, an article URL, an export and the Pro page.
 
-# Step 3: Install the necessary dependencies.
-npm i
+## Using the studio
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+Use the comparison slider and magnification on the sample photograph to inspect a quality setting. **Use WebP Q…** applies that setting to the next batch. **Try a sample** puts the same source photograph through the actual encoder.
 
-**Edit a file directly in GitHub**
+A file size target applies to each image independently. The encoder first tries the selected quality. If the result exceeds the target, it tests up to five lower qualities. It reports the measured outcome for each file, including exports that still exceed the target. PNG stays lossless. Reduce the maximum dimension when a target is too small. Auto-Pick excludes JPEG when it finds transparent pixels.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+The guide directory accepts searches such as [/learn?q=srcset](https://imagealchemy.app/learn?q=srcset). Every guide also has its own directly addressable HTML document.

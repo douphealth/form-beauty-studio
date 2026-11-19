@@ -21,6 +21,9 @@ export interface ImageFile {
   override?: Partial<CompressionOptions> & { auto?: boolean };
   /** Format actually used (set after compress, useful when auto-pick) */
   chosenFormat?: OutputFormat;
+  encodingKey?: string;
+  outputQuality?: number;
+  targetBytes?: number;
 }
 
 const MIME_MAP: Record<OutputFormat, string> = {
@@ -48,7 +51,7 @@ export function getMimeType(format: OutputFormat): string {
 export function formatBytes(bytes: number): string {
   if (bytes === 0) return '0 B';
   const k = 1024;
-  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const sizes = ['B', 'KiB', 'MiB', 'GiB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
 }
@@ -122,7 +125,13 @@ export async function compressImageAuto(
       if (imageData.width > maxDim || imageData.height > maxDim) {
         imageData = resizeImageData(imageData, maxDim);
       }
-      const formats: OutputFormat[] = ['webp', 'avif', 'jpeg'];
+      // JPEG cannot preserve transparent pixels in the export.
+      const formats: OutputFormat[] = ['webp', 'avif'];
+      let opaque = true;
+      for (let i = 3; i < imageData.data.length; i += 4) {
+        if (imageData.data[i] < 255) { opaque = false; break; }
+      }
+      if (opaque) formats.push('jpeg');
       const results = await Promise.all(
         formats.map(async (f) => {
           try {
@@ -189,10 +198,10 @@ function compressImageCanvas(file: File, options: CompressionOptions): Promise<B
         canvas.toBlob(
           (blob) => {
             URL.revokeObjectURL(objectUrl);
-            if (blob) {
+            if (blob?.type === mime) {
               resolve(blob);
             } else {
-              reject(new Error('Failed to compress image'));
+              reject(new Error('This browser could not export '+options.format.toUpperCase()+'. Try another format.'));
             }
           },
           mime,
@@ -225,15 +234,20 @@ export function createImageFile(file: File): ImageFile {
   };
 }
 
-export function downloadBlob(blob: Blob, filename: string) {
-  const url = URL.createObjectURL(blob);
+export function downloadUrl(url: string, filename: string) {
   const a = document.createElement('a');
   a.href = url;
   a.download = filename;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+}
+
+export function downloadBlob(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob);
+  downloadUrl(url, filename);
+  // Give the browser time to take ownership of the download.
+  window.setTimeout(() => URL.revokeObjectURL(url), 60000);
 }
 
 export const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/avif', 'image/gif', 'image/bmp', 'image/tiff'];

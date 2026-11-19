@@ -24,6 +24,7 @@ function PresetBar({ activeId, onSelect }: PresetBarProps) {
           return (
             <MotionButton
               key={p.id}
+              aria-pressed={active}
               onClick={() => onSelect(p.id)}
               whileHover={{ y: -2 }}
               whileTap={{ scale: 0.97 }}

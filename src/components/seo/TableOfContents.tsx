@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { MotionDiv, MotionSection, MotionNav, MotionA, MotionSpan, MotionP, MotionButton, MotionLi } from "@/lib/motion";
 
 export interface TocItem {
@@ -14,6 +14,7 @@ export interface TocItem {
  * parsing document structure.
  */
 export default function TableOfContents({ items, className = "" }: { items: TocItem[]; className?: string }) {
+  const { pathname } = useLocation();
   const [activeId, setActiveId] = useState<string>(items[0]?.id ?? "");
 
   useEffect(() => {
@@ -36,7 +37,7 @@ export default function TableOfContents({ items, className = "" }: { items: TocI
 
   return (
     <nav aria-label="Table of contents" className={"hidden lg:block " + className}>
-      <div className="sticky top-24">
+      <div className="reader-sections">
         <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground/50">
           On this page
         </p>
@@ -45,13 +46,13 @@ export default function TableOfContents({ items, className = "" }: { items: TocI
             const active = activeId === item.id;
             return (
               <li key={item.id}>
-                <Link
-                  to={"#" + item.id}
+                <a
+                  href={pathname + "#" + item.id}
                   className="relative block border-l-2 py-1.5 pl-4 text-xs font-medium transition-colors"
                   style={active ? { color: "hsl(var(--primary))", borderColor: "hsl(var(--primary))" } : { color: "hsl(var(--muted-foreground) / 0.7)", borderColor: "transparent" }}
                 >
                   {item.text}
-                </Link>
+                </a>
               </li>
             );
           })}

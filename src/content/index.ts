@@ -23,7 +23,10 @@ import { COMPANY_CONTENT } from "./data/company";
 import { HUB_CONTENT as LEARN_HUB } from "./data/hub-learn";
 import { HUB_CONTENT as GLOSSARY_HUB } from "./data/hub-glossary";
 
+import { DIRECTORIES } from "./data/directories";
+
 export const CONTENT_INDEX: Record<string, ContentEntry> = {
+  ...DIRECTORIES,
   ...LEARN_HUB,
   ...GLOSSARY_HUB,
   ...GUIDE_CONTENT,
