@@ -22,7 +22,7 @@ import { PRESETS, getPreset, type PresetId } from "@/lib/presets";
 import { HOME } from "@/seo/routes";
 import {
   type ImageFile, type OutputFormat, type CompressionOptions,
-  formatBytes, getCompressionRatio, downloadBlob,
+  formatBytes, getCompressionRatio, downloadBlob, downloadUrl,
 } from "@/lib/image-utils";
 
 const AUTO_COMPRESS_KEY = "imagealchemy:auto-compress";
@@ -44,6 +44,10 @@ export default function Index() {
   const [autoCompress, setAutoCompress] = useState<boolean>(() => {
     return localStorage.getItem(AUTO_COMPRESS_KEY) === "true";
   });
+  const [zipFile, setZipFile] = useState<{ href: string; name: string } | null>(null);
+  const packing = useRef(false);
+  useEffect(() => { setZipFile(null); }, [images]);
+  useEffect(() => () => { if (zipFile) URL.revokeObjectURL(zipFile.href); }, [zipFile]);
   const [targetBytes, setTargetBytes] = useState(0);
   const [processing, setProcessing] = useState(false);
   const [paused, setPaused] = useState(false);
@@ -346,24 +350,35 @@ export default function Index() {
   }, [selected]);
 
   const downloadZip = useCallback(async () => {
-    const completed = imagesRef.current.filter((i) => i.status === "done" && i.compressedBlob);
-    if (completed.length === 0) return;
-    const { default: JSZip } = await import("jszip");
-    const zip = new JSZip();
-    // Unique names: src.png + src.jpg both become src.webp and would overwrite.
-    const used = new Set<string>();
-    completed.forEach((img) => {
-      let name = img.outputFilename;
-      const dot = name.lastIndexOf(".");
-      const base = dot > 0 ? name.slice(0, dot) : name;
-      const ext = dot > 0 ? name.slice(dot) : "";
-      for (let n = 2; used.has(name.toLowerCase()); n++) name = `${base}-${n}${ext}`;
-      used.add(name.toLowerCase());
-      zip.file(name, img.compressedBlob!);
-    });
-    const blob = await zip.generateAsync({ type: "blob" });
-    downloadBlob(blob, `imagealchemy-${Date.now()}.zip`);
-    toast.success("ZIP downloaded!");
+    const snapshot = imagesRef.current;
+    const completed = snapshot.filter((i) => i.status === "done" && i.compressedBlob);
+    if (!completed.length || packing.current) return;
+    packing.current = true;
+    try {
+      const { default: JSZip } = await import("jszip");
+      const zip = new JSZip();
+      // Unique names: src.png + src.jpg both become src.webp and would overwrite.
+      const used = new Set<string>();
+      completed.forEach((img) => {
+        let name = img.outputFilename;
+        const dot = name.lastIndexOf(".");
+        const base = dot > 0 ? name.slice(0, dot) : name;
+        const ext = dot > 0 ? name.slice(dot) : "";
+        for (let n = 2; used.has(name.toLowerCase()); n++) name = `${base}-${n}${ext}`;
+        used.add(name.toLowerCase());
+        zip.file(name, img.compressedBlob!);
+      });
+      const blob = await zip.generateAsync({ type: "blob" });
+      if (snapshot !== imagesRef.current) return;
+      const file = { href: URL.createObjectURL(blob), name: `imagealchemy-${Date.now()}.zip` };
+      setZipFile(file);
+      downloadUrl(file.href, file.name);
+      toast.success("ZIP ready");
+    } catch {
+      toast.error("Could not prepare the ZIP. Try again or download individual files.");
+    } finally {
+      packing.current = false;
+    }
   }, []);
 
   const downloadAllIndividually = useCallback(() => {
@@ -493,6 +508,7 @@ export default function Index() {
                   processing={processing}
                 />
 
+                {zipFile && <p className="zip-ready" role="status">Archive ready. <a href={zipFile.href} download={zipFile.name}>Save ZIP</a></p>}
                 {/* Image Grid */}
                 <fieldset disabled={processing} className="mt-12 min-w-0">
                   <div className="mb-5 flex items-center justify-between">

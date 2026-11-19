@@ -989,3 +989,6 @@ summary::-webkit-details-marker {
 input.inspection-range[type="range"] { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; margin: 0; cursor: ew-resize; touch-action: pan-y; }
 .inspector-image:focus-within { outline: 3px solid var(--violet); outline-offset: -3px; }
 @media (hover: none) { .glass-card .group-hover\:opacity-100 { opacity: 1; } }
+
+.zip-ready { text-align: center; padding: .7rem; color: var(--sub); }
+.zip-ready a { color: var(--violet); text-decoration: underline; text-underline-offset: .2em; }
