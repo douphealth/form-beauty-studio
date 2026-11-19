@@ -21,6 +21,8 @@ const RESIZE_OPTIONS = [
 ];
 
 interface CompressionSettingsProps {
+  targetBytes: number;
+  onTargetChange: (bytes: number) => void;
   format: OutputFormat;
   quality: number;
   maxDimension: number;
@@ -36,12 +38,13 @@ interface CompressionSettingsProps {
 function CompressionSettings({
   format, quality, maxDimension,
   onFormatChange, onQualityChange, onMaxDimensionChange,
-  isOpen, onToggle,
+  isOpen, onToggle, targetBytes, onTargetChange,
   autoPick, onAutoPickChange,
 }: CompressionSettingsProps) {
   return (
     <div className="mt-10">
       <button
+        aria-expanded={isOpen}
         onClick={onToggle}
         className="mb-4 flex w-full items-center justify-between rounded-2xl border border-border/40 bg-card/30 backdrop-blur-sm px-5 py-3.5 text-sm font-semibold text-foreground transition-colors duration-300 hover:bg-card/50"
       >
@@ -109,7 +112,7 @@ function CompressionSettings({
                   </div>
                   {autoPick && (
                     <p className="text-[11px] font-medium text-accent/80">
-                      Encodes WebP, AVIF & JPEG in parallel — keeps the smallest per image.
+                      Compares WebP and AVIF, plus JPEG for opaque images, and keeps the smallest successful export.
                     </p>
                   )}
                 </div>
@@ -131,7 +134,7 @@ function CompressionSettings({
                       value={quality}
                       onChange={(e) => onQualityChange(Number(e.target.value))}
                       className="w-full"
-                      disabled={format === "png"}
+                      disabled={format === "png" && !autoPick}
                       aria-label="Compression quality percentage"
                     />
                   </div>
@@ -139,11 +142,19 @@ function CompressionSettings({
                     <span>Smaller file</span>
                     <span>Higher quality</span>
                   </div>
-                  {format === "png" && (
+                  {format === "png" && !autoPick && (
                     <p className="text-[11px] font-medium text-accent">PNG is lossless — quality doesn't apply</p>
                   )}
                 </div>
 
+                <div className="export-target space-y-3">
+                  <label htmlFor="target-size">File size target</label>
+                  <select id="target-size" value={targetBytes} onChange={e => onTargetChange(Number(e.target.value))}>
+                    <option value={0}>Use selected quality</option>
+                    {[100, 250, 500, 1024].map(kib => <option key={kib} value={kib * 1024}>{kib === 1024 ? "1 MiB" : kib + " KiB"} per image</option>)}
+                  </select>
+                  {targetBytes > 0 && <p>{format === "png" && !autoPick ? "PNG is lossless. Each export shows whether it fits." : "The studio tries lower quality settings when needed. Each export shows whether it fits."}</p>}
+                </div>
                 {/* Resize */}
                 <div className="space-y-3">
                   <label htmlFor="max-dimension-select" className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">

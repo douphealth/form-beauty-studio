@@ -934,3 +934,58 @@ summary::-webkit-details-marker {
 .publisher-links a {
   text-decoration: underline;
 }
+
+.original-window {
+  position: absolute;
+  inset: 0;
+  clip-path: inset(0 calc(100% - var(--split)) 0 0);
+}
+.detail-view .comparison-photo { transform: scale(2); transform-origin: 51% 48%; }
+.proof-zoom {
+  position: absolute; left: 1rem; bottom: .85rem; z-index: 2;
+  display: flex; align-items: center; gap: .4rem; min-height: 40px;
+  padding: .35rem .7rem; color: white; background: #19171fe8;
+  border: 1px solid #ffffff60; border-radius: .5rem; font-size: .875rem;
+}
+.proof-meter { height: 4px; background: #ffffff26; border-radius: 2px; margin: .95rem 0 .35rem; overflow: hidden; }
+.proof-meter i { display: block; height: 100%; background: #d6edaa; transition: width .2s ease; }
+.proof-export { display: flex; gap: 1rem; align-items: center; justify-content: space-between; font-size: .875rem; color: #d3cbd9; }
+.proof-export a { color: #eedfff; text-underline-offset: .2em; text-decoration: underline; padding-block: .55rem; }
+.export-target label { display: block; font-size: .875rem; font-weight: 600; }
+.export-target select { width: 100%; background: var(--panel); border: 1px solid var(--line); min-height: 44px; border-radius: .65rem; padding: .5rem .75rem; }
+.export-target p, .target-result { color: var(--sub); font-size: .875rem; line-height: 1.45; }
+@media (prefers-reduced-motion: reduce) { .proof-meter i { transition: none; } }
+
+.guide-finder { margin-block: 1.5rem; }
+.guide-finder label { display: block; margin-bottom: .4rem; font-weight: 600; }
+.guide-search { display: flex; gap: .65rem; align-items: center; padding: .65rem .9rem; background: var(--panel); border: 1px solid var(--line); border-radius: .6rem; }
+.guide-search input { min-width: 0; width: 100%; background: transparent; color: var(--ink); font: inherit; }
+.guide-finder [role="status"] { color: var(--sub); margin: .6rem 0; font-size: .875rem; }
+.prose-content .guide-finder ul { list-style: none; padding: 0; margin: 0; }
+.guide-finder li { margin: 0; border-bottom: 1px solid var(--line); }
+.prose-content .guide-finder li a { display: flex; align-items: baseline; gap: .75rem; padding: .95rem .25rem; text-decoration: none; }
+.guide-finder svg { flex-shrink: 0; }
+.guide-finder small { display: block; color: var(--sub); font-size: .94rem; margin-top: .15rem; }
+.guide-finder a:hover strong, .guide-finder button { text-decoration: underline; text-underline-offset: .2em; }
+
+.image-inspector { width: min(54rem, calc(100vw - 1.5rem)); max-height: 92dvh; margin: auto; padding: 0; border: 1px solid var(--line); border-radius: 1rem; background: var(--panel); color: var(--ink); overflow: auto; }
+.image-inspector::backdrop { background: rgb(18 15 24 / .78); }
+.inspector-inner header, .inspector-toolbar, .inspector-inner footer { padding: .8rem 1rem; display: flex; align-items: center; justify-content: space-between; gap: .75rem; }
+.inspector-inner header h2 { overflow-wrap: anywhere; font-size: 1.05rem; font-weight: 650; }
+.inspector-inner header p, .inspector-inner footer span { color: var(--sub); font-size: .875rem; }
+.inspector-close { display: grid; place-items: center; min-width: 44px; height: 44px; }
+.inspector-toolbar { flex-wrap: wrap; border-top: 1px solid var(--line); }
+.inspector-tabs { display: inline-flex; gap: .15rem; flex-wrap: wrap; }
+.inspector-tabs button, .inspector-toolbar select { border-radius: .4rem; min-height: 40px; padding: .25rem .6rem; font-size: .875rem; }
+.inspector-tabs button[aria-pressed="true"] { background: var(--tint); color: var(--violet); font-weight: 650; }
+.inspector-toolbar label { font-size: .875rem; }
+.inspector-toolbar select { background: var(--panel); border: 1px solid var(--line); margin-left: .3rem; }
+.inspector-viewport { max-height: 58dvh; overflow: auto; background: repeating-conic-gradient(#747177 0 25%, #817e83 0 50%) 0 0 / 14px 14px; }
+.inspector-image { position: relative; }
+.inspector-image img { display: block; width: 100%; height: auto; }
+.inspector-image .inspector-overlay { position: absolute; inset: 0; height: 100%; }
+.inspection-line { position: absolute; top: 0; bottom: 0; width: 2px; background: white; pointer-events: none; }
+.inspection-line svg { position: absolute; top: 50%; transform: translate(-50%, -50%); border-radius: 50%; background: white; color: #24212b; }
+input.inspection-range[type="range"] { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; margin: 0; cursor: ew-resize; touch-action: pan-y; }
+.inspector-image:focus-within { outline: 3px solid var(--violet); outline-offset: -3px; }
+@media (hover: none) { .glass-card .group-hover\:opacity-100 { opacity: 1; } }

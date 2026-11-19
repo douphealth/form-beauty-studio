@@ -3,7 +3,7 @@ import { useLocation } from "react-router-dom";
 import { SITE } from "../../seo/site";
 import { absUrl } from "../../seo/html";
 import { buildSeoJsonLd } from "../../seo/json-ld";
-import { findRoute } from "../../seo/routes";
+import { findRoute, GLOSSARY_TERM_BY_PATH, DEFAULT_CONTENT_DATE } from "../../seo/routes";
 
 export interface SeoProps {
   title?: string;
@@ -12,6 +12,7 @@ export interface SeoProps {
   breadcrumbs?: { label: string; path: string }[];
   faqs?: { question: string; answer: string }[];
   keywords?: string[];
+  listItems?: { label: string; path: string }[];
   datePublished?: string;
   dateModified?: string;
   noindex?: boolean;
@@ -39,7 +40,9 @@ export default function Seo(props: SeoProps) {
     faqs: props.faqs,
     keywords: props.keywords,
     datePublished: props.datePublished,
-    dateModified: props.dateModified,
+    dateModified: props.dateModified ?? route?.updated ?? DEFAULT_CONTENT_DATE,
+    listItems: props.listItems,
+    term: GLOSSARY_TERM_BY_PATH[path],
   });
 
   return (
@@ -47,6 +50,7 @@ export default function Seo(props: SeoProps) {
       <title>{title}</title>
       <meta name="description" content={description} />
       <link rel="canonical" href={absUrl(path)} />
+      {route && <link rel="alternate" type="text/markdown" href={absUrl(path === "/" ? "/index.md" : path + ".md")} title="Markdown version" />}
       <link rel="icon" href="/favicon-v4.svg" type="image/svg+xml" />
       <link rel="icon" href="/favicon-v4.ico" sizes="16x16 32x32 48x48 64x64" type="image/x-icon" />
       <link rel="shortcut icon" href="/favicon-v4.ico" type="image/x-icon" />

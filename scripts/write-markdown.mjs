@@ -40,6 +40,7 @@ export function writeMarkdown(outDir, route, html) {
       { H2: "## ", H3: "### ", SUMMARY: "### ", LI: "- " }[el.tagName] ?? "";
     lines.push(prefix + text, "");
   }
+  if (route.path === "/") writeFileSync(path.join(outDir, "index.md"), lines.join("\n"));
   writeFileSync(
     path.join(outDir, route.path.slice(1) + ".md"),
     lines.join("\n"),

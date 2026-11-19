@@ -447,6 +447,7 @@ assert(
 // and lets typos get indexed as duplicates of `/`.
 const notFoundDoc = htmlMod.renderHtmlDocument({
   path: "/404",
+  robots: "noindex,follow",
   title: "Page not found — ImageAlchemy",
   description: "The page you were looking for does not exist. Head back to the image compressor.",
   body: [
@@ -508,4 +509,3 @@ fs.writeFileSync(
 
 console.log(`[seo] pre-rendered ${ok} routes -> dist/ (${written.length * 2 - 1} HTML docs, ${titleSeen.size} unique titles)`);
 console.log(`[seo] wrote 404.html, _redirects, _headers`);
-

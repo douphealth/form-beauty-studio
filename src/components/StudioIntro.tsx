@@ -2,7 +2,7 @@ import { useState, type CSSProperties, type ComponentProps } from "react";
 import {
   ChevronsLeftRight,
   LockKeyhole,
-  SlidersHorizontal,
+  SlidersHorizontal, ZoomIn,
 } from "lucide-react";
 import DropZone from "./DropZone";
 
@@ -14,13 +14,15 @@ const encodes = [
 const original = 215293;
 const kib = (size: number) => (size / 1024).toFixed(1) + " KiB";
 
-function SampleProof() {
+type ApplyQuality = { onApplyQuality?: (q: number) => void };
+function SampleProof({ onApplyQuality }: ApplyQuality) {
+  const [detail, setDetail] = useState(false);
   const [encode, setEncode] = useState(encodes[1]);
   const [split, setSplit] = useState(48);
   return (
     <figure className="sample-proof">
       <div
-        className="proof-frame"
+        className={"proof-frame" + (detail ? " detail-view" : "")}
         style={{ "--split": split + "%" } as CSSProperties}
       >
         <img
@@ -31,14 +33,17 @@ function SampleProof() {
           height="675"
           {...{ fetchpriority: "high" }}
         />
-        <img
-          className="comparison-photo proof-original"
+        <div className="original-window"><img
+          className="comparison-photo"
           src="/studio-demo/alaska-range.jpg"
           alt=""
           width="1080"
           height="675"
           decoding="async"
-        />
+        /></div>
+        <button className="proof-zoom" type="button" aria-pressed={detail} aria-label="Magnify photograph detail" onClick={() => setDetail(!detail)}>
+          <ZoomIn size={16} />{detail ? "2× detail" : "1× view"}
+        </button>
         <span className="photo-tag original-tag">Original</span>
         <span className="photo-tag output-tag">WebP · Q{encode.q}</span>
         <div className="proof-divider">
@@ -83,12 +88,19 @@ function SampleProof() {
             <s>{kib(original)}</s> <strong>{kib(encode.bytes)}</strong>
           </span>
         </div>
+        <div className="proof-meter" aria-hidden="true"><i style={{width: (100 * encode.bytes / original) + "%"}} /></div>
+        <div className="proof-export"><span>Measured sample sizes</span>
+          <a href={"/?preset=webp&quality=" + encode.q + "#tool"} onClick={e => {
+            if (!onApplyQuality || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+            e.preventDefault(); onApplyQuality(encode.q);
+          }}>Use WebP Q{encode.q}</a>
+        </div>
       </figcaption>
     </figure>
   );
 }
 
-export default function StudioIntro(props: ComponentProps<typeof DropZone>) {
+export default function StudioIntro({ onApplyQuality, ...props }: ComponentProps<typeof DropZone> & ApplyQuality) {
   return (
     <section
       className={props.hasFiles ? "studio-intro queue-intro" : "studio-intro"}
@@ -116,7 +128,7 @@ export default function StudioIntro(props: ComponentProps<typeof DropZone>) {
         )}
         <DropZone {...props} />
       </div>
-      {!props.hasFiles && <SampleProof />}
+      {!props.hasFiles && <SampleProof onApplyQuality={onApplyQuality} />}
     </section>
   );
 }

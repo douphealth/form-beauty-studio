@@ -18,6 +18,7 @@ export interface ContentLayoutProps {
   faqs?: { question: string; answer: string }[];
   breadcrumbs?: { label: string; path: string }[];
   keywords?: string[];
+  listItems?: SeoProps["listItems"];
   children: ReactNode;
   toc?: { id: string; text: string }[];
   noindex?: boolean;
@@ -43,6 +44,7 @@ export default function ContentLayout(props: ContentLayoutProps) {
         breadcrumbs={crumbs}
         faqs={faqs}
         keywords={keywords}
+        listItems={props.listItems}
         noindex={noindex}
       />
       <div className="relative z-10">

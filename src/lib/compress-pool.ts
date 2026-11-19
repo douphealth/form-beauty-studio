@@ -3,6 +3,7 @@
  * with pause/cancel support, per-image overrides, and auto-pick format.
  */
 
+import { fitFileSize } from './fit-file-size';
 import type { ImageFile, CompressionOptions, OutputFormat } from './image-utils';
 import { compressImage, compressImageAuto, generateOutputFilename } from './image-utils';
 
@@ -24,6 +25,7 @@ export interface PoolControls {
   autoPick?: boolean;
   /** Only process pending/error items (used for retry-failed) */
   onlyRetry?: boolean;
+  targetBytes?: number;
 }
 
 async function waitWhilePaused(isPaused?: () => boolean, signal?: AbortSignal) {
@@ -68,7 +70,7 @@ export async function compressPool(
         maxDimension: img.override?.maxDimension !== undefined ? img.override.maxDimension : globalOptions.maxDimension,
       };
 
-      const encodingKey = JSON.stringify([useAuto ? "auto" : effective.format, effective.quality, effective.maxDimension]);
+      const encodingKey = JSON.stringify([useAuto ? "auto" : effective.format, effective.quality, effective.maxDimension, controls.targetBytes ?? 0]);
       if (img.status === "done" && img.encodingKey === encodingKey) {
         onProgress({ index: i, image: img, completed: ++completed });
         continue;
@@ -93,6 +95,17 @@ export async function compressPool(
         }
 
         if (signal?.aborted) throw new Error("Cancelled");
+        let outputQuality = Math.round(effective.quality * 100);
+        if (controls.targetBytes && chosenFormat !== 'png' && blob.size > controls.targetBytes) {
+          const fit = await fitFileSize(blob, outputQuality, controls.targetBytes, async (q) => {
+            await waitWhilePaused(isPaused, signal);
+            if (signal?.aborted) throw new Error("Cancelled");
+            return compressImage(img.file, { ...effective, format: chosenFormat, quality: q / 100 });
+          });
+          blob = fit.blob;
+          outputQuality = fit.quality;
+        }
+        if (signal?.aborted) throw new Error("Cancelled");
         const outputFilename = generateOutputFilename(img.file.name, chosenFormat);
         const compressedUrl = URL.createObjectURL(blob);
 
@@ -105,6 +118,8 @@ export async function compressPool(
           outputFilename,
           chosenFormat,
           encodingKey,
+          outputQuality: chosenFormat === "png" ? undefined : outputQuality,
+          targetBytes: controls.targetBytes,
         };
       } catch (err) {
         if (signal?.aborted) {

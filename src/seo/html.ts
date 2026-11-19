@@ -206,7 +206,7 @@ ${articleDates}
       representation instead of parsing the full document.
     -->
     <link rel="llms" type="text/plain" href="/llms.txt" />
-    <link rel="alternate" type="text/markdown" href="${url}.md" title="Markdown version" />
+    <link rel="alternate" type="text/markdown" href="${isHome ? absUrl("/index.md") : url + ".md"}" title="Markdown version" />
 ${fontLinks}
 ${cssTags}
 ${jsTags}

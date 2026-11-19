@@ -22,6 +22,8 @@ export interface ImageFile {
   /** Format actually used (set after compress, useful when auto-pick) */
   chosenFormat?: OutputFormat;
   encodingKey?: string;
+  outputQuality?: number;
+  targetBytes?: number;
 }
 
 const MIME_MAP: Record<OutputFormat, string> = {
@@ -123,7 +125,13 @@ export async function compressImageAuto(
       if (imageData.width > maxDim || imageData.height > maxDim) {
         imageData = resizeImageData(imageData, maxDim);
       }
-      const formats: OutputFormat[] = ['webp', 'avif', 'jpeg'];
+      // JPEG cannot preserve transparent pixels in the export.
+      const formats: OutputFormat[] = ['webp', 'avif'];
+      let opaque = true;
+      for (let i = 3; i < imageData.data.length; i += 4) {
+        if (imageData.data[i] < 255) { opaque = false; break; }
+      }
+      if (opaque) formats.push('jpeg');
       const results = await Promise.all(
         formats.map(async (f) => {
           try {

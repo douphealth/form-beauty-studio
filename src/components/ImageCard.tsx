@@ -172,6 +172,9 @@ function ImageCard({ image, onRemove, onPreview, index, selected, onToggleSelect
           )}
         </div>
 
+        {isDone && image.targetBytes && image.compressedSize != null ? (
+          <p className="target-result">{image.compressedSize <= image.targetBytes ? "Within target" : "Over target · try a smaller dimension"}{image.outputQuality ? " · Q" + image.outputQuality : ""}</p>
+        ) : null}
         {isError && image.error && (
           <p className="text-[11px] text-destructive leading-relaxed">{image.error}</p>
         )}
@@ -182,7 +185,7 @@ function ImageCard({ image, onRemove, onPreview, index, selected, onToggleSelect
 
 export default memo(ImageCard, (prev, next) => {
   return (
-    prev.image.id === next.image.id &&
+    prev.image === next.image &&
     prev.image.status === next.image.status &&
     prev.image.compressedSize === next.image.compressedSize &&
     prev.image.override === next.image.override &&

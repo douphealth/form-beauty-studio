@@ -1,6 +1,6 @@
 import { Fragment } from "react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import GuideFinder from "../components/GuideFinder";
 import { ArrowRight } from "lucide-react";
 import ContentLayout from "../components/seo/ContentLayout";
 import QualityExplorer from "../components/QualityExplorer";
@@ -52,6 +52,7 @@ export default function ContentPage({ path }: { path: string }) {
       h1={entry.h1}
       lede={entry.lede}
       keywords={entry.keywords}
+      listItems={entry.related}
       faqs={entry.faqs}
       toc={toc}
     >
@@ -69,6 +70,7 @@ export default function ContentPage({ path }: { path: string }) {
                     {paragraph}
                   </div>
                 ))}
+                {path === "/learn" && section.id === "all-guides" && <GuideFinder />}
               </section>
               {Embed && (
                 <div className="mb-12">
@@ -80,7 +82,7 @@ export default function ContentPage({ path }: { path: string }) {
         })}
       </div>
 
-      {entry.related.length > 0 && (
+      {path !== "/learn" && entry.related.length > 0 && (
         <section className="mt-16" aria-labelledby="related-heading">
           <h2 id="related-heading" className="mb-5 text-lg font-bold text-foreground">
             Related guides

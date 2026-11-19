@@ -13,7 +13,7 @@ export const SITE = {
   locale: "en_US",
   language: "en",
   description:
-    "Compress, convert and resize images to WebP, AVIF, JPEG and PNG entirely in your browser. Free, private, unlimited batch processing — no uploads, no accounts, no tracking.",
+    "Compress, convert and resize images to WebP, AVIF, JPEG and PNG entirely in your browser. Work locally with up to 200 images per batch.",
   /** Short pitch used in nav footers + schema descriptions */
   shortDescription:
     "Free, private, browser-based image compression studio. Batch compress to WebP, AVIF, JPEG and PNG with no uploads.",

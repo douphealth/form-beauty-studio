@@ -1,12 +1,13 @@
-import { useState, useCallback, useMemo, useEffect, useRef } from "react";
+import { lazy, Suspense, useState, useCallback, useMemo, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Helmet } from "react-helmet-async";
+import Seo from "@/components/seo/Seo";
+import { HOME_FAQS } from "@/content/studio-faq";
 import { Sparkles, Lock, Globe, Keyboard, CheckCircle2, Wand2 } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import StudioIntro from "@/components/StudioIntro";
 import ImageCard from "@/components/ImageCard";
-import ImagePreviewModal from "@/components/ImagePreviewModal";
+const ImagePreviewModal = lazy(() => import("@/components/ImagePreviewModal"));
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import CompressionSettings from "@/components/CompressionSettings";
@@ -43,6 +44,7 @@ export default function Index() {
   const [autoCompress, setAutoCompress] = useState<boolean>(() => {
     return localStorage.getItem(AUTO_COMPRESS_KEY) === "true";
   });
+  const [targetBytes, setTargetBytes] = useState(0);
   const [processing, setProcessing] = useState(false);
   const [paused, setPaused] = useState(false);
   const [progress, setProgress] = useState({ current: 0, total: 0 });
@@ -119,9 +121,12 @@ export default function Index() {
     const preset = PRESETS.find(p => p.id === value);
     if (preset) { applyPreset(preset.id); setSetupNotice(preset.label + " preset selected."); }
     else if (value === "webp" || value === "avif" || value === "jpeg" || value === "png") {
-      handleFormatChange(value); setSetupNotice(value.toUpperCase() + " selected.");
+      handleFormatChange(value); const rawQuality = new URLSearchParams(search).get("quality");
+      const q = rawQuality && /^([1-9][0-9]?|100)$/.test(rawQuality) ? Number(rawQuality) : null;
+      if (q && value !== "png") handleQualityChange(q);
+      setSetupNotice(value.toUpperCase() + (q && value !== "png" ? " quality " + q : "") + " selected.");
     }
-  }, [search, applyPreset, handleFormatChange]);
+  }, [search, applyPreset, handleFormatChange, handleQualityChange]);
 
   // Throttled progress update
   const pendingUpdatesRef = useRef<Map<string, ImageFile>>(new Map());
@@ -175,6 +180,7 @@ export default function Index() {
         isPaused: () => pausedRef.current,
         autoPick,
         onlyRetry: opts.onlyRetry,
+        targetBytes,
       },
     );
 
@@ -207,7 +213,7 @@ export default function Index() {
     if (failedCount > 0) {
       toast.error(`${failedCount} failed — use Retry Failed to try again`);
     }
-  }, [format, quality, maxDimension, autoPick, flushUpdates]);
+  }, [format, quality, maxDimension, autoPick, targetBytes, flushUpdates]);
 
   const processAll = useCallback(() => {
     return runCompression(imagesRef.current);
@@ -417,18 +423,14 @@ export default function Index() {
 
   return (
     <div className="min-h-screen bg-background transition-colors duration-700">
-      <Helmet>
-        <title>{HOME.title}</title>
-        <meta name="description" content={HOME.description} />
-        <link rel="canonical" href="https://imagealchemy.app/" />
-        <meta property="og:title" content={HOME.title} />
-        <meta property="og:description" content={HOME.description} />
-        <meta property="og:url" content="https://imagealchemy.app/" />
-      </Helmet>
+      <Seo path="/" title={HOME.title} description={HOME.description} faqs={HOME_FAQS} />
       <div>
         <SiteHeader />
         <main id="main-content" className="studio-container">
-          <StudioIntro onFilesAdded={handleFilesAdded} hasFiles={images.length > 0} currentCount={images.length} disabled={processing} />
+          <StudioIntro onApplyQuality={q => {
+            handleFormatChange("webp"); handleQualityChange(q);
+            announceSettings("WebP quality " + q + " selected. Choose an image to begin.");
+          }} onFilesAdded={handleFilesAdded} hasFiles={images.length > 0} currentCount={images.length} disabled={processing} />
           {!images.length && setupNotice && <p role="status" className="setup-notice">{setupNotice}</p>}
 
           <AnimatePresence mode="wait">
@@ -449,6 +451,8 @@ export default function Index() {
                   format={format}
                   quality={quality}
                   maxDimension={maxDimension}
+                  targetBytes={targetBytes}
+                  onTargetChange={setTargetBytes}
                   onFormatChange={handleFormatChange}
                   onQualityChange={handleQualityChange}
                   onMaxDimensionChange={handleMaxDimensionChange}
@@ -556,7 +560,7 @@ export default function Index() {
       </div>
 
       {previewImage && (
-        <ImagePreviewModal image={previewImage} onClose={() => setPreviewImage(null)} />
+        <Suspense fallback={null}><ImagePreviewModal image={previewImage} onClose={() => setPreviewImage(null)} /></Suspense>
       )}
     </div>
   );
