@@ -335,6 +335,14 @@ function allowedOrigin(env: Env, origin: string | null): boolean {
   return allowed.includes("*") || allowed.includes(origin);
 }
 
+/** What buyers see on Stripe Checkout and on their card statement. */
+export const CHECKOUT_BRAND = {
+  displayName: "ImageAlchemy",
+  buttonColor: "#7C3AED",
+  iconUrl: "https://imagealchemy.app/apple-touch-icon-v4.png",
+  statementSuffix: "IMAGEALCHEMY",
+} as const;
+
 async function createCheckout(request: Request, env: Env, cors: Record<string, string>): Promise<Response> {
   if (!hasStripeKey(env) || !env.STRIPE_PRICE_ID?.startsWith("price_")) {
     return json({ ok: false, error: "Checkout is not configured." }, 503, cors);
@@ -352,6 +360,16 @@ async function createCheckout(request: Request, env: Env, cors: Record<string, s
   form.set("cancel_url", `${origin}/pro?checkout=cancelled`);
   form.set("metadata[product_id]", PRODUCT_ID);
   form.set("payment_intent_data[metadata][product_id]", PRODUCT_ID);
+  // The Stripe account is shared with other products, so its business name is
+  // not "ImageAlchemy". Brand this session so buyers see who they are paying.
+  // display_name only covers the top of the Checkout page; receipts and terms
+  // still use the account's public business name.
+  form.set("branding_settings[display_name]", CHECKOUT_BRAND.displayName);
+  form.set("branding_settings[button_color]", CHECKOUT_BRAND.buttonColor);
+  form.set("branding_settings[icon][type]", "url");
+  form.set("branding_settings[icon][url]", CHECKOUT_BRAND.iconUrl);
+  // Card statements read "<account prefix>* IMAGEALCHEMY" (22-char limit overall).
+  form.set("payment_intent_data[statement_descriptor_suffix]", CHECKOUT_BRAND.statementSuffix);
 
   const response = await stripeRequest(env, "/checkout/sessions", {
     method: "POST",
