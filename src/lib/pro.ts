@@ -28,7 +28,8 @@ export const PRO_CONFIG = {
 } as const;
 
 export const AUDIT_CONFIGURED = Boolean(PRO_CONFIG.auditProxyUrl && PRO_CONFIG.apiUrl);
-export const PRO_PRICE_DISPLAY = env.VITE_PRO_PRICE_DISPLAY ?? "$19";
+// `||` not `??`: Vite expands "$19" in .env files to "", which must fall back too.
+export const PRO_PRICE_DISPLAY = env.VITE_PRO_PRICE_DISPLAY?.trim() || "$19";
 
 export const PRO_BENEFITS: { title: string; body: string }[] = [
   {

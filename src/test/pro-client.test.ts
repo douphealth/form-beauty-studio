@@ -240,3 +240,12 @@ describe("restore purchase", () => {
     expect(pro.parseRestoreInput(link)).toEqual({ kind: "session", sessionId: SESSION });
   });
 });
+
+describe("displayed price", () => {
+  it("falls back to $19 when the env value is empty, as Vite produces for an unescaped $19", async () => {
+    vi.resetModules();
+    vi.stubEnv("VITE_PRO_PRICE_DISPLAY", "");
+    const pro = await import("../lib/pro");
+    expect(pro.PRO_PRICE_DISPLAY).toBe("$19");
+  });
+});

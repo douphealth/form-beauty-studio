@@ -102,7 +102,7 @@ Set only public values:
 ```bash
 VITE_PRO_API_URL=https://imagealchemy-audit-proxy.<account>.workers.dev
 VITE_AUDIT_PROXY_URL=https://imagealchemy-audit-proxy.<account>.workers.dev
-VITE_PRO_PRICE_DISPLAY=$19
+VITE_PRO_PRICE_DISPLAY=\$19   # escaped: Vite would expand a bare $19 to ""
 VITE_PRO_PRODUCT_ID=pro_lifetime
 ```
 
@@ -132,7 +132,7 @@ Never add `VITE_PRO_LICENCE_SECRET`, `STRIPE_SECRET_KEY`,
    ```bash
    VITE_PRO_API_URL=https://imagealchemy-audit-proxy.<account>.workers.dev
    VITE_AUDIT_PROXY_URL=https://imagealchemy-audit-proxy.<account>.workers.dev
-   VITE_PRO_PRICE_DISPLAY=$19
+   VITE_PRO_PRICE_DISPLAY=\$19   # escaped: Vite would expand a bare $19 to ""
    VITE_PRO_PRODUCT_ID=pro_lifetime
    ```
 
