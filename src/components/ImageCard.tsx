@@ -98,15 +98,31 @@ function ImageCard({ image, onRemove, onPreview, index, selected, onToggleSelect
               <Loader2 className="h-3 w-3 animate-spin" /> Compressing
             </MotionSpan>
           )}
-          {isDone && ratio !== null && (
+          {isDone && ratio !== null && image.keptOriginal && (
+            <span
+              className="inline-flex items-center gap-1 rounded-lg bg-muted px-3 py-1.5 text-[11px] font-bold text-foreground shadow-lg"
+              title="Every re-encode came out bigger, so the original file is kept unchanged."
+            >
+              <Check className="h-3 w-3" strokeWidth={3} /> Original kept
+            </span>
+          )}
+          {isDone && ratio !== null && !image.keptOriginal && ratio > 0 && (
             <MotionSpan
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ type: "spring", stiffness: 500 }}
               className="inline-flex items-center gap-1 rounded-lg bg-success px-3 py-1.5 text-[11px] font-bold text-success-foreground shadow-lg"
             >
-              <Check className="h-3 w-3" strokeWidth={3} /> {ratio >= 0 ? "−" : "+"}{Math.abs(ratio)}%
+              <Check className="h-3 w-3" strokeWidth={3} /> −{ratio}%
             </MotionSpan>
+          )}
+          {isDone && ratio !== null && !image.keptOriginal && ratio <= 0 && (
+            <span
+              className="inline-flex items-center gap-1 rounded-lg bg-amber-500 px-3 py-1.5 text-[11px] font-bold text-black shadow-lg"
+              title="No smaller version was possible. The original was not kept because it contains metadata (such as location) or needed resizing."
+            >
+              <AlertCircle className="h-3 w-3" /> {ratio === 0 ? "No saving" : `+${Math.abs(ratio)}% larger`}
+            </span>
           )}
           {isError && (
             <span className="inline-flex items-center gap-1 rounded-lg bg-destructive px-3 py-1.5 text-[11px] font-bold text-destructive-foreground shadow-lg">
@@ -165,7 +181,7 @@ function ImageCard({ image, onRemove, onPreview, index, selected, onToggleSelect
           {image.compressedSize != null && (
             <>
               <span className="text-muted-foreground/30">→</span>
-              <span className="font-bold text-success tabular-nums">
+              <span className={`font-bold tabular-nums ${image.compressedSize < image.originalSize ? "text-success" : "text-muted-foreground"}`}>
                 {formatBytes(image.compressedSize)}
               </span>
             </>
@@ -190,6 +206,7 @@ export default memo(ImageCard, (prev, next) => {
     prev.image.compressedSize === next.image.compressedSize &&
     prev.image.override === next.image.override &&
     prev.image.chosenFormat === next.image.chosenFormat &&
+    prev.image.keptOriginal === next.image.keptOriginal &&
     prev.selected === next.selected &&
     prev.index === next.index
   );
