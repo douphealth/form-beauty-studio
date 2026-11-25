@@ -272,6 +272,22 @@ console.log("\nscore — findings and thresholds\n");
   check("no lazy-loading finding when everything is lazy", !good.findings.some((f) => f.id === "no-lazy"));
   check("no dimension finding when all have width/height", !good.findings.some((f) => f.id === "no-dimensions"));
 
+  // Alt text: a deliberate alt="" (decorative) is correct and must not be reported;
+  // only a missing attribute is a defect. The finding text says exactly that.
+  const altParsed = audit.parseHtml(
+    `<img src="/deco.jpg" alt=""><img src="/none.jpg"><img src="/desc.jpg" alt="Desc">`,
+    BASE,
+  );
+  const altFindings = audit.score(
+    altParsed,
+    altParsed.map((img) => mkMeasure(img.url, 40 * 1024, "image/webp")),
+    100,
+  ).findings;
+  const noAltFinding = altFindings.find((f) => f.id === "no-alt");
+  check("alt=\"\" is not reported as missing alt text", !!noAltFinding && !noAltFinding.images.some((u) => u.endsWith("/deco.jpg")));
+  check("an image with no alt attribute is reported", !!noAltFinding && noAltFinding.images.some((u) => u.endsWith("/none.jpg")));
+  check("an image with descriptive alt is not reported", !!noAltFinding && !noAltFinding.images.some((u) => u.endsWith("/desc.jpg")));
+
   // Every finding must be actionable and quantified where it claims to be.
   for (const f of [...bad.findings, ...good.findings]) {
     check(`finding "${f.id}" has a title, detail and fix`, Boolean(f.title && f.detail && f.fix));

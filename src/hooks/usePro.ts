@@ -3,6 +3,7 @@ import {
   checkEntitlement,
   createCheckoutSession,
   exchangeLegacyLicence,
+  parseRestoreInput,
   redeemCheckoutSession,
   readEntitlement,
   clearEntitlement,
@@ -10,7 +11,8 @@ import {
 } from "../lib/pro";
 
 export interface UsePro extends ProStatus {
-  activate: (key: string) => Promise<string | null>;
+  /** Restore purchase from a restore code, restore link or legacy licence key. */
+  activate: (input: string) => Promise<string | null>;
   redeemCheckout: (sessionId: string) => Promise<string | null>;
   startCheckout: () => Promise<string | null>;
   deactivate: () => void;
@@ -40,8 +42,14 @@ export function usePro(): UsePro {
     };
   }, []);
 
-  const activate = useCallback(async (key: string) => {
-    const error = await exchangeLegacyLicence(key);
+  // Restore purchase: a restore code or link is re-verified with Stripe; anything
+  // else is treated as a legacy ACHM licence key.
+  const activate = useCallback(async (input: string) => {
+    const parsed = parseRestoreInput(input);
+    const error =
+      parsed.kind === "session"
+        ? await redeemCheckoutSession(parsed.sessionId)
+        : await exchangeLegacyLicence(parsed.key);
     if (!error && alive.current) {
       setStatus({ isPro: true, entitlement: readEntitlement(), checking: false });
     }

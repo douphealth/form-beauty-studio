@@ -10,7 +10,9 @@ import SiteHeader from "../components/SiteHeader";
 import SiteFooter from "../components/SiteFooter";
 import { MotionDiv } from "../lib/motion";
 import { usePro } from "../hooks/usePro";
-import { AUDIT_CONFIGURED, PRO_BENEFITS, PRO_CONFIG, PRO_PRICE_DISPLAY } from "../lib/pro";
+import {
+  AUDIT_CONFIGURED, PRO_BENEFITS, PRO_CONFIG, PRO_PRICE_DISPLAY, restoreLink,
+} from "../lib/pro";
 import {
   runAudit, normaliseTargetUrl, formatBytes, toMarkdown,
   FOUR_G_BYTES_PER_SEC,
@@ -53,9 +55,26 @@ export default function Pro() {
     }
   }, [startCheckout]);
 
+  // The one-time session_id has done its job once this browser holds an
+  // entitlement. Strip it from the address bar so a refresh or a shared link
+  // cannot replay it.
+  const stripSessionId = useCallback(() => {
+    const next = new URLSearchParams(params);
+    next.delete("session_id");
+    setParams(next, { replace: true });
+  }, [params, setParams]);
+
   useEffect(() => {
-    if (!sessionId || isPro) {
+    // Wait for the stored entitlement check first, so a returning Pro user with a
+    // stale session_id in the URL is not sent back to Stripe for verification.
+    if (checking) return;
+    if (!sessionId) {
       setRedeeming(false);
+      return;
+    }
+    if (isPro) {
+      setRedeeming(false);
+      stripSessionId();
       return;
     }
     let cancelled = false;
@@ -64,18 +83,14 @@ export default function Pro() {
     redeemCheckout(sessionId).then((err) => {
       if (cancelled) return;
       setRedeeming(false);
-      if (err) {
-        setCheckoutError(err);
-        return;
-      }
-      const next = new URLSearchParams(params);
-      next.delete("session_id");
-      setParams(next, { replace: true });
+      // On success redeemCheckout flips isPro, and the branch above strips the id.
+      // On failure the id stays in the URL so a refresh can verify again.
+      if (err) setCheckoutError(err);
     });
     return () => {
       cancelled = true;
     };
-  }, [sessionId, isPro, redeemCheckout, params, setParams]);
+  }, [checking, sessionId, isPro, redeemCheckout, stripSessionId]);
 
   if (checking || redeeming) {
     return (
@@ -91,7 +106,9 @@ export default function Pro() {
     return (
       <Shell title="Website Image Audit — ImageAlchemy Pro">
         <Paywall
-          justPaid={Boolean(sessionId)}
+          // Only while a return from Checkout is still unverified. A failed
+          // verification shows its own error instead of a stale "verifying" note.
+          justPaid={Boolean(sessionId) && !checkoutError}
           keyInput={keyInput}
           setKeyInput={setKeyInput}
           keyError={keyError}
@@ -107,7 +124,54 @@ export default function Pro() {
   return (
     <Shell title="Website Image Audit — ImageAlchemy Pro">
       <AuditWorkspace entitlementToken={entitlement?.token ?? ""} />
+      {entitlement?.restoreCode && <RestoreCodeCard restoreCode={entitlement.restoreCode} />}
     </Shell>
+  );
+}
+
+/**
+ * Shows the buyer the one thing they need to unlock Pro elsewhere. The code is the
+ * paid Checkout Session ID, which the Worker re-verifies with Stripe on restore.
+ */
+function RestoreCodeCard({ restoreCode }: { restoreCode: string }) {
+  const [copied, setCopied] = useState<"code" | "link" | null>(null);
+  const copy = useCallback(async (what: "code" | "link") => {
+    try {
+      await navigator.clipboard.writeText(what === "code" ? restoreCode : restoreLink(restoreCode));
+      setCopied(what);
+      window.setTimeout(() => setCopied(null), 2000);
+    } catch {
+      /* clipboard blocked: the code stays selectable on screen */
+    }
+  }, [restoreCode]);
+
+  return (
+    <section aria-labelledby="restore-heading" className="glass-card mx-auto mt-12 max-w-2xl p-6">
+      <div className="flex items-start gap-3">
+        <KeyRound className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+        <div className="min-w-0 flex-1">
+          <h2 id="restore-heading" className="font-semibold text-foreground">Keep your restore code</h2>
+          <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+            Pro is stored in this browser only. Save this code to unlock Pro on another device or after
+            clearing site data: open Pro, choose “Restore your purchase” and paste it. Anyone with the code
+            can unlock Pro, so keep it private.
+          </p>
+          <p className="mt-3 break-all rounded-lg border border-border/60 bg-background/60 px-3 py-2 font-mono text-xs text-foreground select-all">
+            {restoreCode}
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button type="button" onClick={() => copy("code")} className="inline-flex items-center gap-1.5 rounded-lg border border-border/60 px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-muted/50">
+              {copied === "code" ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+              {copied === "code" ? "Copied" : "Copy code"}
+            </button>
+            <button type="button" onClick={() => copy("link")} className="inline-flex items-center gap-1.5 rounded-lg border border-border/60 px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-muted/50">
+              {copied === "link" ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+              {copied === "link" ? "Copied" : "Copy restore link"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -275,9 +339,14 @@ function Paywall({
         <details className="group" open={justPaid}>
           <summary className="flex cursor-pointer list-none items-center gap-2 text-sm font-semibold text-foreground">
             <KeyRound className="h-4 w-4 text-primary" />
-            Bought Pro before the secure checkout upgrade? Enter your legacy licence key
+            Already bought Pro? Restore your purchase
             <ArrowRight className="h-3.5 w-3.5 transition-transform group-open:rotate-90" />
           </summary>
+          <p className="mt-3 text-sm leading-relaxed text-muted-foreground/85">
+            Paste the restore code or restore link shown after you paid. It is also the{" "}
+            <code className="font-mono text-xs">session_id</code> in the address Stripe returned you to.
+            Older ACHM licence keys work here too.
+          </p>
           <div className="mt-4 flex flex-col gap-3 sm:flex-row">
             <input
               type="text"
@@ -287,8 +356,8 @@ function Paywall({
               value={keyInput}
               onChange={(e) => setKeyInput(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter") onActivate(); }}
-              placeholder="ACHM-XXXXX-XXXXX-XX"
-              aria-label="Licence key"
+              placeholder="Restore code (cs_live_…) or licence key"
+              aria-label="Restore code, restore link or licence key"
               className="min-w-0 flex-1 rounded-xl border border-border/60 bg-background/60 px-4 py-3 font-mono text-sm tracking-wider text-foreground placeholder:text-muted-foreground/40 focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20"
             />
             <button
@@ -299,7 +368,7 @@ function Paywall({
               style={{ background: "var(--gradient-primary)" }}
             >
               {activating ? <Loader2 className="h-4 w-4 animate-spin" /> : <KeyRound className="h-4 w-4" />}
-              Activate
+              Restore
             </button>
           </div>
           {keyError && (

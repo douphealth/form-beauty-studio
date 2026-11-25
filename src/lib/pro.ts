@@ -13,7 +13,8 @@
  * The free compressor remains entirely client-side and needs no entitlement.
  */
 
-const env = (import.meta as unknown as { env?: Record<string, string | undefined> }).env ?? {};
+// Read via the direct `import.meta.env` form so both Vite's build and Vitest substitute it.
+const env: Record<string, string | undefined> = import.meta.env;
 
 function cleanBase(value: string | undefined): string {
   return (value ?? "").trim().replace(/\/$/, "");
@@ -59,6 +60,11 @@ export interface ProEntitlement {
   activatedAt: string;
   source: "stripe-checkout" | "legacy-licence";
   productId: string;
+  /**
+   * The paid Stripe Checkout Session ID. The Worker re-verifies it with Stripe on
+   * every redemption, so it doubles as the buyer's restore code on a new device.
+   */
+  restoreCode?: string;
 }
 
 export interface ProStatus {
@@ -198,6 +204,7 @@ export async function createCheckoutSession(): Promise<{ url: string } | { error
 async function storeIssuedEntitlement(
   response: Response,
   source: ProEntitlement["source"],
+  restoreCode?: string,
 ): Promise<string | null> {
   if (!response.ok) return readApiError(response, "Pro could not be activated.");
   const body = (await response.json()) as EntitlementResponse;
@@ -209,6 +216,7 @@ async function storeIssuedEntitlement(
     activatedAt: new Date().toISOString(),
     source: body.source ?? source,
     productId: body.productId ?? PRO_CONFIG.productId,
+    ...(restoreCode ? { restoreCode } : {}),
   };
   writeEntitlement(entitlement);
   return null;
@@ -231,7 +239,7 @@ export async function redeemCheckoutSession(sessionId: string): Promise<string |
       headers: { "Content-Type": "application/json", Accept: "application/json" },
       body: JSON.stringify({ sessionId: clean, productId: PRO_CONFIG.productId }),
     });
-    return await storeIssuedEntitlement(response, "stripe-checkout");
+    return await storeIssuedEntitlement(response, "stripe-checkout", clean);
   } catch {
     return "Could not verify the payment with Stripe. Check your connection and try again.";
   }
@@ -271,4 +279,23 @@ export function normaliseLicenceKey(input: string): string {
 
 export function formatLicenceKey(normalised: string): string {
   return normalised.replace(/(.{5})/g, "$1-").replace(/-$/, "");
+}
+
+const SESSION_ID = /cs_(?:live|test)_[A-Za-z0-9]{8,}/;
+
+/**
+ * "Restore purchase" accepts three things a buyer may have kept: the restore code
+ * (a Stripe Checkout Session ID), the restore link that contains it, or an old
+ * ACHM licence key. Anything holding a session ID is verified with Stripe again.
+ */
+export function parseRestoreInput(raw: string): { kind: "session"; sessionId: string } | { kind: "legacy"; key: string } {
+  const match = raw.trim().match(SESSION_ID);
+  if (match) return { kind: "session", sessionId: match[0] };
+  return { kind: "legacy", key: raw.trim() };
+}
+
+/** A link that restores Pro in any browser by re-verifying the paid session. */
+export function restoreLink(restoreCode: string): string {
+  const origin = typeof window !== "undefined" ? window.location.origin : "https://imagealchemy.app";
+  return `${origin}${PRO_CONFIG.successPath}?session_id=${encodeURIComponent(restoreCode)}`;
 }
