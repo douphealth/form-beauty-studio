@@ -1,6 +1,6 @@
 # ImageAlchemy
 
-> Private, browser-based image compression studio. Compress, convert and resize images to WebP, AVIF, JPEG and PNG entirely on-device — no uploads, no accounts, no tracking.
+> Private, browser-based image compression studio. Compress, convert and resize images to WebP, AVIF, JPEG and PNG entirely on-device — no uploads, no accounts. The site itself runs anonymous usage analytics (see /privacy); image data is never sent.
 
 ImageAlchemy runs the @jsquash WebAssembly codecs in the browser to batch-compress images with smart presets (Web, Email, Social, Print, Max Quality, Auto-Pick), per-image overrides, pause/resume/cancel, before/after comparison and ZIP export.
 

@@ -147,14 +147,14 @@ export const GLOSSARY_CONTENT: Record<string, ContentEntry> = {
   "/glossary/mozjpeg": {
     path: "/glossary/mozjpeg",
     h1: "MozJPEG",
-    lede: "Mozilla's improved JPEG encoder — same JPEG format, roughly 10–15% smaller files at equal quality.",
+    lede: "Mozilla's improved JPEG encoder — same JPEG format, about 5% smaller files on average at equal quality, by Mozilla’s own measurement.",
     keywords: ["mozjpeg", "jpeg encoder", "jpeg compression", "progressive jpeg"],
     sections: [
-      { id: "definition", heading: "Definition", body: [P(<>MozJPEG is a JPEG encoder maintained by Mozilla. It improves on the standard libjpeg encoder with <strong>trellis quantization</strong> (choosing coefficients that compress better at equal visual quality) and <strong>progressive encoding</strong>, producing JPEGs that are typically 10–15% smaller at the same visual quality while remaining 100% standard JPEG files.</>)] },
-      { id: "in-practice", heading: "In practice", body: [P(<>Because MozJPEG output is a standard JPEG, it works everywhere JPEG works — no browser or tool changes needed. The catch is that few online compressors actually use it. ImageAlchemy uses MozJPEG for its JPEG output path.</>)] },
+      { id: "definition", heading: "Definition", body: [P(<>MozJPEG is a JPEG encoder maintained by Mozilla. It improves on the standard libjpeg encoder with <strong>trellis quantization</strong> (choosing coefficients that compress better at equal visual quality) and <strong>progressive encoding</strong>, producing JPEGs that Mozilla measured at about 5% smaller on average than libjpeg-turbo at the same visual quality (some images shrink more) while remaining 100% standard JPEG files.</>)] },
+      { id: "in-practice", heading: "In practice", body: [P(<>Because MozJPEG output is a standard JPEG, it works everywhere JPEG works — no browser or tool changes needed. ImageAlchemy uses MozJPEG for its JPEG output path.</>), P(<>Source for the size figure: <a href="https://research.mozilla.org/2014/07/15/mozilla-advances-jpeg-encoding-with-mozjpeg-2-0/" rel="noopener">Mozilla’s MozJPEG 2.0 announcement</a> (July 2014), which reports that MozJPEG 2.0 “can reduce file sizes … by 5% on average” compared with libjpeg-turbo.</>)] },
       { id: "why-encoder-matters", heading: "Why the encoder matters more than the format", body: [
         P(<>People discuss image formats as though the format decides the file size. It does not. The <strong>encoder</strong> decides, and JPEG is the clearest example.</>),
-        P(<>JPEG has been a fixed standard since 1992. Any compliant encoder produces files that every decoder reads. What the standard does not dictate is how hard the encoder works to choose good coefficients — and that is where the entire 10–15% lives. Two encoders can produce mathematically valid JPEGs from the same source, at the same quality setting, with visibly different file sizes.</>),
+        P(<>JPEG has been a fixed standard since 1992. Any compliant encoder produces files that every decoder reads. What the standard does not dictate is how hard the encoder works to choose good coefficients — and that is where MozJPEG’s saving comes from. Two encoders can produce mathematically valid JPEGs from the same source, at the same quality setting, with visibly different file sizes.</>),
         P(<>MozJPEG is essentially libjpeg with a great deal more effort spent on those choices. To you this is pure gain: smaller files, identical compatibility, no quality trade-off. There is no downside beyond slightly slower encoding.</>),
       ]},
       { id: "progressive-vs-baseline", heading: "Progressive and baseline JPEG", body: [
@@ -165,10 +165,10 @@ export const GLOSSARY_CONTENT: Record<string, ContentEntry> = {
       ]},
     ],
     faqs: [
-      { question: "What does MozJPEG do?", answer: "MozJPEG is an improved JPEG encoder. Using trellis quantization and progressive encoding, it produces standard JPEG files that are roughly 10–15% smaller than those from the default libjpeg encoder, at the same visual quality." },
+      { question: "What does MozJPEG do?", answer: "MozJPEG is an improved JPEG encoder. Using trellis quantization and progressive encoding, it produces standard JPEG files that are about 5% smaller on average than libjpeg-turbo output at the same visual quality, according to Mozilla; some images shrink more." },
       { question: "Are MozJPEG files different from normal JPEGs?", answer: "No. MozJPEG output is a 100% standard JPEG file — every browser, editor and device reads it. The improvement is purely in how the file is encoded, not in the format itself." },
       { question: "Is MozJPEG free?", answer: "Yes. MozJPEG is open source, maintained by Mozilla, and royalty-free to use. ImageAlchemy uses it as its JPEG encoder." },
-      { question: "Why is my JPEG still large after compression?", answer: "Two likely reasons. The encoder may be a basic one — the same JPEG can differ 10–15% in size depending on how much effort the encoder spends, which is what MozJPEG improves. Or the image dimensions are simply too large; reducing pixel width usually saves far more than any encoder setting." },
+      { question: "Why is my JPEG still large after compression?", answer: "Two likely reasons. The encoder may be a basic one — the same JPEG can differ by several percent in size depending on how much effort the encoder spends, which is what MozJPEG improves. Or the image dimensions are simply too large; reducing pixel width usually saves far more than any encoder setting." },
       { question: "What is progressive JPEG?", answer: "A JPEG encoding that stores several passes of increasing detail, so the whole image appears blurred almost immediately and then sharpens. A baseline JPEG fills in from the top instead. Progressive files feel faster to load at the same final quality, and MozJPEG produces them." },
       { question: "Should I use MozJPEG or WebP for JPEG photos?", answer: "WebP if you can serve it, since it is smaller still and now universally supported. Keep MozJPEG-encoded JPEG as the fallback inside a <picture> element — it is the best version of the one format every browser on earth understands." },
     ],
