@@ -9,7 +9,8 @@ import {
 vi.mock("../lib/image-utils", async (importActual) => ({
   ...(await importActual<typeof import("../lib/image-utils")>()),
   compressImage: vi.fn(
-    async () => new Blob(["export"], { type: "image/webp" }),
+    // Smaller than the 5-byte "input" files below, like a real compression.
+    async () => new Blob(["out"], { type: "image/webp" }),
   ),
 }));
 

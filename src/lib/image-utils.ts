@@ -24,6 +24,8 @@ export interface ImageFile {
   encodingKey?: string;
   outputQuality?: number;
   targetBytes?: number;
+  /** The original file was kept because every re-encode came out bigger. */
+  keptOriginal?: boolean;
 }
 
 const MIME_MAP: Record<OutputFormat, string> = {

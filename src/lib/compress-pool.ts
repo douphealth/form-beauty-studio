@@ -5,7 +5,8 @@
 
 import { fitFileSize } from './fit-file-size';
 import type { ImageFile, CompressionOptions, OutputFormat } from './image-utils';
-import { compressImage, compressImageAuto, generateOutputFilename } from './image-utils';
+import { compressImage, compressImageAuto, generateOutputFilename, MAX_DIMENSION } from './image-utils';
+import { formatOfFile, pickSmaller } from './keep-smaller';
 
 const CONCURRENCY = navigator.hardwareConcurrency
   ? Math.min(navigator.hardwareConcurrency, 6)
@@ -76,7 +77,7 @@ export async function compressPool(
         continue;
       }
       if (img.compressedUrl) URL.revokeObjectURL(img.compressedUrl);
-      results[i] = { ...img, status: "processing", error: undefined, compressedSize: null, compressedBlob: null, compressedUrl: null };
+      results[i] = { ...img, status: "processing", error: undefined, compressedSize: null, compressedBlob: null, compressedUrl: null, keptOriginal: false };
       onProgress({ index: i, image: results[i], completed });
 
       try {
@@ -106,7 +107,31 @@ export async function compressPool(
           outputQuality = fit.quality;
         }
         if (signal?.aborted) throw new Error("Cancelled");
-        const outputFilename = generateOutputFilename(img.file.name, chosenFormat);
+
+        // Never return a bigger file than the user gave us (see keep-smaller.ts).
+        const maxDim = effective.maxDimension || MAX_DIMENSION;
+        const smaller = await pickSmaller({
+          original: img.file,
+          output: blob,
+          outputFormat: chosenFormat,
+          reencode: (format) => compressImage(img.file, { ...effective, format }),
+          needsResize: async () => {
+            const bitmap = await createImageBitmap(img.file);
+            const over = bitmap.width > maxDim || bitmap.height > maxDim;
+            bitmap.close();
+            return over;
+          },
+        });
+        if (signal?.aborted) throw new Error("Cancelled");
+        const keptOriginal = smaller.kind === "original";
+        if (smaller.kind === "encoded") {
+          blob = smaller.blob;
+          chosenFormat = smaller.format;
+        } else {
+          blob = img.file;
+          chosenFormat = formatOfFile(img.file) ?? chosenFormat;
+        }
+        const outputFilename = keptOriginal ? img.file.name : generateOutputFilename(img.file.name, chosenFormat);
         const compressedUrl = URL.createObjectURL(blob);
 
         results[i] = {
@@ -118,8 +143,9 @@ export async function compressPool(
           outputFilename,
           chosenFormat,
           encodingKey,
-          outputQuality: chosenFormat === "png" ? undefined : outputQuality,
+          outputQuality: keptOriginal || chosenFormat === "png" ? undefined : outputQuality,
           targetBytes: controls.targetBytes,
+          keptOriginal,
         };
       } catch (err) {
         if (signal?.aborted) {
