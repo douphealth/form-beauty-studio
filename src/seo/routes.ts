@@ -131,6 +131,7 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     path: "/learn/reduce-image-file-size",
+    updated: "2026-11-25",
     kind: "guide",
     title: "9 Proven Ways to Reduce Image File Size (2026)",
     description:
@@ -140,6 +141,7 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     path: "/learn/jpeg-quality-guide",
+    updated: "2026-11-25",
     kind: "guide",
     title: "What JPEG Quality Should You Use? Settings That Work (2026)",
     description:
@@ -178,6 +180,7 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     path: "/formats/jpeg",
+    updated: "2026-11-25",
     kind: "format",
     title: "JPEG Compressor — Reduce JPEG File Size Free, In-Browser",
     description:
@@ -307,7 +310,8 @@ export const GLOSSARY: GlossaryEntry[] = [
     term: "MozJPEG",
     title: "What Is MozJPEG? Better JPEG Compression Explained",
     description:
-      "MozJPEG is Mozilla's improved JPEG encoder that produces JPEG files roughly 10-15% smaller at the same visual quality. Here's how it works.",
+      "MozJPEG is Mozilla's improved JPEG encoder that produces JPEG files about 5% smaller on average at the same visual quality. Here's how it works.",
+    updated: "2026-11-25",
   },
   {
     path: "/glossary/chroma-subsampling",
@@ -339,6 +343,7 @@ export const GLOSSARY_ROUTE_ENTRIES: RouteEntry[] = GLOSSARY.map((g) => ({
   description: g.description,
   priority: g.priority ?? 0.5,
   changefreq: "yearly" as const,
+  updated: g.updated,
 }));
 
 /**

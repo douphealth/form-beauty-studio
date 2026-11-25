@@ -119,7 +119,7 @@ export const COMPANY_CONTENT: Record<string, ContentEntry> = {
         id: "analytics",
         heading: "Analytics we do run",
         body: [
-          P(<>The site loads a lightweight, privacy-oriented analytics script that records <strong>aggregate, non-identifying</strong> information: the page path you visited, the referring URL, your browser's user-agent string, a country derived from your browser's locale setting, page-load performance metrics (including Core Web Vitals timings), and a random identifier generated per visit.</>),
+          P(<>The site loads a lightweight, privacy-oriented analytics script that records <strong>aggregate, non-identifying</strong> information: the page path you visited, the referring URL, your browser's user-agent string, a country derived from your browser's locale setting, page-load performance metrics (including Core Web Vitals timings), and a random identifier generated per visit. The analytics script is supplied by the site's hosting platform and also records interactions with page controls, such as clicks on buttons and links.</>),
           P(<>That random identifier is created in your browser, is not tied to any account, and is not used to build a profile across other websites. We do not run advertising pixels, we do not sell or share this data with data brokers, and we do not attempt to identify individual visitors.</>),
           P(<>We are describing this explicitly because vague privacy copy is worse than none. If you would prefer not to be measured at all, any content blocker or the browser's tracking-protection setting will suppress the script, and the tool will continue to work exactly the same — it is client-side and requires no network access to function.</>),
         ],
