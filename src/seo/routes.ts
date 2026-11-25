@@ -219,7 +219,7 @@ export const ROUTES: RouteEntry[] = [
     kind: "tool",
     title: "Free Image Converter — Batch Convert to WebP, AVIF, JPEG, PNG",
     description:
-      "Convert images between WebP, AVIF, JPEG and PNG for free, in bulk, in your browser. No uploads, no watermarks, no limits — auto-pick picks the smallest format.",
+      "Convert images between WebP, AVIF, JPEG and PNG for free, in bulk, in your browser. No uploads, no watermarks, 200 images per batch — auto-pick keeps the smallest format.",
     priority: 0.8,
     changefreq: "monthly",
   },

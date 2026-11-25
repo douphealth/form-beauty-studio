@@ -22,7 +22,7 @@ export const FORMAT_CONTENT: Record<string, ContentEntry> = {
       { question: "What quality should I use for WebP?", answer: "Quality 78–82 for hero and product photography, 70–75 for thumbnails and content images. At quality 80, WebP is visually indistinguishable from the original for nearly all photographs while being roughly half the size of a quality-100 export." },
       { question: "Does WebP support transparency?", answer: "Yes. WebP supports a full 8-bit alpha channel for transparency in both lossy and lossless modes, so it replaces PNG for transparent graphics as well as JPEG for photographs." },
       { question: "Is WebP still worth using if AVIF exists?", answer: "Yes. WebP encodes faster, has universal support and slightly wider tooling. AVIF is usually smaller for photographs, by a margin that varies with the image. The most robust approach is serving AVIF first, WebP second and JPEG as fallback using the <picture> element." },
-      { question: "Is converting to WebP free and private?", answer: "With ImageAlchemy, yes — conversion runs locally in your browser via WebAssembly codecs. No uploads, no account, no watermark, no limits." },
+      { question: "Is converting to WebP free and private?", answer: "With ImageAlchemy, yes — conversion runs locally in your browser via WebAssembly codecs. No uploads, no account, no watermark, and up to 200 images (50 MB each) per batch." },
     ],
     related: [
       { path: "/formats/avif", label: "AVIF compressor" },

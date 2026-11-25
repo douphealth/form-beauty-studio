@@ -7,7 +7,7 @@ export const TOOL_CONTENT: Record<string, ContentEntry> = {
   "/tools/image-converter": {
     path: "/tools/image-converter",
     h1: "Free image converter — WebP, AVIF, JPEG and PNG",
-    lede: "Convert images between formats in bulk, right in your browser. Turn PNG into WebP, JPEG into AVIF, or let Auto-Pick encode all three and keep the smallest. No uploads, no watermarks, no limits.",
+    lede: "Convert images between formats in bulk, right in your browser. Turn PNG into WebP, JPEG into AVIF, or let Auto-Pick encode all three and keep the smallest. No uploads, no watermarks, up to 200 images per batch.",
     keywords: ["image converter", "convert image format", "png to webp", "jpeg to avif", "batch image converter"],
     sections: [
       { id: "supported-conversions", heading: "Supported conversions", body: [P(<>ImageAlchemy converts between <strong>AVIF, WebP, JPEG and PNG</strong> in any direction, for up to 200 images at once. Common jobs: PNG → WebP (transparency preserved), JPEG → WebP or AVIF (biggest savings), WebP → JPEG (compatibility), screenshots PNG → WebP lossless.</>)] },

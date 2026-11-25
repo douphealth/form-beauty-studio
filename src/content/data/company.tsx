@@ -66,7 +66,7 @@ export const COMPANY_CONTENT: Record<string, ContentEntry> = {
     faqs: [
       {
         question: "Is ImageAlchemy really free?",
-        answer: "Yes. No account, no subscription, no watermark and no file limits. Batch process up to 200 images at a time, as often as you like. The Pro audit is a separate one-time purchase for a different job — auditing pages you do not own — and the free compressor is not restricted to sell it.",
+        answer: "Yes. No account, no subscription and no watermark. Batch process up to 200 images at a time (50 MB each), as often as you like. The Pro audit is a separate one-time purchase for a different job — auditing pages you do not own — and the free compressor is not restricted to sell it.",
       },
       {
         question: "Does ImageAlchemy upload my images?",
