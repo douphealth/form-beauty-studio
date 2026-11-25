@@ -63,6 +63,11 @@ export interface AuditImage {
   height: number | null;
   /** `alt` text, so the report can name images meaningfully. */
   alt: string;
+  /**
+   * False only when the `alt` attribute is absent from the markup. `alt=""` is a
+   * valid, deliberate choice for decorative images, so it must not be reported.
+   */
+  hasAlt: boolean;
   /** True when the image was found in inline CSS or a <style> block. */
   fromCss: boolean;
   /** True when this is the LCP candidate (first large eager image above the fold). */
@@ -309,6 +314,7 @@ export function parseHtml(html: string, baseUrl: string): AuditImage[] {
       width: width && /^\d+$/.test(width) ? parseInt(width, 10) : null,
       height: height && /^\d+$/.test(height) ? parseInt(height, 10) : null,
       alt: attr(tag, "alt") ?? "",
+      hasAlt: attr(tag, "alt") !== null,
       fromCss: false,
       aboveFold: false,
     });
@@ -334,6 +340,7 @@ export function parseHtml(html: string, baseUrl: string): AuditImage[] {
       width: null,
       height: null,
       alt: "",
+      hasAlt: true, // alt belongs to the <img> fallback, which is counted separately
       fromCss: false,
       aboveFold: false,
     });
@@ -357,6 +364,7 @@ export function parseHtml(html: string, baseUrl: string): AuditImage[] {
       width: null,
       height: null,
       alt: "",
+      hasAlt: true,
       fromCss: false,
       // A preloaded image is by definition above the fold and eager.
       aboveFold: true,
@@ -387,6 +395,7 @@ export function parseHtml(html: string, baseUrl: string): AuditImage[] {
         width: null,
         height: null,
         alt: "",
+        hasAlt: true,
         fromCss: true,
         aboveFold: false,
       });
@@ -632,7 +641,7 @@ export function score(
   }
 
   // ── 9. Alt text (not a performance issue, but a real defect) ────────────
-  const noAlt = images.filter((i) => !i.fromCss && i.alt.trim() === "");
+  const noAlt = images.filter((i) => !i.fromCss && !i.hasAlt);
   if (noAlt.length) {
     findings.push({
       id: "no-alt",

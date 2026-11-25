@@ -27,3 +27,9 @@ dist-ssr
 .env
 .env.*
 !.env.example
+# .env.production holds PUBLIC build-time values only (Lovable builds from the repo).
+# Never put secrets in it: every VITE_* value ships in the browser bundle.
+!.env.production
+
+# Wrangler local dev state (workers/audit-proxy)
+.wrangler/

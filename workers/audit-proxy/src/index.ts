@@ -131,12 +131,19 @@ export function isBlockedHost(rawUrl: string): string | null {
 
   // IPv6 checks
   if (host.includes(":")) {
-    if (host === "::1") return "loopback address";
+    if (host === "::" || host === "::1") return "loopback or unspecified address";
     if (host.startsWith("fc") || host.startsWith("fd")) return "unique-local range";
     if (host.startsWith("fe80")) return "link-local range";
-    // ::ffff:127.0.0.1 — IPv4-mapped IPv6 is a standard bypass.
-    const mapped = host.match(/^::ffff:(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$/);
-    if (mapped) return isBlockedHost(`http://${mapped[1]}/`);
+    // ::ffff:127.0.0.1 — IPv4-mapped IPv6 is a standard bypass. URL() rewrites the
+    // dotted form to hex (::ffff:7f00:1), so both spellings must be checked.
+    const mappedDotted = host.match(/^::ffff:(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$/);
+    if (mappedDotted) return isBlockedHost(`http://${mappedDotted[1]}/`);
+    const mappedHex = host.match(/^::ffff:([0-9a-f]{1,4}):([0-9a-f]{1,4})$/);
+    if (mappedHex) {
+      const hi = parseInt(mappedHex[1], 16);
+      const lo = parseInt(mappedHex[2], 16);
+      return isBlockedHost(`http://${hi >> 8}.${hi & 255}.${lo >> 8}.${lo & 255}/`);
+    }
     return null;
   }
 
@@ -280,13 +287,43 @@ function bearerToken(request: Request): string {
   return value.toLowerCase().startsWith("bearer ") ? value.slice(7).trim() : "";
 }
 
+/**
+ * A usable Stripe server key: a standard secret key (sk_) or a restricted key (rk_).
+ * Restricted keys are Stripe's recommended choice for a single-purpose backend like this one;
+ * the key needs only Checkout Sessions (write) and Prices (read).
+ */
+function hasStripeKey(env: Env): boolean {
+  return /^(sk|rk)_(live|test)_/.test(env.STRIPE_SECRET_KEY ?? "");
+}
+
 async function stripeRequest(env: Env, path: string, init: RequestInit = {}): Promise<Response> {
-  if (!env.STRIPE_SECRET_KEY?.startsWith("sk_")) {
+  if (!hasStripeKey(env)) {
     throw new Error("Stripe is not configured");
   }
   const headers = new Headers(init.headers);
   headers.set("Authorization", `Bearer ${env.STRIPE_SECRET_KEY}`);
   return fetch(`${STRIPE_API}${path}`, { ...init, headers });
+}
+
+/**
+ * Read a Stripe response body without letting a non-JSON reply (an HTML error
+ * page from an upstream outage, say) turn into an unhandled 500 from this Worker.
+ */
+async function stripeJson<T extends object>(response: Response): Promise<T & { error?: { message?: string } }> {
+  try {
+    return (await response.json()) as T & { error?: { message?: string } };
+  } catch {
+    return {} as T & { error?: { message?: string } };
+  }
+}
+
+/**
+ * Map a failed Stripe call onto an HTTP status the browser can act on.
+ * A rejected API key is a server misconfiguration (502), not a bad request from
+ * the visitor, and an upstream 5xx is likewise not the visitor's fault.
+ */
+function stripeFailureStatus(stripeStatus: number): number {
+  return stripeStatus === 401 || stripeStatus >= 500 ? 502 : 400;
 }
 
 function allowedOrigin(env: Env, origin: string | null): boolean {
@@ -299,7 +336,7 @@ function allowedOrigin(env: Env, origin: string | null): boolean {
 }
 
 async function createCheckout(request: Request, env: Env, cors: Record<string, string>): Promise<Response> {
-  if (!env.STRIPE_SECRET_KEY?.startsWith("sk_") || !env.STRIPE_PRICE_ID?.startsWith("price_")) {
+  if (!hasStripeKey(env) || !env.STRIPE_PRICE_ID?.startsWith("price_")) {
     return json({ ok: false, error: "Checkout is not configured." }, 503, cors);
   }
   const origin = request.headers.get("origin");
@@ -321,9 +358,13 @@ async function createCheckout(request: Request, env: Env, cors: Record<string, s
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: form.toString(),
   });
-  const body = await response.json() as { id?: string; url?: string; error?: { message?: string } };
+  const body = await stripeJson<{ id?: string; url?: string }>(response);
   if (!response.ok || !body.url) {
-    return json({ ok: false, error: body.error?.message ?? "Stripe could not create checkout." }, 502, cors);
+    return json(
+      { ok: false, error: body.error?.message ?? "Stripe could not create checkout." },
+      stripeFailureStatus(response.status),
+      cors,
+    );
   }
   return json({ ok: true, sessionId: body.id, url: body.url }, 200, cors);
 }
@@ -337,7 +378,7 @@ async function redeemCheckout(request: Request, env: Env, cors: Record<string, s
   }
   const sessionId = typeof body.sessionId === "string" ? body.sessionId.trim() : "";
   if (!sessionId.startsWith("cs_")) return json({ ok: false, error: "invalid checkout session" }, 400, cors);
-  if (!env.STRIPE_SECRET_KEY?.startsWith("sk_") || !env.STRIPE_PRICE_ID?.startsWith("price_")) {
+  if (!hasStripeKey(env) || !env.STRIPE_PRICE_ID?.startsWith("price_")) {
     return json({ ok: false, error: "Stripe is not configured." }, 503, cors);
   }
 
@@ -345,15 +386,20 @@ async function redeemCheckout(request: Request, env: Env, cors: Record<string, s
     env,
     `/checkout/sessions/${encodeURIComponent(sessionId)}?expand[]=line_items`,
   );
-  const session = await response.json() as {
+  const session = await stripeJson<{
     id?: string;
     mode?: string;
     payment_status?: string;
     metadata?: Record<string, string>;
     line_items?: { data?: Array<{ price?: { id?: string } }> };
-    error?: { message?: string };
-  };
-  if (!response.ok) return json({ ok: false, error: session.error?.message ?? "Stripe verification failed." }, 502, cors);
+  }>(response);
+  if (!response.ok) {
+    return json(
+      { ok: false, error: session.error?.message ?? "Stripe verification failed." },
+      stripeFailureStatus(response.status),
+      cors,
+    );
+  }
 
   const priceMatches = Boolean(session.line_items?.data?.some((item) => item.price?.id === env.STRIPE_PRICE_ID));
   if (
@@ -365,13 +411,27 @@ async function redeemCheckout(request: Request, env: Env, cors: Record<string, s
     return json({ ok: false, error: "This checkout session does not contain a completed ImageAlchemy Pro payment." }, 403, cors);
   }
 
-  const token = await issueEntitlement(env, {
+  return issueOr503(env, cors, {
     v: 1,
     productId: PRODUCT_ID,
     issuedAt: new Date().toISOString(),
     stripeSessionId: session.id ?? sessionId,
-  });
-  return json({ ok: true, token, productId: PRODUCT_ID, source: "stripe-checkout" }, 200, cors);
+  }, "stripe-checkout");
+}
+
+/** Sign an entitlement, or answer 503 when the signing secret is missing or short. */
+async function issueOr503(
+  env: Env,
+  cors: Record<string, string>,
+  payload: EntitlementPayload,
+  source: "stripe-checkout" | "legacy-licence",
+): Promise<Response> {
+  try {
+    const token = await issueEntitlement(env, payload);
+    return json({ ok: true, token, productId: PRODUCT_ID, source }, 200, cors);
+  } catch {
+    return json({ ok: false, error: "Pro activation is not configured on the server." }, 503, cors);
+  }
 }
 
 const B32 = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
@@ -423,13 +483,12 @@ async function exchangeLegacy(request: Request, env: Env, cors: Record<string, s
   if (!(await verifyLegacyLicence(env, key))) {
     return json({ ok: false, error: "That legacy licence key could not be verified." }, 403, cors);
   }
-  const token = await issueEntitlement(env, {
+  return issueOr503(env, cors, {
     v: 1,
     productId: PRODUCT_ID,
     issuedAt: new Date().toISOString(),
     legacy: true,
-  });
-  return json({ ok: true, token, productId: PRODUCT_ID, source: "legacy-licence" }, 200, cors);
+  }, "legacy-licence");
 }
 
 /** Per-IP token bucket. KV when bound, in-memory otherwise. */
