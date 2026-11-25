@@ -141,6 +141,22 @@ describe("POST /api/checkout", () => {
     expect(form.get("metadata[product_id]")).toBe("pro_lifetime");
   });
 
+  it("brands the session as ImageAlchemy, not the shared Stripe account's name", async () => {
+    const calls = installFetch({ stripe: () => json({ id: "cs_b", url: "https://checkout.stripe.com/b" }) });
+    await call(request("/api/checkout", { method: "POST", origin: ORIGIN, body: {} }));
+    const form = new URLSearchParams(String(calls[0].init?.body));
+    expect(form.get("branding_settings[display_name]")).toBe("ImageAlchemy");
+    expect(form.get("branding_settings[icon][type]")).toBe("url");
+    expect(form.get("branding_settings[icon][url]")).toMatch(/^https:\/\/imagealchemy\.app\//);
+    expect(form.get("branding_settings[button_color]")).toMatch(/^#[0-9A-Fa-f]{6}$/);
+    // Card statement suffix: Stripe allows at most 22 characters, letters required.
+    const suffix = form.get("payment_intent_data[statement_descriptor_suffix]") ?? "";
+    expect(suffix).toBe("IMAGEALCHEMY");
+    expect(suffix.length).toBeLessThanOrEqual(22);
+    // A full descriptor is only valid for non-card charges; it must never be sent.
+    expect(form.has("payment_intent_data[statement_descriptor]")).toBe(false);
+  });
+
   it("ignores any price the browser tries to send", async () => {
     const calls = installFetch({ stripe: () => json({ id: "cs_x", url: "https://checkout.stripe.com/x" }) });
     await call(
