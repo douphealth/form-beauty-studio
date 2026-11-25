@@ -89,7 +89,7 @@ export const GUIDE_CONTENT: Record<string, ContentEntry> = {
       },
       {
         question: "Is ImageAlchemy free and private?",
-        answer: "Yes. ImageAlchemy runs entirely in your browser using WebAssembly codecs. Your images are never uploaded to a server, no account is required, there is no tracking, and there is no limit on how many images you can process.",
+        answer: "Yes. ImageAlchemy runs entirely in your browser using WebAssembly codecs. Your images are never uploaded to a server, no account is required, and there is no limit on how many images you can process.",
       },
     ],
     related: [

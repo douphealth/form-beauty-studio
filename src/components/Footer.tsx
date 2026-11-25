@@ -68,7 +68,7 @@ export default function Footer() {
                 <Globe className="h-3 w-3" /> Browser-Only
               </span>
               <span className="inline-flex items-center gap-1.5 rounded-full border border-border/30 bg-card/20 px-3 py-1.5 text-[10px] font-medium text-muted-foreground/40">
-                <Shield className="h-3 w-3" /> Zero Tracking
+                <Shield className="h-3 w-3" /> No Uploads
               </span>
             </div>
           </MotionDiv>

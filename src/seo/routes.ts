@@ -86,6 +86,7 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     path: "/learn/compress-images-for-web",
+    updated: "2026-11-25",
     kind: "guide",
     title: "How to Compress Images for the Web Without Losing Quality",
     description:
@@ -95,6 +96,7 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     path: "/learn/webp-vs-avif",
+    updated: "2026-11-25",
     kind: "guide",
     title: "WebP vs AVIF: Which Image Format Wins in 2026?",
     description:
@@ -122,6 +124,7 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     path: "/learn/best-free-image-compression-tools",
+    updated: "2026-11-25",
     kind: "guide",
     title: "Best Free Image Compression Tools in 2026 (Compared)",
     description:
@@ -131,6 +134,7 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     path: "/learn/reduce-image-file-size",
+    updated: "2026-11-25",
     kind: "guide",
     title: "9 Proven Ways to Reduce Image File Size (2026)",
     description:
@@ -140,6 +144,7 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     path: "/learn/jpeg-quality-guide",
+    updated: "2026-11-25",
     kind: "guide",
     title: "What JPEG Quality Should You Use? Settings That Work (2026)",
     description:
@@ -160,6 +165,7 @@ export const ROUTES: RouteEntry[] = [
   // ── Format pages (format-level intent: "compress to webp", "convert to avif") ─
   {
     path: "/formats/webp",
+    updated: "2026-11-25",
     kind: "format",
     title: "WebP Compressor & Converter — Compress Images to WebP Free",
     description:
@@ -169,6 +175,7 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     path: "/formats/avif",
+    updated: "2026-11-25",
     kind: "format",
     title: "AVIF Compressor & Converter — Convert Images to AVIF Free",
     description:
@@ -178,6 +185,7 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     path: "/formats/jpeg",
+    updated: "2026-11-25",
     kind: "format",
     title: "JPEG Compressor — Reduce JPEG File Size Free, In-Browser",
     description:
@@ -187,6 +195,7 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     path: "/formats/png",
+    updated: "2026-11-25",
     kind: "format",
     title: "PNG Compressor & Optimizer — Shrink PNG Files Free",
     description:
@@ -210,7 +219,7 @@ export const ROUTES: RouteEntry[] = [
     kind: "tool",
     title: "Free Image Converter — Batch Convert to WebP, AVIF, JPEG, PNG",
     description:
-      "Convert images between WebP, AVIF, JPEG and PNG for free, in bulk, in your browser. No uploads, no watermarks, no limits — auto-pick picks the smallest format.",
+      "Convert images between WebP, AVIF, JPEG and PNG for free, in bulk, in your browser. No uploads, no watermarks, 200 images per batch — auto-pick keeps the smallest format.",
     priority: 0.8,
     changefreq: "monthly",
   },
@@ -277,6 +286,7 @@ export const GLOSSARY: GlossaryEntry[] = [
   {
     path: "/glossary/avif",
     term: "AVIF",
+    updated: "2026-11-25",
     title: "What Is AVIF? AV1 Image File Format Explained",
     description:
       "AVIF (AV1 Image File Format) is a modern, royalty-free image format with the best compression of any web image format. Here's how it works and when to use it.",
@@ -286,10 +296,12 @@ export const GLOSSARY: GlossaryEntry[] = [
     term: "WebP",
     title: "What Is WebP? Google's Web Image Format Explained",
     description:
-      "WebP is Google's image format offering lossy and lossless compression, transparency and animation in one file, ~25-35% smaller than JPEG and PNG.",
+      "WebP is Google's image format offering lossy and lossless compression, transparency and animation in one file, ~25-34% smaller than JPEG.",
+    updated: "2026-11-25",
   },
   {
     path: "/glossary/lossless-compression",
+    updated: "2026-11-25",
     term: "Lossless compression",
     title: "What Is Lossless Compression? (vs Lossy, Explained)",
     description:
@@ -307,7 +319,8 @@ export const GLOSSARY: GlossaryEntry[] = [
     term: "MozJPEG",
     title: "What Is MozJPEG? Better JPEG Compression Explained",
     description:
-      "MozJPEG is Mozilla's improved JPEG encoder that produces JPEG files roughly 10-15% smaller at the same visual quality. Here's how it works.",
+      "MozJPEG is Mozilla's improved JPEG encoder that produces JPEG files about 5% smaller on average at the same visual quality. Here's how it works.",
+    updated: "2026-11-25",
   },
   {
     path: "/glossary/chroma-subsampling",
@@ -339,6 +352,7 @@ export const GLOSSARY_ROUTE_ENTRIES: RouteEntry[] = GLOSSARY.map((g) => ({
   description: g.description,
   priority: g.priority ?? 0.5,
   changefreq: "yearly" as const,
+  updated: g.updated,
 }));
 
 /**

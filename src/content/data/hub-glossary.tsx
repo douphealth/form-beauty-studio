@@ -8,7 +8,7 @@ const TERMS = [
   { path: "/glossary/webp", term: "WebP", desc: "Google's all-round web image format: lossy, lossless, transparency and animation in one file." },
   { path: "/glossary/lossless-compression", term: "Lossless compression", desc: "Shrinking a file without discarding any data — the original reconstructs bit for bit." },
   { path: "/glossary/core-web-vitals", term: "Core Web Vitals", desc: "Google's three page-experience metrics: LCP (loading), INP (responsiveness), CLS (stability)." },
-  { path: "/glossary/mozjpeg", term: "MozJPEG", desc: "Mozilla's improved JPEG encoder — same format, roughly 10-15% smaller files." },
+  { path: "/glossary/mozjpeg", term: "MozJPEG", desc: "Mozilla's improved JPEG encoder — same format, about 5% smaller files on average." },
   { path: "/glossary/chroma-subsampling", term: "Chroma subsampling", desc: "Storing less color detail than brightness detail. Why 4:2:0 works on photos but ruins screenshots." },
   { path: "/glossary/entropy-coding", term: "Entropy coding", desc: "The final lossless stage of most codecs — Huffman, arithmetic and ANS coding." },
   { path: "/glossary/lazy-loading", term: "Lazy loading", desc: "Deferring image downloads until they're needed, via a single HTML attribute." },
