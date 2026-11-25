@@ -86,6 +86,7 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     path: "/learn/compress-images-for-web",
+    updated: "2026-11-25",
     kind: "guide",
     title: "How to Compress Images for the Web Without Losing Quality",
     description:
@@ -123,6 +124,7 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     path: "/learn/best-free-image-compression-tools",
+    updated: "2026-11-25",
     kind: "guide",
     title: "Best Free Image Compression Tools in 2026 (Compared)",
     description:
@@ -193,6 +195,7 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     path: "/formats/png",
+    updated: "2026-11-25",
     kind: "format",
     title: "PNG Compressor & Optimizer — Shrink PNG Files Free",
     description:
@@ -298,6 +301,7 @@ export const GLOSSARY: GlossaryEntry[] = [
   },
   {
     path: "/glossary/lossless-compression",
+    updated: "2026-11-25",
     term: "Lossless compression",
     title: "What Is Lossless Compression? (vs Lossy, Explained)",
     description:

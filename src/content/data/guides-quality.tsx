@@ -83,7 +83,7 @@ export const GUIDE_CONTENT: Record<string, ContentEntry> = {
           P(<><strong>JPEG — 78 to 85.</strong> The classic range, and still correct. MozJPEG's improved encoder means you can sit at the lower end of that band than you could with a stock libjpeg encoder; Mozilla documents about 5% smaller files on average at matched quality, more on some images. Below 75 on a photographic JPEG, banding becomes a real risk.</>),
           P(<><strong>WebP — 75 to 82.</strong> WebP's lossy mode is more efficient than JPEG, so it can go lower for the same visual result. Quality 80 in WebP is broadly comparable to quality 85 in JPEG. It also handles transparency and animation, so it is often the format that lets you stop shipping a PNG.</>),
           P(<><strong>AVIF — 60 to 75.</strong> This surprises people. AVIF's quality scale is not calibrated to JPEG's — AVIF at 65 is frequently visually equivalent to JPEG at 80, at a smaller size. Encoding is slower, which is the real cost. If you set AVIF to 80 you are usually leaving significant savings on the table.</>),
-          P(<><strong>PNG — lossless, no quality setting.</strong> Use the maximum optimisation effort (OxiPNG and similar tools re-encode losslessly for typically 10–30% off a naive PNG export). If you are reaching for a PNG quality slider, you probably want WebP instead.</>),
+          P(<><strong>PNG — lossless, no quality setting.</strong> Use the maximum optimisation effort (OxiPNG at the level ImageAlchemy uses cut 8–29% off a default PNG export on our test images). If you are reaching for a PNG quality slider, you probably want WebP instead.</>),
           P(<><strong>Screenshots, UI and diagrams — do not use lossy JPEG.</strong> Use PNG, or WebP in lossless mode. Text is the worst case for DCT-based compression and the artifacts are maximally visible.</>),
         P(<>Terms used here — chroma subsampling, entropy coding, lossless and lossy — are defined in plain English in the <a href="/glossary">image compression glossary</a>.</>),
         P(<>The JPEG range here assumes MozJPEG; see <a href="/glossary/mozjpeg">What Is MozJPEG?</a> for why its encoder beats libjpeg-turbo by about 5% on average.</>),
@@ -159,7 +159,7 @@ export const GUIDE_CONTENT: Record<string, ContentEntry> = {
       },
       {
         question: "What quality should I use for PNG?",
-        answer: "PNG is lossless — it has no quality setting, and any tool offering a PNG quality slider is applying lossy preprocessing. Use maximum lossless optimisation instead (OxiPNG and similar tools typically cut 10 to 30% from a naive PNG export). If you need to control quality, use WebP or AVIF rather than PNG.",
+        answer: "PNG is lossless — it has no quality setting, and any tool offering a PNG quality slider is applying lossy preprocessing. Use maximum lossless optimisation instead (on our test images OxiPNG cut 8 to 29% from a default PNG export). If you need to control quality, use WebP or AVIF rather than PNG.",
       },
       {
         question: "Why does my image still look bad after compressing at quality 80?",

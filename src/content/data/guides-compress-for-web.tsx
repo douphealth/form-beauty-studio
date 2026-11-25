@@ -63,7 +63,7 @@ export const GUIDE_CONTENT: Record<string, ContentEntry> = {
       },
       {
         question: "What is the best free image compressor?",
-        answer: "For privacy and batch processing, a browser-based tool like ImageAlchemy is best — nothing is uploaded, there are no file limits, and you can process hundreds of images at once. Squoosh is good for single images and detailed per-format control. TinyPNG is convenient but uploads your files and limits batch size on the free tier.",
+        answer: "For privacy and batch processing, a browser-based tool like ImageAlchemy is best — nothing is uploaded, and you can process up to 200 images (50 MB each) in one batch. Squoosh is good for single images and detailed per-format control. TinyPNG is convenient but uploads your files, and its free web tier takes 20 images per session at 5 MB each (November 2026).",
       },
       {
         question: "Does compressing images reduce quality?",
@@ -71,7 +71,7 @@ export const GUIDE_CONTENT: Record<string, ContentEntry> = {
       },
       {
         question: "How much file size can I save by compressing images?",
-        answer: "Typically 50–70% for photographs by converting to WebP at quality 80 and resizing to display dimensions. Converting a PNG photograph to WebP can save 80–90%. Lossless re-optimization adds another 2–10%.",
+        answer: "Typically 50–70% for photographs by converting to WebP at quality 80 and resizing to display dimensions. Converting a PNG photograph to WebP can save 80–90% — on our 1080×675 test photo, WebP at quality 80 was 88% smaller than the optimised PNG. Lossless re-optimization of a PNG saved 8–29% on our test images.",
       },
       {
         question: "Is it safe to compress images online?",
