@@ -95,6 +95,7 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     path: "/learn/webp-vs-avif",
+    updated: "2026-11-25",
     kind: "guide",
     title: "WebP vs AVIF: Which Image Format Wins in 2026?",
     description:
@@ -162,6 +163,7 @@ export const ROUTES: RouteEntry[] = [
   // ── Format pages (format-level intent: "compress to webp", "convert to avif") ─
   {
     path: "/formats/webp",
+    updated: "2026-11-25",
     kind: "format",
     title: "WebP Compressor & Converter — Compress Images to WebP Free",
     description:
@@ -171,6 +173,7 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     path: "/formats/avif",
+    updated: "2026-11-25",
     kind: "format",
     title: "AVIF Compressor & Converter — Convert Images to AVIF Free",
     description:
@@ -280,6 +283,7 @@ export const GLOSSARY: GlossaryEntry[] = [
   {
     path: "/glossary/avif",
     term: "AVIF",
+    updated: "2026-11-25",
     title: "What Is AVIF? AV1 Image File Format Explained",
     description:
       "AVIF (AV1 Image File Format) is a modern, royalty-free image format with the best compression of any web image format. Here's how it works and when to use it.",
@@ -289,7 +293,8 @@ export const GLOSSARY: GlossaryEntry[] = [
     term: "WebP",
     title: "What Is WebP? Google's Web Image Format Explained",
     description:
-      "WebP is Google's image format offering lossy and lossless compression, transparency and animation in one file, ~25-35% smaller than JPEG and PNG.",
+      "WebP is Google's image format offering lossy and lossless compression, transparency and animation in one file, ~25-34% smaller than JPEG.",
+    updated: "2026-11-25",
   },
   {
     path: "/glossary/lossless-compression",

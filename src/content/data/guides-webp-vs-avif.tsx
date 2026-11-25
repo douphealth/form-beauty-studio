@@ -14,7 +14,7 @@ export const GUIDE_CONTENT: Record<string, ContentEntry> = {
         id: "the-short-answer",
         heading: "The short answer",
         body: [
-          P(<>Pick <strong>AVIF</strong> if your build pipeline supports it — it's roughly <strong>20% smaller</strong> than WebP at equivalent quality and is now supported by all major browsers. Pick <strong>WebP</strong> as the reliable default: universal support, faster encoding, smaller decoder, and every image tool handles it. In practice, serving both via <code>&lt;picture&gt;</code> with a JPEG fallback remains the most robust approach.</>),
+          P(<>Pick <strong>AVIF</strong> if your build pipeline supports it — it is usually <strong>smaller than WebP</strong> at equivalent quality and is now supported by all major browsers. Pick <strong>WebP</strong> as the reliable default: universal support, faster encoding, smaller decoder, and every image tool handles it. In practice, serving both via <code>&lt;picture&gt;</code> with a JPEG fallback remains the most robust approach.</>),
         P(<>WebP itself is defined, with its lossy and lossless modes, in <a href="/glossary/webp">What Is WebP?</a>.</>),
         ],
       },
@@ -22,7 +22,7 @@ export const GUIDE_CONTENT: Record<string, ContentEntry> = {
         id: "compression-efficiency",
         heading: "Compression efficiency",
         body: [
-          P(<>AVIF wins clearly. Based on the same source image at matched visual quality, typical results are: JPEG 100% (baseline), <strong>WebP ~70–75%</strong> of JPEG size, <strong>AVIF ~50–60%</strong>. For a 1 MB JPEG, that's roughly 720 KB WebP and 550 KB AVIF. Across a site with hundreds of images, the difference compounds.</>),
+          P(<>AVIF wins clearly. Based on the same source image at matched visual quality, Google measures WebP at <strong>25–34% smaller</strong> than JPEG (<a href="https://developers.google.com/speed/webp" rel="noopener">Google’s WebP documentation</a>), and tests reported on <a href="https://web.dev/articles/compress-images-avif" rel="noopener">web.dev</a> have seen AVIF save <strong>more than 50%</strong> versus JPEG. web.dev also cautions that the exact saving depends on the content, encoder settings and quality target, so for a 1 MB JPEG expect roughly 660–750 KB as WebP and often around half that size or less as AVIF. Across a site with hundreds of images, the difference compounds.</>),
           P(<>The <a href="/formats/avif">AVIF format page</a> collects its browser support, quality settings and conversion steps in one place.</>),
         ],
       },
@@ -30,7 +30,7 @@ export const GUIDE_CONTENT: Record<string, ContentEntry> = {
         id: "browser-support",
         heading: "Browser support",
         body: [
-          P(<>Both are now safe. WebP has been universal since ~2020. AVIF is supported in Chrome, Firefox, Safari (16.4+), Edge and all modern mobile browsers — roughly 96%+ of global traffic in 2026. The remaining gap is very old browsers and some email clients, which is why a JPEG fallback still matters.</>),
+          P(<>Both are now safe. WebP has been universal since ~2020. AVIF is supported in Chrome, Firefox, Safari (16.4+), Edge and all modern mobile browsers — over 96% of global browser usage according to <a href="https://caniuse.com/avif" rel="noopener">caniuse.com</a> (October 2026 data). The remaining gap is very old browsers and some email clients, which is why a JPEG fallback still matters.</>),
         ],
       },
       {
@@ -65,15 +65,15 @@ export const GUIDE_CONTENT: Record<string, ContentEntry> = {
     faqs: [
       {
         question: "Is AVIF better than WebP?",
-        answer: "On compression, yes — AVIF is roughly 20% smaller than WebP at equivalent quality and supports 12-bit color depth. WebP counters with faster encoding, broader tooling support and a smaller decoder. Both are safe to serve in 2026; use the <picture> element to serve AVIF with WebP and JPEG fallbacks.",
+        answer: "On compression, usually — AVIF tends to beat WebP at equivalent quality, by a margin that varies with the image, and supports 12-bit color depth. WebP counters with faster encoding, broader tooling support and a smaller decoder. Both are safe to serve in 2026; use the <picture> element to serve AVIF with WebP and JPEG fallbacks.",
       },
       {
         question: "Which is smaller, WebP or AVIF?",
-        answer: "AVIF. For the same source image at matched visual quality, AVIF typically produces files 50–60% the size of the JPEG baseline, while WebP produces 70–75%. That makes AVIF roughly 20–25% smaller than WebP.",
+        answer: "AVIF. For the same source image at matched visual quality, Google measures WebP at 25–34% smaller than JPEG, and tests cited by web.dev have seen AVIF save more than 50% versus JPEG. The exact gap depends on the image and encoder settings, so compare real output.",
       },
       {
         question: "Do all browsers support AVIF and WebP?",
-        answer: "WebP has been universally supported since around 2020. AVIF is supported by Chrome, Firefox, Safari 16.4+, Edge and all modern mobile browsers — over 96% of global traffic in 2026. Very old browsers and some email clients still need a JPEG or PNG fallback.",
+        answer: "WebP has been universally supported since around 2020. AVIF is supported by Chrome, Firefox, Safari 16.4+, Edge and all modern mobile browsers — over 96% of global browser usage (caniuse.com, October 2026 data). Very old browsers and some email clients still need a JPEG or PNG fallback.",
       },
       {
         question: "Can I convert WebP to AVIF or AVIF to WebP?",
