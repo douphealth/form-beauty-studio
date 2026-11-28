@@ -11,7 +11,7 @@ export const GLOSSARY_CONTENT: Record<string, ContentEntry> = {
     keywords: ["avif", "av1 image file format", "image format", "image compression"],
     sections: [
       { id: "definition", heading: "Definition", body: [P(<>AVIF (AV1 Image File Format) is an image format that encodes still images using the AV1 video codec. It supports lossy and lossless compression, an alpha channel for transparency, animation, 12-bit color depth and wide color gamuts, and produces the smallest files of any current web image format.</>)] },
-      { id: "in-practice", heading: "In practice", body: [P(<>At matched visual quality, AVIF files are roughly <strong>50–60%</strong> the size of JPEG and <strong>80%</strong> the size of WebP. Supported in Chrome, Firefox, Safari 16.4+ and Edge — over 96% of browsers in 2026. Its encoder is slower than WebP's, which is why batch tools run it in background workers.</>), P(<>WebP is the pragmatic fallback beneath AVIF; see <a href="/glossary/webp">What Is WebP?</a> for its lossy, lossless, transparency and animation modes.</>)] },
+      { id: "in-practice", heading: "In practice", body: [P(<>At matched visual quality, AVIF files are often around <strong>half the size</strong> of JPEG — tests cited by <a href="https://web.dev/articles/compress-images-avif" rel="noopener">web.dev</a> have seen savings above 50% — and usually smaller than WebP, though results vary with content and encoder settings. Supported in Chrome, Firefox, Safari 16.4+ and Edge — over 96% of global browser usage according to <a href="https://caniuse.com/avif" rel="noopener">caniuse.com</a> (October 2026 data). Its encoder is slower than WebP's, which is why batch tools run it in background workers.</>), P(<>WebP is the pragmatic fallback beneath AVIF; see <a href="/glossary/webp">What Is WebP?</a> for its lossy, lossless, transparency and animation modes.</>)] },
       { id: "what-it-does-well", heading: "What AVIF is unusually good at", body: [
         P(<>Two things separate AVIF from WebP in practice, and both matter more than the headline percentage.</>),
         P(<><strong>Gradients and low-light areas.</strong> Because AV1 was designed for video, it handles smooth tonal transitions well. A photograph with a sky gradient, a soft studio backdrop or dim interior lighting is where AVIF's advantage is most visible — those are exactly the regions where JPEG shows banding at small file sizes.</>),
@@ -27,9 +27,9 @@ export const GLOSSARY_CONTENT: Record<string, ContentEntry> = {
     faqs: [
       { question: "What does AVIF stand for?", answer: "AV1 Image File Format. It encodes still images using the AV1 video codec, which is why it achieves better compression than older image formats." },
       { question: "Is AVIF free to use?", answer: "Yes. AVIF is royalty-free and open, backed by the Alliance for Open Media. There are no licensing fees for encoding or decoding." },
-      { question: "What browsers support AVIF?", answer: "Chrome, Firefox, Safari 16.4 and later, Edge, and all modern mobile browsers — over 96% of global traffic in 2026. A WebP or JPEG fallback inside a <picture> element covers the remainder." },
+      { question: "What browsers support AVIF?", answer: "Chrome, Firefox, Safari 16.4 and later, Edge, and all modern mobile browsers — over 96% of global browser usage (caniuse.com, October 2026 data). A WebP or JPEG fallback inside a <picture> element covers the remainder." },
       { question: "When should I not use AVIF?", answer: "Three cases: very small images (under a few kilobytes), where AVIF's format overhead can make the file larger than the JPEG it replaces; flat-colour graphics, logos and screenshots, where PNG or WebP lossless is more suitable; and any pipeline that re-encodes on demand, because AVIF encoding is slow enough to become a real cost." },
-      { question: "Is AVIF always smaller than WebP?", answer: "For photographs at matched visual quality, yes — typically around 20% smaller. The exception is very small images, where AVIF's greater format overhead can make it larger. Always compare the actual output for images under a few kilobytes." },
+      { question: "Is AVIF always smaller than WebP?", answer: "For photographs at matched visual quality, usually, though the margin varies by image. The exception is very small images, where AVIF's greater format overhead can make it larger. Always compare the actual output for images under a few kilobytes." },
     ],
     related: [
       { path: "/formats/avif", label: "AVIF compressor" },
@@ -41,11 +41,11 @@ export const GLOSSARY_CONTENT: Record<string, ContentEntry> = {
   "/glossary/webp": {
     path: "/glossary/webp",
     h1: "WebP",
-    lede: "Google's web image format — lossy, lossless, transparency and animation in one file, 25–35% smaller than JPEG and PNG.",
+    lede: "Google's web image format — lossy, lossless, transparency and animation in one file, 25–34% smaller than JPEG and about 26% smaller than PNG.",
     keywords: ["webp", "image format", "google image format", "image compression"],
     sections: [
       { id: "definition", heading: "Definition", body: [P(<>WebP is an image format developed by Google, based on the VP8 video codec. It supports lossy compression, lossless compression, transparency (alpha channel) and animation within a single format, effectively replacing JPEG, PNG and animated GIF for web use.</>)] },
-      { id: "in-practice", heading: "In practice", body: [P(<>At matched visual quality, WebP files are roughly <strong>25–35% smaller</strong> than JPEG and 20–30% smaller than PNG lossless. Universally supported since around 2020. It's the pragmatic default format for web images when AVIF isn't available.</>), P(<>When AVIF is available it beats WebP on size; see <a href="/glossary/avif">What Is AVIF?</a> for when it wins and when it doesn't.</>)] },
+      { id: "in-practice", heading: "In practice", body: [P(<>At matched visual quality, WebP files are roughly <strong>25–34% smaller</strong> than JPEG (<a href="https://developers.google.com/speed/webp" rel="noopener">Google’s WebP documentation</a>) and about 26% smaller than PNG lossless. Universally supported since around 2020. It's the pragmatic default format for web images when AVIF isn't available.</>), P(<>When AVIF is available it beats WebP on size; see <a href="/glossary/avif">What Is AVIF?</a> for when it wins and when it doesn't.</>)] },
       { id: "why-it-won", heading: "Why it became the default", body: [
         P(<>WebP succeeded where earlier format attempts failed, and the reasons explain when to keep using it.</>),
         P(<><strong>It replaces three formats at once.</strong> Before WebP, a site needed JPEG for photographs, PNG for transparency, and GIF for animation. WebP covers all three in a single format — one conversion path, one set of fallbacks, less to reason about.</>),
@@ -55,16 +55,16 @@ export const GLOSSARY_CONTENT: Record<string, ContentEntry> = {
       { id: "lossy-vs-lossless", heading: "Lossy and lossless are different tools", body: [
         P(<>WebP has two distinct modes and they are not interchangeable. Choosing the wrong one is a common mistake.</>),
         P(<><strong>Lossy WebP</strong> replaces JPEG. Use it for photographs and anything with continuous tone. Quality 75–85 is the usable band, mirroring JPEG's.</>),
-        P(<><strong>Lossless WebP</strong> replaces PNG. Use it for logos, icons, screenshots, UI graphics and anything with flat colour or text. It is frequently 20–30% smaller than an equivalent PNG.</>),
+        P(<><strong>Lossless WebP</strong> replaces PNG. Use it for logos, icons, screenshots, UI graphics and anything with flat colour or text. Google puts it at about 26% smaller than an equivalent PNG.</>),
         P(<>Converting a screenshot or logo to <em>lossy</em> WebP is where WebP gets blamed unfairly — the artifacts around sharp edges and text are the result of choosing the wrong mode, not a flaw in the format.</>),
       ]},
     ],
     faqs: [
-      { question: "What is WebP used for?", answer: "WebP is used for web images — photographs, graphics with transparency, and animations. It produces files 25–35% smaller than JPEG at equivalent quality, which reduces page weight and improves load times." },
+      { question: "What is WebP used for?", answer: "WebP is used for web images — photographs, graphics with transparency, and animations. It produces files 25–34% smaller than JPEG at equivalent quality, which reduces page weight and improves load times." },
       { question: "Does WebP support transparency?", answer: "Yes. WebP supports a full 8-bit alpha channel for transparency in both lossy and lossless modes." },
-      { question: "Is WebP better than JPEG?", answer: "For web use, yes. WebP produces files 25–35% smaller than JPEG at matched visual quality and additionally supports transparency and lossless compression. JPEG remains useful only for maximum compatibility." },
-      { question: "Should I use WebP or AVIF?", answer: "Serve AVIF first and WebP as the fallback. AVIF produces smaller files — roughly 20% smaller than WebP at matched quality — but WebP encodes far faster and has marginally broader support. In a <picture> element the browser picks the best format it understands, so offering both costs nothing." },
-      { question: "Why does my image look worse after converting to WebP?", answer: "Almost always because a flat-colour graphic was saved in lossy mode. Screenshots, logos, icons and anything with text or sharp edges should use WebP lossless, which is still typically 20–30% smaller than PNG. Lossy WebP is for photographs." },
+      { question: "Is WebP better than JPEG?", answer: "For web use, yes. WebP produces files 25–34% smaller than JPEG at matched visual quality and additionally supports transparency and lossless compression. JPEG remains useful only for maximum compatibility." },
+      { question: "Should I use WebP or AVIF?", answer: "Serve AVIF first and WebP as the fallback. AVIF usually produces smaller files than WebP at matched quality, but WebP encodes far faster and has marginally broader support. In a <picture> element the browser picks the best format it understands, so offering both costs nothing." },
+      { question: "Why does my image look worse after converting to WebP?", answer: "Almost always because a flat-colour graphic was saved in lossy mode. Screenshots, logos, icons and anything with text or sharp edges should use WebP lossless, which Google puts at about 26% smaller than PNG. Lossy WebP is for photographs." },
     ],
     related: [
       { path: "/formats/webp", label: "WebP compressor" },
